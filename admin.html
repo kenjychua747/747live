@@ -938,7 +938,7 @@ const DEFAULTS = {
   stickyCta: 'Join now'
 };
 
-// ===== SUPABASE AUTH (REST API, no CDN needed) =====
+// ===== SUPABASE (REST API, no CDN needed) =====
 const SUPABASE_URL = 'https://agkuojclxealcjymbeos.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFna3VvamNseGVhbGNqeW1iZW9zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5NTgzMDcsImV4cCI6MjEwMDUzNDMwN30.oOFnkmDlaSDtxpDBbiQR6YODhqYaQo9QWYDBLzeZhlg';
 
@@ -1055,16 +1055,27 @@ const supabaseRest = {
   }
 };
 
-// ===== DATA MANAGEMENT =====
+// ===== DATA MANAGEMENT (Supabase-backed) =====
 let data = {};
 
-function loadData() {
-  const saved = localStorage.getItem('adminData');
-  if (saved) {
-    try { data = JSON.parse(saved); } catch(e) { data = {}; }
+async function loadData() {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/site_config?id=eq.1&select=config`, {
+      headers: { 'apikey': SUPABASE_ANON_KEY }
+    });
+    if (res.ok) {
+      const rows = await res.json();
+      if (rows && rows[0] && rows[0].config) {
+        data = { ...DEFAULTS, ...rows[0].config };
+      } else {
+        data = { ...DEFAULTS };
+      }
+    } else {
+      data = { ...DEFAULTS };
+    }
+  } catch (e) {
+    data = { ...DEFAULTS };
   }
-  // Merge with defaults for any missing keys
-  data = { ...DEFAULTS, ...data };
   // Deep merge arrays
   for (const key of ['hiw', 'benefitFeatures', 'payments', 'providers', 'agentCards', 'faq', 'winNotifications']) {
     if (Array.isArray(DEFAULTS[key]) && (!data[key] || !Array.isArray(data[key]))) {
@@ -1072,25 +1083,38 @@ function loadData() {
     }
   }
   if (!data.promoSlides || !Array.isArray(data.promoSlides)) data.promoSlides = [...DEFAULTS.promoSlides];
-  // Fix old data where agentCards link might be empty - use defaults
   if (data.agentCards && Array.isArray(data.agentCards)) {
-    data.agentCards = data.agentCards.map((c, i) => ({
-      ...DEFAULTS.agentCards[i],
-      ...c
-    }));
+    data.agentCards = data.agentCards.map((c, i) => ({ ...DEFAULTS.agentCards[i], ...c }));
   }
-  saveData();
 }
 
-function saveData() {
-  localStorage.setItem('adminData', JSON.stringify(data));
+async function saveData() {
+  const token = localStorage.getItem('supabaseAccessToken');
+  if (!token) return;
+  const payload = {};
+  for (const k of Object.keys(data)) {
+    if (k !== 'adminEmail' && k !== 'adminPassword') {
+      payload[k] = data[k];
+    }
+  }
+  await fetch(`${SUPABASE_URL}/rest/v1/site_config?id=eq.1`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ config: payload, updated_at: new Date().toISOString() })
+  });
 }
 
 async function saveAll() {
   collectFromForm();
-  saveData();
 
   try {
+    // Save site config to Supabase
+    await saveData();
+
     // Sync email/password to Supabase Auth
     const authUpdates = {};
     if (data.adminEmail) authUpdates.email = data.adminEmail;
@@ -1111,9 +1135,9 @@ async function saveAll() {
       recovery_answer: recoveryAnswer
     });
 
-    showStatus('All changes saved successfully! Credentials synced to Supabase Auth.', 'success');
+    showStatus('All changes saved to Supabase!', 'success');
   } catch (err) {
-    showStatus('Saved locally but failed to sync with Supabase: ' + err.message, 'error');
+    showStatus('Save failed: ' + err.message, 'error');
   }
 }
 
@@ -1548,22 +1572,24 @@ function showStatus(msg, type) {
   setTimeout(() => { el.className = 'status-msg'; }, 4000);
 }
 
-function resetToDefaults() {
+async function resetToDefaults() {
   if (!confirm('Reset all data to defaults? This cannot be undone.')) return;
   data = JSON.parse(JSON.stringify(DEFAULTS));
-  saveData();
+  await saveData();
   populateForm();
   showStatus('Reset to defaults successfully!', 'success');
 }
 
 // ===== INIT =====
-loadData();
-populateForm();
-const savedSection = localStorage.getItem('adminActiveSection');
-if (savedSection) {
-  const link = document.querySelector(`.sidebar-nav a[data-section="${savedSection}"]`);
-  if (link) link.click();
-}
+(async () => {
+  await loadData();
+  populateForm();
+  const savedSection = localStorage.getItem('adminActiveSection');
+  if (savedSection) {
+    const link = document.querySelector(`.sidebar-nav a[data-section="${savedSection}"]`);
+    if (link) link.click();
+  }
+})();
 </script>
 </body>
 </html>

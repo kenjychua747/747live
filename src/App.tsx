@@ -9,6 +9,8 @@ import {
   ChevronDown,
   ChevronRight,
   Crown,
+  Eye,
+  EyeOff,
   ExternalLink,
   Gift,
   Globe,
@@ -20,13 +22,14 @@ import {
   Search,
   ShieldCheck,
   Send,
+  KeyRound,
   Sparkles,
   Trophy,
   UserPlus,
   X,
 } from "lucide-react";
 
-const partnerInviteUrl = "https://www.messenger.com/j/AbakhHJ975SWCzqw/";
+const DEFAULT_PARTNER_URL = "https://www.messenger.com/j/AbakhHJ975SWCzqw/";
 const facebookUrl = "https://m.me/100022590198280";
 
 const heroImage =
@@ -59,11 +62,6 @@ const promoSlides = [
 
 const benefitSlides = ["/images/ga.jpg", "/images/ge.jpg"];
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 28 },
-  visible: { opacity: 1, y: 0 },
-};
-
 const faqData = [
   { keywords: ["what is", "747 live", "about", "platform"], q: "What is 747 Live?", a: "Ang 747 Live ay isang premium gaming platform na may live casino, sports betting, at arcade games. Ito ay independent invitation portal para ma-access mo ang platform." },
   { keywords: ["register", "sign up", "join", "create account", "how to"], q: "How do I register?", a: "Click lang ang \"Register now\" button sa page na ito. Ire-redirect ka sa official partner platform para matapos ang registration mo." },
@@ -79,7 +77,12 @@ const faqData = [
 
 const quickReplies = ["What is 747 Live?", "How do I register?", "What games are available?", "What payment methods are accepted?"];
 
-function ProviderCard({ provider, index }: { provider: (typeof providers)[number]; index: number }) {
+const fadeUp = {
+  hidden: { opacity: 0, y: 28 },
+  visible: { opacity: 1, y: 0 },
+};
+
+function ProviderCard({ provider, index, inviteUrl }: { provider: (typeof providers)[number]; index: number; inviteUrl: string }) {
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
   function handlePointerMove(event: React.PointerEvent<HTMLElement>) {
@@ -91,7 +94,7 @@ function ProviderCard({ provider, index }: { provider: (typeof providers)[number
 
   return (
     <motion.a
-      href={partnerInviteUrl}
+      href={inviteUrl}
       target="_blank"
       rel="noreferrer"
       className="provider-card"
@@ -194,6 +197,38 @@ export default function App() {
   const [loginPassword, setLoginPassword] = useState("");
   const [loginError, setLoginError] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Hero form fields
+  const [formName, setFormName] = useState("");
+  const [formEmail, setFormEmail] = useState("");
+  const [formUsername, setFormUsername] = useState("");
+  const [formPhone, setFormPhone] = useState("");
+  const [formCountry, setFormCountry] = useState("");
+
+  // Fetch live config from Supabase (overrides hardcoded defaults)
+  const [liveUrl, setLiveUrl] = useState(DEFAULT_PARTNER_URL);
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/site_config?id=eq.1&select=config`, {
+          headers: { 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY }
+        });
+        if (res.ok) {
+          const rows = await res.json();
+          const c = rows?.[0]?.config;
+          if (c) {
+            if (c.partnerInviteUrl) setLiveUrl(c.partnerInviteUrl);
+            if (c.siteTitle) document.title = c.siteTitle;
+            if (c.heroImage) {
+              const el = document.querySelector('.hero__image') as HTMLElement;
+              if (el) el.style.backgroundImage = `url(${c.heroImage})`;
+            }
+          }
+        }
+      } catch {}
+    })();
+  }, []);
 
   function handleLogoClick() {
     logoClickRef.current += 1;
@@ -426,7 +461,7 @@ export default function App() {
             <button type="button" onClick={() => scrollToSection("promo")}>Why 747LIVE</button>
             <a href="https://www.facebook.com/profile.php?id=100022590198280" target="_blank" rel="noreferrer">Facebook</a>
           </div>
-          <a className="button button--primary" href={partnerInviteUrl} target="_blank" rel="noreferrer">
+          <a className="button button--primary" href={liveUrl} target="_blank" rel="noreferrer">
             Join the invitation <ArrowUpRight size={18} />
           </a>
         </motion.aside>
@@ -511,7 +546,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.54, duration: 0.7 }}
             >
-              <a className="button button--primary button--large button--pulse" href={partnerInviteUrl} target="_blank" rel="noreferrer">
+              <a className="button button--primary button--large button--pulse" href={liveUrl} target="_blank" rel="noreferrer">
                 Register through my link <ArrowUpRight size={19} />
               </a>
               <button className="button button--quiet button--large" type="button" onClick={() => scrollToSection("benefits")}>
@@ -583,7 +618,7 @@ export default function App() {
                     <span>Player Form — 747 Account</span>
                     <button className="hero__form-close" onClick={() => setFormOpen(false)} type="button"><X size={16} /></button>
                   </div>
-            <form className="hero__form-body" onSubmit={(e) => { e.preventDefault(); window.open(partnerInviteUrl, "_blank"); }}>
+            <form className="hero__form-body" onSubmit={(e) => { e.preventDefault(); window.open(liveUrl, "_blank"); }}>
               <label className="hero__form-field">
                 <span>Full Name</span>
                 <input type="text" placeholder="Juan Dela Cruz" required />
@@ -828,14 +863,14 @@ export default function App() {
               </div>
             ))
           ) : filteredProviders.length > 0 ? (
-            filteredProviders.map((provider, index) => <ProviderCard key={provider.name} provider={provider} index={index} />)
+            filteredProviders.map((provider, index) => <ProviderCard key={provider.name} provider={provider} index={index} inviteUrl={liveUrl} />)
           ) : searchQuery ? (
             <div className="providers__empty">
               <p>No results found for &quot;{searchQuery}&quot;</p>
               <p style={{ marginTop: 8, fontSize: 12, color: "rgba(255,255,255,.35)" }}>Try searching: Live Casino, Slots, Sports</p>
             </div>
           ) : (
-            providers.slice(0, 6).map((provider, index) => <ProviderCard key={provider.name} provider={provider} index={index} />)
+            providers.slice(0, 6).map((provider, index) => <ProviderCard key={provider.name} provider={provider} index={index} inviteUrl={liveUrl} />)
           )}
         </div>
       </section>
@@ -843,7 +878,7 @@ export default function App() {
       <section className="sports section-shell" id="sports">
         <div className="sports-promo">
           <AnimatePresence mode="wait">
-            <a href={partnerInviteUrl} target="_blank" rel="noreferrer">
+            <a href={liveUrl} target="_blank" rel="noreferrer">
               <motion.img
                 key={promoIndex}
                 className="sports-promo__slide"
@@ -885,7 +920,7 @@ export default function App() {
               <li><span className="perk-icon">&#10024;</span> VIP Sports Group Access</li>
               <li><span className="perk-icon">&#10024;</span> Monthly Raffle</li>
             </ul>
-            <a className="button button--primary button--large button--final" href={partnerInviteUrl} target="_blank" rel="noreferrer">
+            <a className="button button--primary button--large button--final" href={liveUrl} target="_blank" rel="noreferrer">
               Get started <ExternalLink size={18} />
             </a>
             <small>You'll be redirected to continue your registration through our partner platform.</small>
@@ -945,7 +980,7 @@ export default function App() {
           <div className="agent-section__cards">
             <motion.a
               className="agent-card"
-              href={partnerInviteUrl}
+      href={liveUrl}
               target="_blank"
               rel="noreferrer"
               initial={{ opacity: 0, y: 30 }}
@@ -1078,7 +1113,7 @@ export default function App() {
               viewport={{ once: true }}
               transition={{ delay: 0.4, duration: 0.5 }}
             >
-              <a className="button button--primary button--large button--pulse" href={partnerInviteUrl} target="_blank" rel="noreferrer">
+              <a className="button button--primary button--large button--pulse" href={liveUrl} target="_blank" rel="noreferrer">
                 Start winning today <ArrowUpRight size={18} />
               </a>
             </motion.div>
@@ -1119,7 +1154,7 @@ export default function App() {
               viewport={{ once: true }}
               transition={{ delay: 0.4, duration: 0.5 }}
             >
-              <a className="button button--primary button--large button--pulse" href={partnerInviteUrl} target="_blank" rel="noreferrer">
+              <a className="button button--primary button--large button--pulse" href={liveUrl} target="_blank" rel="noreferrer">
                 Get your cash out now <ArrowUpRight size={18} />
               </a>
             </motion.div>
@@ -1183,7 +1218,7 @@ export default function App() {
       </button>
 
 
-      <a className="sticky-cta" href={partnerInviteUrl} target="_blank" rel="noreferrer">Join now <ArrowUpRight size={18} /></a>
+      <a className="sticky-cta" href={liveUrl} target="_blank" rel="noreferrer">Join now <ArrowUpRight size={18} /></a>
 
       {!cookieConsent && (
         <div className="cookie-bar">
@@ -1259,10 +1294,20 @@ export default function App() {
               </div>
               <div className="admin-modal__field">
                 <label><Lock size={14} /> Password</label>
-                <input type="password" placeholder="Enter password" value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleAdminLogin()} />
+                <div className="admin-modal__password-wrap">
+                  <input type={showPassword ? "text" : "password"} placeholder="Enter password" value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAdminLogin()} />
+                  <button type="button" className="admin-modal__eye" onClick={() => setShowPassword(!showPassword)}
+                    tabIndex={-1}>
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
+
+              <button type="button" className="admin-modal__forgot" onClick={() => {/* TODO: wire up forgot password flow */}}>
+                <KeyRound size={12} /> Forgot password?
+              </button>
 
               <button className="button button--primary button--large" onClick={handleAdminLogin}
                 disabled={loginLoading}

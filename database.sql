@@ -15,6 +15,13 @@ CREATE TABLE admin_credentials (
   updated_at        TIMESTAMPTZ DEFAULT now()
 );
 
+-- ==================== SITE CONFIG (single JSON blob for the live website) ====================
+CREATE TABLE site_config (
+  id        INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+  config    JSONB NOT NULL DEFAULT '{}',
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
 -- ==================== BRANDING ====================
 CREATE TABLE branding (
   id          INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
@@ -336,6 +343,162 @@ CREATE INDEX idx_win_notifications_sort ON win_notifications(sort_order);
 INSERT INTO admin_credentials (email, password, recovery_question, recovery_answer)
 VALUES ('admin@747live.com', 'admin123', 'What is your favorite color?', 'blue');
 
+-- Site config (JSON blob with all website content)
+INSERT INTO site_config (id, config) VALUES (1, '{
+  "siteTitle": "747 Free Online Betting Site",
+  "faviconPath": "/favicon.png",
+  "logoPath": "/images/logo.jpg",
+  "heroImage": "/images/hero.jpg",
+  "partnerInviteUrl": "https://www.messenger.com/j/AbakhHJ975SWCzqw/",
+  "facebookUrl": "https://m.me/100022590198280",
+  "agentFacebookUrl": "https://www.facebook.com/Yjnek#",
+  "altFacebookUrl": "https://www.facebook.com/share/1BriKGwHZ2/?mibextid=wwXIfr",
+  "messengerLoadingGc": "https://m.me/j/AbYgP-t5JeYDO3R7/?send_source=gc:copy_invite_link_c",
+  "messengerSportsTips": "https://m.me/j/AbYoJLM_qK2rnSQh/",
+  "heroHeadline": "Play <em>747 LIVE</em> &amp; win real cash.",
+  "heroSubcopy": "Sign up through my link for a Welcome Bonus + Cashback. Casino, live sports, eSports & VIP rewards \\u2014 Saudi Riyals accepted.",
+  "heroLogoTag": "Official Agent",
+  "heroCtaPrimary": "Register through my link",
+  "heroCtaSecondary": "Why join",
+  "statPlayingNum": 3163,
+  "statPlayingSuffix": "+",
+  "statPaidNum": 2.4,
+  "statPaidSuffix": "B+",
+  "trustBadgeText": "Verified Partner \\u2014 100% secure registration",
+  "formTriggerText": "Register Account",
+  "formTriggerNote": "10% cash back + exclusive GCs",
+  "formSubmitText": "Register now",
+  "formFooterText": "10% CASH BACK sa total na LOSS BETS twice a month \\u2014 plus exclusive access to all GCs!",
+  "desktopNavItems": "Benefits, Discover, Sports, Promo",
+  "mobileNavItems": "Benefits, Discover, Sports, Why 747LIVE, ext:Facebook",
+  "tickerLabel": "Now in the lounge",
+  "tickerMessages": "TWICE MONTHLY CASHBACK\nSAUDI RIYALS ACCEPTED\n24/7 LIVE SPORTS TIPS\nMONTHLY VIP RAFFLE",
+  "hiwKicker": "How it works",
+  "hiwHeading": "Get started in <em>3 easy steps</em>",
+  "hiw": [
+    {"enTitle":"Register","tlTitle":"Magrehistro","enDesc":"Click the register button and fill in your details through our partner platform.","tlDesc":"I-click ang register button at punan ang iyong detalye."},
+    {"enTitle":"Deposit","tlTitle":"Mag-deposito","enDesc":"Choose from GCash, GOtyme, STC Pay, or Barq. No hidden fees, instant processing.","tlDesc":"Pumili ng GCash, GOtyme, STC Pay, o Barq. Walang dagdag na bayad."},
+    {"enTitle":"Play & Win","tlTitle":"Maglaro at Manalo","enDesc":"Access live casino, sports betting, slots, and arcade games. Start winning today!","tlDesc":"Mag-access sa live casino, sports betting, slots, at arcade games. Manalo na!"}
+  ],
+  "benefitsKicker": "Invitation privileges",
+  "benefitsHeading": "A more rewarding way to <em>step inside.</em>",
+  "benefitsCopy": "Selected benefits to look for when you continue through the partner platform.",
+  "benefitSlides": "/images/ga.jpg\n/images/ge.jpg",
+  "benefitFeatures": [
+    {"strong":"24/7","suffix":"SUPPORT"},
+    {"strong":"FAST","suffix":"CASH IN / CASH OUT"},
+    {"strong":"NO","suffix":"CASH OUT FEE"},
+    {"strong":"PLAY SMART","suffix":"WIN BIG"}
+  ],
+  "paySectionTitle": "AVAILABLE CASH IN METHOD",
+  "payments": [
+    {"name":"GCash","logo":"/images/gcash.jpg","min":"P100","max":"P100,000","fee":"Free","speed":"Instant"},
+    {"name":"GOtyme","logo":"/images/gotyme.jpg","min":"P100","max":"P50,000","fee":"Free","speed":"Instant"},
+    {"name":"STC Pay","logo":"/images/stc.jpg","min":"SAR 10","max":"SAR 50,000","fee":"Free","speed":"Instant"},
+    {"name":"Barq","logo":"/images/barq.png","min":"SAR 10","max":"SAR 50,000","fee":"Free","speed":"Instant"}
+  ],
+  "benefitsTagline": "FAST., SAFE., SECURE.",
+  "provSearchPlaceholder": "Search games, providers, categories...",
+  "provNoResults": "No results found for",
+  "provKicker": "Curated entertainment",
+  "provHeading": "Find your <em>table,</em> your tempo.",
+  "providers": [
+    {"name":"Live Sports","kind":"Sports","asset":"/images/provider-live-sports.gif","hue":"#67f79d"},
+    {"name":"Pre-match","kind":"Sports","asset":"/images/provider-pre-match.gif","hue":"#ec6800"},
+    {"name":"Live Casino","kind":"Tables","asset":"/images/provider-live-casino.gif","hue":"#5c17a2"},
+    {"name":"Evolution","kind":"Live tables","asset":"/images/provider-evolution.gif","hue":"#e4b551"},
+    {"name":"JILI","kind":"Slots","asset":"/images/provider-jili.gif","hue":"#f83700"},
+    {"name":"Casino","kind":"Tables","asset":"/images/provider-casino.gif","hue":"#66f89c"},
+    {"name":"Pragmatic Play","kind":"Slots","asset":"/images/provider-pragmatic-play.gif","hue":"#ef5d2d"},
+    {"name":"Fachai","kind":"Arcade","asset":"/images/provider-fachai.gif","hue":"#e9bb43"},
+    {"name":"CreedRoomz","kind":"Live tables","asset":"/images/provider-creedroomz.gif","hue":"#5d6dff"},
+    {"name":"Dragon Gaming","kind":"Slots","asset":"/images/provider-dragon-gaming.gif","hue":"#d93723"},
+    {"name":"747 News","kind":"Updates","asset":"/images/provider-747-news.gif","hue":"#66f89c"},
+    {"name":"747 Hearts","kind":"Tables","asset":"/images/provider-747-hearts.gif","hue":"#f56b9a"},
+    {"name":"PopOK","kind":"Arcade","asset":"/images/provider-popok.gif","hue":"#75a9ff"},
+    {"name":"Amigo","kind":"Games","asset":"/images/provider-amigo.gif","hue":"#f1a343"}
+  ],
+  "promoSlides": ["/images/promo-1.webp","/images/promo-2.webp","/images/promo-3.webp","/images/promo-4.webp","/images/promo-5.webp"],
+  "sportsKicker": "Sports & Promotions",
+  "convBadge": "747LIVE invitation",
+  "convHeadline": "Looking for Players and Sports Lovers!",
+  "convDesc": "Sali na sa aming exclusive sports community at e-enjoy ang mga member perks:",
+  "convPerks": "2% Bonus 1st Cash In\n10% Loss Rebates Twice Monthly\nBirthday Bonus Gift\nVIP Sports Group Access\nMonthly Raffle",
+  "convCta": "Get started",
+  "convSidebarImg": "/images/z.jpg",
+  "convDisclaimer": "You''ll be redirected to continue your registration through our partner platform.",
+  "promoHeading": "10% Cashback / Rebates\nFree Registration",
+  "promoCopy1": "kaya ano pang hinihintay mo MESSAGE na \\ud83d\\udd0d\\ud83c\\udf76\\ufe0f",
+  "promoCopy2": "Kung nandito ka sa Mid.Est sakto para sayo to\nMeron din SPORTS TIPS GC para sayo.\n24/7 Loading GC at customer service",
+  "promoCtaLead": "Message na dito \\ud83d\\udc49\\ud83c\\udffc\\ufe0f",
+  "promoCtaText": "Message on Facebook",
+  "promoVerified": "Legit na legit blue check verified by META kaya safe na safe ka \\ud83d\\ude09",
+  "promoAffiliate": "Pwede ka din mag apply as Affiliate \\ud83d\\ude09",
+  "promoVideo": "/images/vid.mp4",
+  "agentBadge": "747 AREA MANAGER",
+  "agentName": "Kenj Chua",
+  "agentTagline": "747 Free Online Betting Site \\u2014 Free Sports Picks sa baba plus 10% REBATES",
+  "agentCards": [
+    {"title":"Registration","icon":"/images/a.jpg","desc":"Click and Message for details","cta":"Register now","link":""},
+    {"title":"24/7 Loading Gc","icon":"/images/b.jpg","desc":"Click and Message for details","cta":"Join now","link":""},
+    {"title":"Free Sports GC Tips","icon":"/images/c.jpg","desc":"Click and Message for details","cta":"Join now","link":""}
+  ],
+  "faqKicker": "FAQ",
+  "faqHeading": "Frequently asked <em>questions</em>",
+  "faqCopy": "Quick answers to the most common questions about 747 Live.",
+  "faq": [
+    {"q":"What is 747 Live?","a":"Ang 747 Live ay isang premium gaming platform na may live casino, sports betting, at arcade games. Ito ay independent invitation portal para ma-access mo ang platform.","keywords":"what is, 747 live, about, platform"},
+    {"q":"How do I register?","a":"Click lang ang \\\"Register now\\\" button sa page na ito. Ire-redirect ka sa official partner platform para matapos ang registration mo.","keywords":"register, sign up, join, create account, how to"},
+    {"q":"Is there a welcome bonus?","a":"Oo naman! Kapag nag-register ka through our partner link, may exclusive welcome bonuses, cashback, at promotions na \\u00e0wait sa\\'yo.","keywords":"bonus, welcome, promo, cashback, rebate"},
+    {"q":"What games are available?","a":"Marami kang pagpipilian \\u2014 live dealer tables tulad ng baccarat, blackjack, roulette, sports betting, arcade games, at slot experiences mula sa top providers.","keywords":"game, slot, casino, sports, bet, play, available"},
+    {"q":"Is this the official site?","a":"Hindi po. Independent promotional website lang ito \\u2014 hindi kami ang operator ng gaming platform. Ang registration ay sa official partner link namin dumadaan.","keywords":"official, real, legit, legitimate, scam"},
+    {"q":"Is it safe?","a":"Ang partner platform ay gumagamit ng industry-standard security. Laging magsugal nang responsable at siguraduhing 18 years old ka pataas.","keywords":"safe, secure, security, trust, reliable"},
+    {"q":"What payment methods are accepted?","a":"Tumatanggap kami ng GCash, GOtyme, STC Pay, at Barq. Mabilis ang cash in at cash out \\u2014 walang hidden fees.","keywords":"payment, cash in, deposit, gcash, barq, stc, gotyme"},
+    {"q":"What VIP perks are available?","a":"May 2% bonus sa first cash in, 10% loss rebates dalawang beses sa isang buwan, birthday bonus, VIP sports group access, at monthly raffle ang mga members.","keywords":"vip, raffle, member, perks, privilege"},
+    {"q":"Who can play?","a":"Dapat 18 years old or pataas para gumamit ng platform na ito. Lage naming pino-promote ang responsible gaming.","keywords":"age, 18, minor, legal"},
+    {"q":"How do I contact support?","a":"Pwede mo kaming i-message directly sa Facebook \\u2014 24/7 ang support namin.","keywords":"contact, support, help, customer, message, facebook"}
+  ],
+  "winsHeading": "Winning Slips",
+  "winsCount": 8,
+  "winsCopy": "See the latest winning slips from our community members.",
+  "winsCta": "Start winning today",
+  "cashHeading": "Cash Out Proof",
+  "cashCount": 7,
+  "cashCopy": "Real cash outs from our community members.",
+  "cashCta": "Get your cash out now",
+  "botName": "747 Live Assistant",
+  "botStatus": "Online",
+  "botWelcome": "Hi! I''m the 747 Live smart assistant. Ask me anything about registration, bonuses, games, or promotions!",
+  "botFallback": "Thanks for your question! For detailed assistance, you can message me directly on Facebook or register through the platform. Is there anything else I can help with?",
+  "botPlaceholder": "Type your question...",
+  "botQuickReplies": "What is 747 Live?\nHow do I register?\nWhat games are available?\nWhat payment methods are accepted?",
+  "winNotifications": [
+    {"name":"John D.","amount":"P25,000","game":"Live Casino"},
+    {"name":"Maria S.","amount":"P12,400","game":"JILI Slots"},
+    {"name":"Ahmed R.","amount":"SAR 3,200","game":"Sports Betting"},
+    {"name":"Ken J.","amount":"P48,700","game":"Evolution"},
+    {"name":"Sarah L.","amount":"P8,900","game":"Pragmatic Play"},
+    {"name":"Omar K.","amount":"SAR 5,500","game":"Live Casino"},
+    {"name":"Carlos M.","amount":"P32,100","game":"Fachai Arcade"},
+    {"name":"Fatima Z.","amount":"SAR 8,000","game":"CreedRoomz"},
+    {"name":"Mike T.","amount":"P15,600","game":"Sports Betting"},
+    {"name":"Rosa P.","amount":"P22,300","game":"Dragon Gaming"}
+  ],
+  "notifInterval": 14000,
+  "notifDuration": 5000,
+  "footerBrand": "747 LIVE",
+  "footerDesc": "Independent invitation portal for an elevated partner gaming experience. Casino, live sports, eSports & VIP rewards.",
+  "footerEmailPlaceholder": "Enter your email...",
+  "footerMark": "// 747 FREE ONLINE BETTING SITE",
+  "splashTagline": "747 Free Online Betting Site",
+  "splashDuration": 2800,
+  "splashReady": 3400,
+  "cookieText": "We use cookies to improve your experience. By continuing, you agree to our use of cookies.",
+  "cookieBtn": "Accept",
+  "stickyCta": "Join now"
+}')
+ON CONFLICT (id) DO NOTHING;
+
 -- Branding
 INSERT INTO branding (site_title, favicon_path, logo_path, hero_image) VALUES
   ('747 Free Online Betting Site', '/favicon.png', '/images/logo.jpg', '/images/hero.jpg');
@@ -476,3 +639,24 @@ INSERT INTO splash_config (tagline, duration_ms, content_ready_ms) VALUES
 INSERT INTO cookie_consent_config (bar_text, accept_button) VALUES
   ('We use cookies to improve your experience. By continuing, you agree to our use of cookies.', 'Accept');
 INSERT INTO sticky_cta_config (text) VALUES ('Join now');
+
+-- ==================== FORM INQUIRIES ====================
+-- Stores every hero form registration submission.
+CREATE TABLE form_inquiries (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  full_name   TEXT NOT NULL,
+  email       TEXT NOT NULL,
+  username    TEXT NOT NULL,
+  phone       TEXT NOT NULL,
+  country     TEXT NOT NULL,
+  created_at  TIMESTAMPTZ DEFAULT now()
+);
+
+-- Enable Row Level Service (admin reads all, anon inserts only)
+ALTER TABLE form_inquiries ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow anonymous inserts" ON form_inquiries
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Allow authenticated reads" ON form_inquiries
+  FOR SELECT USING (auth.role() = 'authenticated');
