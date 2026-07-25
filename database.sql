@@ -449,7 +449,7 @@ INSERT INTO site_config (id, config) VALUES (1, '{
   "faq": [
     {"q":"What is 747 Live?","a":"Ang 747 Live ay isang premium gaming platform na may live casino, sports betting, at arcade games. Ito ay independent invitation portal para ma-access mo ang platform.","keywords":"what is, 747 live, about, platform"},
     {"q":"How do I register?","a":"Click lang ang \\\"Register now\\\" button sa page na ito. Ire-redirect ka sa official partner platform para matapos ang registration mo.","keywords":"register, sign up, join, create account, how to"},
-    {"q":"Is there a welcome bonus?","a":"Oo naman! Kapag nag-register ka through our partner link, may exclusive welcome bonuses, cashback, at promotions na \\u00e0wait sa\\'yo.","keywords":"bonus, welcome, promo, cashback, rebate"},
+    {"q":"Is there a welcome bonus?","a":"Oo naman! Kapag nag-register ka through our partner link, may exclusive welcome bonuses, cashback, at promotions na \\u00e0wait sa''yo.","keywords":"bonus, welcome, promo, cashback, rebate"},
     {"q":"What games are available?","a":"Marami kang pagpipilian \\u2014 live dealer tables tulad ng baccarat, blackjack, roulette, sports betting, arcade games, at slot experiences mula sa top providers.","keywords":"game, slot, casino, sports, bet, play, available"},
     {"q":"Is this the official site?","a":"Hindi po. Independent promotional website lang ito \\u2014 hindi kami ang operator ng gaming platform. Ang registration ay sa official partner link namin dumadaan.","keywords":"official, real, legit, legitimate, scam"},
     {"q":"Is it safe?","a":"Ang partner platform ay gumagamit ng industry-standard security. Laging magsugal nang responsable at siguraduhing 18 years old ka pataas.","keywords":"safe, secure, security, trust, reliable"},
@@ -660,3 +660,20 @@ CREATE POLICY "Allow anonymous inserts" ON form_inquiries
 
 CREATE POLICY "Allow authenticated reads" ON form_inquiries
   FOR SELECT USING (auth.role() = 'authenticated');
+
+-- ==================== STORAGE BUCKET ====================
+-- Create storage bucket for gallery images
+INSERT INTO storage.buckets (id, name, public) VALUES ('gallery-images', 'gallery-images', true)
+  ON CONFLICT (id) DO NOTHING;
+
+-- Allow public read access
+CREATE POLICY "gallery_public_read" ON storage.objects
+  FOR SELECT USING (bucket_id = 'gallery-images');
+
+-- Allow authenticated inserts
+CREATE POLICY "gallery_auth_insert" ON storage.objects
+  FOR INSERT WITH CHECK (bucket_id = 'gallery-images' AND auth.role() = 'authenticated');
+
+-- Allow authenticated deletes
+CREATE POLICY "gallery_auth_delete" ON storage.objects
+  FOR DELETE USING (bucket_id = 'gallery-images' AND auth.role() = 'authenticated');

@@ -208,6 +208,10 @@ export default function App() {
 
   // Fetch live config from Supabase (overrides hardcoded defaults)
   const [liveUrl, setLiveUrl] = useState(DEFAULT_PARTNER_URL);
+  const [winsImages, setWinsImages] = useState<string[]>(() => Array.from({ length: 8 }, (_, i) => `/images/slip (${i + 1}).jpg`));
+  const [cashImages, setCashImages] = useState<string[]>(() => Array.from({ length: 7 }, (_, i) => `/images/win (${i + 1}).jpg`));
+  const [winsCtaUrl, setWinsCtaUrl] = useState("");
+  const [cashCtaUrl, setCashCtaUrl] = useState("");
   useEffect(() => {
     (async () => {
       try {
@@ -224,6 +228,10 @@ export default function App() {
               const el = document.querySelector('.hero__image') as HTMLElement;
               if (el) el.style.backgroundImage = `url(${c.heroImage})`;
             }
+            if (c.winsImages && Array.isArray(c.winsImages)) setWinsImages(c.winsImages);
+            if (c.cashImages && Array.isArray(c.cashImages)) setCashImages(c.cashImages);
+            if (c.winsCtaUrl) setWinsCtaUrl(c.winsCtaUrl);
+            if (c.cashCtaUrl) setCashCtaUrl(c.cashCtaUrl);
           }
         }
       } catch {}
@@ -618,26 +626,47 @@ export default function App() {
                     <span>Player Form — 747 Account</span>
                     <button className="hero__form-close" onClick={() => setFormOpen(false)} type="button"><X size={16} /></button>
                   </div>
-            <form className="hero__form-body" onSubmit={(e) => { e.preventDefault(); window.open(liveUrl, "_blank"); }}>
+            <form className="hero__form-body" onSubmit={async (e) => {
+              e.preventDefault();
+              // Save inquiry to Supabase
+              try {
+                await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/form_inquiries`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
+                  },
+                  body: JSON.stringify({
+                    full_name: formName,
+                    email: formEmail,
+                    username: formUsername,
+                    phone: formPhone,
+                    country: formCountry
+                  })
+                });
+              } catch (_) { /* silent fail */ }
+              setFormName(""); setFormEmail(""); setFormUsername(""); setFormPhone(""); setFormCountry("");
+              window.open(liveUrl, "_blank");
+            }}>
               <label className="hero__form-field">
                 <span>Full Name</span>
-                <input type="text" placeholder="Juan Dela Cruz" required />
+                <input type="text" placeholder="Juan Dela Cruz" required value={formName} onChange={e => setFormName(e.target.value)} />
               </label>
               <label className="hero__form-field">
                 <span>Email Address</span>
-                <input type="email" placeholder="juan@email.com" required />
+                <input type="email" placeholder="juan@email.com" required value={formEmail} onChange={e => setFormEmail(e.target.value)} />
               </label>
               <label className="hero__form-field">
                 <span>Desired Username</span>
-                <input type="text" placeholder="Choose your username" required />
+                <input type="text" placeholder="Choose your username" required value={formUsername} onChange={e => setFormUsername(e.target.value)} />
               </label>
               <label className="hero__form-field">
                 <span>Contact Number</span>
-                <input type="tel" placeholder="+63 XXX XXX XXXX" required />
+                <input type="tel" placeholder="+63 XXX XXX XXXX" required value={formPhone} onChange={e => setFormPhone(e.target.value)} />
               </label>
               <label className="hero__form-field">
                 <span>Country</span>
-                <select required defaultValue="">
+                <select required value={formCountry} onChange={e => setFormCountry(e.target.value)}>
                   <option value="" disabled>Select your country</option>
                   <option value="Philippines">Philippines</option>
                   <option value="Saudi Arabia">Saudi Arabia</option>
@@ -1103,7 +1132,7 @@ export default function App() {
               transition={{ delay: 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             >
               <div className="image-gallery-wrap">
-                <ImageGallery images={Array.from({ length: 8 }, (_, i) => `/images/slip (${i + 1}).jpg`)} />
+                <ImageGallery images={winsImages} />
               </div>
             </motion.div>
             <motion.div
@@ -1113,7 +1142,7 @@ export default function App() {
               viewport={{ once: true }}
               transition={{ delay: 0.4, duration: 0.5 }}
             >
-              <a className="button button--primary button--large button--pulse" href={liveUrl} target="_blank" rel="noreferrer">
+              <a className="button button--primary button--large button--pulse" href={winsCtaUrl || liveUrl} target="_blank" rel="noreferrer">
                 Start winning today <ArrowUpRight size={18} />
               </a>
             </motion.div>
@@ -1144,7 +1173,7 @@ export default function App() {
               transition={{ delay: 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             >
               <div className="image-gallery-wrap">
-                <ImageGallery images={Array.from({ length: 7 }, (_, i) => `/images/win (${i + 1}).jpg`)} />
+                <ImageGallery images={cashImages} />
               </div>
             </motion.div>
             <motion.div
@@ -1154,7 +1183,7 @@ export default function App() {
               viewport={{ once: true }}
               transition={{ delay: 0.4, duration: 0.5 }}
             >
-              <a className="button button--primary button--large button--pulse" href={liveUrl} target="_blank" rel="noreferrer">
+              <a className="button button--primary button--large button--pulse" href={cashCtaUrl || liveUrl} target="_blank" rel="noreferrer">
                 Get your cash out now <ArrowUpRight size={18} />
               </a>
             </motion.div>

@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>747 Admin Panel</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>7</text></svg>">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
@@ -111,7 +112,7 @@ body {
 }
 
 .main-content {
-  margin-left: var(--sidebar-width); flex: 1; padding: 30px 40px; max-width: 1100px;
+  margin-left: var(--sidebar-width); flex: 1; padding: 30px 40px;
 }
 
 /* Confirm Dialog */
@@ -173,7 +174,41 @@ body {
 .btn-outline:hover { border-color: var(--text2); }
 .btn-sm { padding: 6px 14px; font-size: 12px; }
 
-.header-actions { display: flex; gap: 10px; margin-bottom: 28px; flex-wrap: wrap; }
+.header-actions {
+  display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap;
+  padding: 16px 20px; border-radius: 12px;
+  background: linear-gradient(135deg, rgba(102,248,156,.04) 0%, rgba(20,20,42,.4) 100%);
+  border: 1px solid rgba(102,248,156,.08);
+}
+.action-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 22px; border: none; border-radius: 10px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: all .3s cubic-bezier(.16,1,.3,1);
+  position: relative; overflow: hidden; letter-spacing: .3px;
+}
+.action-btn svg { flex-shrink: 0; }
+.action-btn--save {
+  background: linear-gradient(135deg, #66f89c, #3ad483);
+  color: #000; box-shadow: 0 4px 20px rgba(102,248,156,.25);
+}
+.action-btn--save:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(102,248,156,.35);
+}
+.action-btn--save:active { transform: translateY(0); }
+.action-btn--reset {
+  background: rgba(255,255,255,.04);
+  color: var(--text2); border: 1px solid var(--border);
+  backdrop-filter: blur(4px);
+}
+.action-btn--reset:hover {
+  background: rgba(255,68,102,.08);
+  border-color: rgba(255,68,102,.2);
+  color: var(--danger);
+  transform: translateY(-2px);
+}
+.action-btn--reset:active { transform: translateY(0); }
 .status-msg {
   padding: 10px 16px; border-radius: 6px; font-size: 13px; margin-bottom: 16px; display: none;
 }
@@ -190,6 +225,28 @@ body {
   color: var(--danger); cursor: pointer; font-size: 18px; line-height: 1;
 }
 .add-item { margin-top: 8px; }
+
+.array-item__delete {
+  background: none; border: none; color: var(--text2); cursor: pointer;
+  padding: 4px 6px; border-radius: 4px; transition: all .2s; display: inline-flex;
+}
+.array-item__delete:hover { color: var(--danger); background: rgba(255,68,102,.1); }
+.array-item__action {
+  background: none; border: none; color: var(--text2); cursor: pointer;
+  padding: 4px 6px; border-radius: 4px; transition: all .2s; display: inline-flex;
+}
+.array-item__action:hover:not(:disabled) { color: var(--accent); background: rgba(102,248,156,.1); }
+.array-item__action:disabled { opacity: .25; cursor: not-allowed; }
+
+/* Gallery image management */
+.gallery-manage { margin-top: 8px; }
+.gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; margin-bottom: 12px; }
+.gallery-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; position: relative; }
+.gallery-item img { width: 100%; height: 140px; object-fit: cover; display: block; background: var(--surface2); }
+.gallery-item__placeholder { width: 100%; height: 140px; display: flex; align-items: center; justify-content: center; background: var(--surface2); }
+.gallery-item__actions { position: absolute; top: 6px; right: 6px; display: flex; gap: 2px; background: rgba(0,0,0,.6); border-radius: 6px; padding: 2px; }
+.gallery-item__url { width: 100%; padding: 8px 10px; background: var(--surface2); border: none; border-top: 1px solid var(--border); color: var(--text); font-size: 11px; outline: none; font-family: var(--font); }
+.gallery-item__url:focus { background: var(--bg); }
 
 table.form-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
 table.form-table th, table.form-table td {
@@ -216,6 +273,40 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
 /* Preview note */
 .preview-note { font-size: 12px; color: var(--text2); font-style: italic; margin-bottom: 16px; }
 
+/* Dashboard */
+.dash-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px; }
+.dash-stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; text-align: center; }
+.dash-stat__value { font-size: 28px; font-weight: 800; color: var(--accent); letter-spacing: -.02em; }
+.dash-stat__label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: .8px; margin-top: 4px; }
+.dash-toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+.dash-toolbar input {
+  padding: 8px 14px; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text); font-size: 13px; outline: none; font-family: var(--font); flex: 1; min-width: 180px;
+}
+.dash-toolbar input:focus { border-color: var(--accent); }
+.dash-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+.dash-table { width: 100%; border-collapse: collapse; }
+.dash-table th, .dash-table td { padding: 12px 14px; font-size: 13px; text-align: left; border-bottom: 1px solid var(--border); }
+.dash-table th { background: var(--surface); color: var(--text2); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .6px; position: sticky; top: 0; }
+.dash-table tr:hover td { background: rgba(102,248,156,.03); }
+.dash-table td { color: var(--text); }
+.dash-table .dash-date { color: var(--text2); white-space: nowrap; font-size: 12px; }
+.dash-table .dash-email { color: var(--accent); }
+.dash-table .dash-delete {
+  background: none; border: none; color: var(--text2); cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: all .2s;
+}
+.dash-table .dash-delete:hover { color: var(--danger); background: rgba(255,68,102,.1); }
+.dash-pagination { display: flex; gap: 6px; align-items: center; justify-content: center; margin-top: 16px; }
+.dash-pagination button {
+  padding: 6px 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text);
+  border-radius: 6px; font-size: 12px; cursor: pointer; transition: all .2s;
+}
+.dash-pagination button:hover { border-color: var(--accent); color: var(--accent); }
+.dash-pagination button.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 600; }
+.dash-pagination button:disabled { opacity: .4; cursor: not-allowed; }
+.dash-empty { text-align: center; padding: 48px 20px; color: var(--text2); }
+.dash-empty svg { width: 40px; height: 40px; margin-bottom: 12px; opacity: .3; }
+
 
 </style>
 </head>
@@ -232,10 +323,10 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
     </div>
     <nav class="sidebar-nav" id="sidebarNav">
       <div class="sidebar-nav__group">
-        <div class="sidebar-nav__label">General</div>
-        <a class="active" data-section="general">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-          General Settings
+        <div class="sidebar-nav__label">Dashboard</div>
+        <a class="active" data-section="dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Form Inquiries
         </a>
       </div>
       <div class="sidebar-nav__group">
@@ -275,21 +366,17 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
       </div>
       <div class="sidebar-nav__group">
         <div class="sidebar-nav__label">Settings</div>
+        <a data-section="general">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          General Settings
+        </a>
         <a data-section="branding">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           Branding
         </a>
-        <a data-section="nav">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-          Navigation
-        </a>
         <a data-section="links">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
           External Links
-        </a>
-        <a data-section="footer">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20"/><path d="M4 16V4h16v12"/></svg>
-          Footer
         </a>
         <a data-section="ticker">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="14" y2="18"/></svg>
@@ -315,13 +402,6 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
           Win Notifications
         </a>
       </div>
-      <div class="sidebar-nav__group">
-        <div class="sidebar-nav__label">Other</div>
-        <a data-section="splash">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
-          Splash / Misc
-        </a>
-      </div>
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-footer__avatar">A</div>
@@ -337,13 +417,66 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
 
   <div class="main-content">
     <div class="header-actions">
-      <button class="btn btn-primary btn-sm" onclick="saveAll()">Save All Changes</button>
-      <button class="btn btn-outline btn-sm" onclick="resetToDefaults()">Reset to Defaults</button>
+      <button class="action-btn action-btn--save" onclick="saveAll()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save Changes
+      </button>
+      <button class="action-btn action-btn--reset" onclick="resetToDefaults()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        Reset Defaults
+      </button>
     </div>
     <div class="status-msg" id="statusMsg"></div>
 
+    <!-- Dashboard: Form Inquiries -->
+    <div class="section-card active" id="sec-dashboard">
+      <h2>Form Inquiries</h2>
+      <p>All registrations submitted through the hero form on the live site.</p>
+      <div class="dash-stats" id="dashStats">
+        <div class="dash-stat">
+          <div class="dash-stat__value" id="dashTotal">0</div>
+          <div class="dash-stat__label">Total Inquiries</div>
+        </div>
+        <div class="dash-stat">
+          <div class="dash-stat__value" id="dashToday">0</div>
+          <div class="dash-stat__label">Today</div>
+        </div>
+        <div class="dash-stat">
+          <div class="dash-stat__value" id="dashThisWeek">0</div>
+          <div class="dash-stat__label">This Week</div>
+        </div>
+      </div>
+      <div class="dash-toolbar">
+        <input type="text" id="dashSearch" placeholder="Search name, email, username..." style="max-width:300px" />
+        <button class="btn btn-outline btn-sm" onclick="loadInquiries()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Refresh
+        </button>
+
+      </div>
+      <div class="dash-table-wrap">
+        <table class="dash-table" id="dashTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Full Name</th>
+              <th>Email</th>
+              <th>Username</th>
+              <th>Phone</th>
+              <th>Country</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="dashTableBody">
+            <tr><td colspan="7" style="text-align:center;color:var(--text2);padding:40px">Loading inquiries...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="dash-pagination" id="dashPagination"></div>
+    </div>
+
     <!-- General Settings -->
-    <div class="section-card active" id="sec-general">
+    <div class="section-card" id="sec-general">
       <h2>General Settings</h2>
       <p>Admin login credentials used to access this panel. Changes sync to Supabase Auth on save.</p>
       <div class="form-row">
@@ -423,7 +556,7 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
       <div class="tab-section">
         <h3>Headline & Copy</h3>
         <div class="form-group">
-          <label>Headline (use &lt;em&gt;LIVE&lt;/em&gt; for green emphasis)</label>
+          <label>Headline (wrap LIVE in em tags for green emphasis)</label>
           <input id="heroHeadline" />
         </div>
         <div class="form-group">
@@ -464,14 +597,6 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
         <div class="form-group"><label>Form Submit Button Text</label><input id="formSubmitText" /></div>
         <div class="form-group"><label>Form Footer Text</label><textarea id="formFooterText" rows="2"></textarea></div>
       </div>
-    </div>
-
-    <!-- Navigation -->
-    <div class="section-card" id="sec-nav">
-      <h2>Navigation</h2>
-      <p>Desktop and mobile nav link labels.</p>
-      <div class="form-group"><label>Desktop Nav Items (comma separated)</label><input id="desktopNavItems" /></div>
-      <div class="form-group"><label>Mobile Menu Items (comma separated; external: prefix with "ext:")</label><input id="mobileNavItems" /></div>
     </div>
 
     <!-- Ticker -->
@@ -622,12 +747,16 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
     <!-- FAQ -->
     <div class="section-card" id="sec-faq">
       <h2>FAQ</h2>
-      <p>10 frequently asked questions with keyword matching for the chatbot.</p>
+      <p>Frequently asked questions with keyword matching for the chatbot.</p>
       <div class="form-group"><label>Section Kicker</label><input id="faqKicker" /></div>
       <div class="form-group"><label>Section Heading</label><input id="faqHeading" /></div>
       <div class="form-group"><label>Section Copy</label><textarea id="faqCopy" rows="2"></textarea></div>
+      <button class="btn btn-outline btn-sm add-item" onclick="addFaq()" style="margin-bottom:12px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add FAQ
+      </button>
       <table class="form-table">
-        <thead><tr><th>#</th><th>Question</th><th>Answer</th><th>Keywords (comma)</th></tr></thead>
+        <thead><tr><th style="width:40px">#</th><th>Question</th><th>Answer</th><th>Keywords (comma)</th><th style="width:40px"></th></tr></thead>
         <tbody id="faqTableBody"></tbody>
       </table>
     </div>
@@ -635,24 +764,40 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
     <!-- Galleries -->
     <div class="section-card" id="sec-galleries">
       <h2>Galleries</h2>
-      <p>Winning Slips and Cash Out Proof galleries.</p>
+      <p>Winning Slips and Cash Out Proof image galleries.</p>
       <div class="tab-section">
         <h3>Winning Slips</h3>
         <div class="form-row">
           <div class="form-group"><label>Section Heading</label><input id="winsHeading" /></div>
-          <div class="form-group"><label>Image Count</label><input type="number" id="winsCount" /></div>
+          <div class="form-group"><label>CTA Text</label><input id="winsCta" /></div>
         </div>
+        <div class="form-group"><label>CTA Link URL</label><input id="winsCtaUrl" /></div>
         <div class="form-group"><label>Section Copy</label><textarea id="winsCopy" rows="2"></textarea></div>
-        <div class="form-group"><label>CTA Text</label><input id="winsCta" /></div>
+        <div class="gallery-manage">
+          <div class="gallery-grid" id="winsGalleryGrid"></div>
+          <label class="btn btn-outline btn-sm add-item gallery-upload-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Upload Image
+            <input type="file" accept="image/*" onchange="uploadGalleryImage('wins', this)" style="display:none" />
+          </label>
+        </div>
       </div>
       <div class="tab-section">
         <h3>Cash Out Proof</h3>
         <div class="form-row">
           <div class="form-group"><label>Section Heading</label><input id="cashHeading" /></div>
-          <div class="form-group"><label>Image Count</label><input type="number" id="cashCount" /></div>
+          <div class="form-group"><label>CTA Text</label><input id="cashCta" /></div>
         </div>
+        <div class="form-group"><label>CTA Link URL</label><input id="cashCtaUrl" /></div>
         <div class="form-group"><label>Section Copy</label><textarea id="cashCopy" rows="2"></textarea></div>
-        <div class="form-group"><label>CTA Text</label><input id="cashCta" /></div>
+        <div class="gallery-manage">
+          <div class="gallery-grid" id="cashGalleryGrid"></div>
+          <label class="btn btn-outline btn-sm add-item gallery-upload-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Upload Image
+            <input type="file" accept="image/*" onchange="uploadGalleryImage('cash', this)" style="display:none" />
+          </label>
+        </div>
       </div>
     </div>
 
@@ -682,44 +827,6 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
         <thead><tr><th>#</th><th>Name</th><th>Amount</th><th>Game</th></tr></thead>
         <tbody id="notifTableBody"></tbody>
       </table>
-    </div>
-
-    <!-- Footer -->
-    <div class="section-card" id="sec-footer">
-      <h2>Footer</h2>
-      <p>NeoMinimalFooter configuration.</p>
-      <div class="form-group"><label>Brand Text</label><input id="footerBrand" /></div>
-      <div class="form-group"><label>Description</label><textarea id="footerDesc" rows="2"></textarea></div>
-      <div class="form-group"><label>Email Placeholder</label><input id="footerEmailPlaceholder" /></div>
-      <div class="form-group"><label>Footer Mark</label><input id="footerMark" /></div>
-      <p class="form-hint" style="margin-top:12px">Link columns (Platform, Company, Connect) and social links are managed via the External Links section above.</p>
-    </div>
-
-    <!-- Splash / Misc -->
-    <div class="section-card" id="sec-splash">
-      <h2>Splash Screen &amp; Misc</h2>
-      <p>Splash screen appearance and miscellaneous text.</p>
-      <div class="tab-section">
-        <h3>Splash Screen</h3>
-        <div class="form-group"><label>Tagline</label><input id="splashTagline" /></div>
-        <div class="form-row">
-          <div class="form-group"><label>Visible Duration (ms)</label><input type="number" id="splashDuration" /></div>
-          <div class="form-group"><label>Content Ready Delay (ms)</label><input type="number" id="splashReady" /></div>
-        </div>
-      </div>
-      <div class="tab-section">
-        <h3>Cookie Consent Bar</h3>
-        <div class="form-group"><label>Cookie Bar Text</label><textarea id="cookieText" rows="2"></textarea></div>
-        <div class="form-group"><label>Accept Button Text</label><input id="cookieBtn" /></div>
-      </div>
-      <div class="tab-section">
-        <h3>Sticky CTA</h3>
-        <div class="form-group"><label>Sticky CTA Text</label><input id="stickyCta" /></div>
-      </div>
-      <div class="tab-section">
-        <h3>Chatbot Fallback &amp; Quick Replies</h3>
-        <p class="form-hint">Managed in the Chatbot section above.</p>
-      </div>
     </div>
   </div>
 </div>
@@ -803,8 +910,6 @@ const DEFAULTS = {
   formTriggerNote: '10% cash back + exclusive GCs',
   formSubmitText: 'Register now',
   formFooterText: '10% CASH BACK sa total na LOSS BETS twice a month — plus exclusive access to all GCs!',
-  desktopNavItems: 'Benefits, Discover, Sports, Promo',
-  mobileNavItems: 'Benefits, Discover, Sports, Why 747LIVE, ext:Facebook',
   tickerLabel: 'Now in the lounge',
   tickerMessages: 'TWICE MONTHLY CASHBACK\nSAUDI RIYALS ACCEPTED\n24/7 LIVE SPORTS TIPS\nMONTHLY VIP RAFFLE',
   hiwKicker: 'How it works',
@@ -884,7 +989,7 @@ const DEFAULTS = {
     { title: 'Free Sports GC Tips', icon: '/images/c.jpg', desc: 'Click and Message for details', cta: 'Join now', link: '' }
   ],
   faqKicker: 'FAQ',
-  faqHeading: 'Frequently asked <em>questions</em>',
+  faqHeading: 'Frequently asked questions',
   faqCopy: 'Quick answers to the most common questions about 747 Live.',
   faq: [
     { q: 'What is 747 Live?', a: 'Ang 747 Live ay isang premium gaming platform na may live casino, sports betting, at arcade games. Ito ay independent invitation portal para ma-access mo ang platform.', keywords: 'what is, 747 live, about, platform' },
@@ -899,13 +1004,15 @@ const DEFAULTS = {
     { q: 'How do I contact support?', a: 'Pwede mo kaming i-message directly sa Facebook — 24/7 ang support namin.', keywords: 'contact, support, help, customer, message, facebook' }
   ],
   winsHeading: 'Winning Slips',
-  winsCount: 8,
+  winsImages: ['/images/slip (1).jpg','/images/slip (2).jpg','/images/slip (3).jpg','/images/slip (4).jpg','/images/slip (5).jpg','/images/slip (6).jpg','/images/slip (7).jpg','/images/slip (8).jpg'],
   winsCopy: 'See the latest winning slips from our community members.',
   winsCta: 'Start winning today',
+  winsCtaUrl: 'https://www.messenger.com/j/AbakhHJ975SWCzqw/',
   cashHeading: 'Cash Out Proof',
-  cashCount: 7,
+  cashImages: ['/images/win (1).jpg','/images/win (2).jpg','/images/win (3).jpg','/images/win (4).jpg','/images/win (5).jpg','/images/win (6).jpg','/images/win (7).jpg'],
   cashCopy: 'Real cash outs from our community members.',
   cashCta: 'Get your cash out now',
+  cashCtaUrl: 'https://www.messenger.com/j/AbakhHJ975SWCzqw/',
   botName: '747 Live Assistant',
   botStatus: 'Online',
   botWelcome: "Hi! I'm the 747 Live smart assistant. Ask me anything about registration, bonuses, games, or promotions!",
@@ -925,17 +1032,7 @@ const DEFAULTS = {
     { name: 'Rosa P.', amount: 'P22,300', game: 'Dragon Gaming' }
   ],
   notifInterval: 14000,
-  notifDuration: 5000,
-  footerBrand: '747 LIVE',
-  footerDesc: 'Independent invitation portal for an elevated partner gaming experience. Casino, live sports, eSports & VIP rewards.',
-  footerEmailPlaceholder: 'Enter your email...',
-  footerMark: '// 747 FREE ONLINE BETTING SITE',
-  splashTagline: '747 Free Online Betting Site',
-  splashDuration: 2800,
-  splashReady: 3400,
-  cookieText: 'We use cookies to improve your experience. By continuing, you agree to our use of cookies.',
-  cookieBtn: 'Accept',
-  stickyCta: 'Join now'
+  notifDuration: 5000
 };
 
 // ===== SUPABASE (REST API, no CDN needed) =====
@@ -1150,7 +1247,7 @@ function collectFromForm() {
     'heroHeadline', 'heroSubcopy', 'heroLogoTag', 'heroCtaPrimary', 'heroCtaSecondary',
     'statPlayingNum', 'statPlayingSuffix', 'statPaidNum', 'statPaidSuffix',
     'trustBadgeText', 'formTriggerText', 'formTriggerNote', 'formSubmitText', 'formFooterText',
-    'desktopNavItems', 'mobileNavItems', 'tickerLabel', 'tickerMessages',
+    'tickerLabel', 'tickerMessages',
     'hiwKicker', 'hiwHeading',
     'benefitsKicker', 'benefitsHeading', 'benefitsCopy', 'benefitSlides',
     'paySectionTitle', 'benefitsTagline',
@@ -1160,13 +1257,10 @@ function collectFromForm() {
     'promoHeading', 'promoCopy1', 'promoCopy2', 'promoCtaLead', 'promoCtaText', 'promoVerified', 'promoAffiliate', 'promoVideo',
     'agentBadge', 'agentName', 'agentTagline',
     'faqKicker', 'faqHeading', 'faqCopy',
-    'winsHeading', 'winsCount', 'winsCopy', 'winsCta',
-    'cashHeading', 'cashCount', 'cashCopy', 'cashCta',
+    'winsHeading', 'winsCopy', 'winsCta', 'winsCtaUrl',
+    'cashHeading', 'cashCopy', 'cashCta', 'cashCtaUrl',
     'botName', 'botStatus', 'botWelcome', 'botFallback', 'botPlaceholder', 'botQuickReplies',
-    'notifInterval', 'notifDuration',
-    'footerBrand', 'footerDesc', 'footerEmailPlaceholder', 'footerMark',
-    'splashTagline', 'splashDuration', 'splashReady',
-    'cookieText', 'cookieBtn', 'stickyCta'
+    'notifInterval', 'notifDuration'
   ];
   for (const id of textFields) {
     const el = document.getElementById(id);
@@ -1175,6 +1269,10 @@ function collectFromForm() {
       data[id] = val;
     }
   }
+
+  // Gallery images
+  data.winsImages = collectGalleryImages('wins');
+  data.cashImages = collectGalleryImages('cash');
 
   // How It Works
   data.hiw = [
@@ -1253,7 +1351,7 @@ function populateForm() {
     'messengerLoadingGc', 'messengerSportsTips',
     'heroHeadline', 'heroSubcopy', 'heroLogoTag', 'heroCtaPrimary', 'heroCtaSecondary',
     'trustBadgeText', 'formTriggerText', 'formTriggerNote', 'formSubmitText', 'formFooterText',
-    'desktopNavItems', 'mobileNavItems', 'tickerLabel', 'tickerMessages',
+    'tickerLabel', 'tickerMessages',
     'hiwKicker', 'hiwHeading',
     'benefitsKicker', 'benefitsHeading', 'benefitsCopy',
     'paySectionTitle', 'benefitsTagline',
@@ -1263,12 +1361,9 @@ function populateForm() {
     'promoHeading', 'promoCopy1', 'promoCopy2', 'promoCtaLead', 'promoCtaText', 'promoVerified', 'promoAffiliate', 'promoVideo',
     'agentBadge', 'agentName', 'agentTagline',
     'faqKicker', 'faqHeading', 'faqCopy',
-    'winsHeading', 'winsCopy', 'winsCta',
-    'cashHeading', 'cashCopy', 'cashCta',
-    'botName', 'botStatus', 'botWelcome', 'botFallback', 'botPlaceholder', 'botQuickReplies',
-    'footerBrand', 'footerDesc', 'footerEmailPlaceholder', 'footerMark',
-    'splashTagline',
-    'cookieText', 'cookieBtn', 'stickyCta'
+    'winsHeading', 'winsCopy', 'winsCta', 'winsCtaUrl',
+    'cashHeading', 'cashCopy', 'cashCta', 'cashCtaUrl',
+    'botName', 'botStatus', 'botWelcome', 'botFallback', 'botPlaceholder', 'botQuickReplies'
   ];
   for (const id of textFields) {
     const el = document.getElementById(id);
@@ -1276,7 +1371,7 @@ function populateForm() {
   }
 
   // Number fields
-  const numFields = ['statPlayingNum', 'statPaidNum', 'winsCount', 'cashCount', 'notifInterval', 'notifDuration', 'splashDuration', 'splashReady'];
+  const numFields = ['statPlayingNum', 'statPaidNum', 'notifInterval', 'notifDuration'];
   for (const id of numFields) {
     const el = document.getElementById(id);
     if (el) el.value = data[id] !== undefined ? data[id] : '';
@@ -1357,11 +1452,16 @@ function populateForm() {
   // Win Notifications table
   renderNotifTable();
 
+  // Galleries
+  renderGalleryImages('wins');
+  renderGalleryImages('cash');
+
   // Load recovery data from Supabase
   loadRecoveryData();
 }
 
 async function loadRecoveryData() {
+  if (!localStorage.getItem('supabaseAccessToken')) return;
   try {
     const creds = await supabaseRest.getCredentials();
     if (creds) {
@@ -1404,14 +1504,49 @@ function renderProvidersTable() {
 function renderFaqTable() {
   const tbody = document.getElementById('faqTableBody');
   tbody.innerHTML = '';
-  (data.faq || DEFAULTS.faq).forEach((item, i) => {
+  const faq = data.faq || DEFAULTS.faq;
+  faq.forEach((item, i) => {
     const tr = document.createElement('tr');
     tr.innerHTML = `<td style="color:var(--text2);font-size:12px">${i + 1}</td>
       <td><input value="${escapeHtml(item.q)}" /></td>
       <td><textarea rows="2">${escapeHtml(item.a)}</textarea></td>
-      <td><input value="${escapeHtml(item.keywords || '')}" /></td>`;
+      <td><input value="${escapeHtml(item.keywords || '')}" /></td>
+      <td style="white-space:nowrap">
+        <button class="array-item__action" onclick="moveFaq(${i},-1)" title="Move up"${i === 0 ? ' disabled' : ''}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="18 15 12 9 6 15"/></svg>
+        </button>
+        <button class="array-item__action" onclick="moveFaq(${i},1)" title="Move down"${i === faq.length - 1 ? ' disabled' : ''}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <button class="array-item__delete" onclick="deleteFaq(${i})" title="Delete FAQ">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
+      </td>`;
     tbody.appendChild(tr);
   });
+}
+
+function addFaq() {
+  if (!data.faq) data.faq = JSON.parse(JSON.stringify(DEFAULTS.faq));
+  data.faq.push({ q: '', a: '', keywords: '' });
+  renderFaqTable();
+}
+
+function deleteFaq(index) {
+  if (!data.faq) data.faq = JSON.parse(JSON.stringify(DEFAULTS.faq));
+  if (!confirm('Delete this FAQ entry?')) return;
+  data.faq.splice(index, 1);
+  renderFaqTable();
+}
+
+function moveFaq(index, direction) {
+  if (!data.faq) data.faq = JSON.parse(JSON.stringify(DEFAULTS.faq));
+  const newIndex = index + direction;
+  if (newIndex < 0 || newIndex >= data.faq.length) return;
+  const temp = data.faq[index];
+  data.faq[index] = data.faq[newIndex];
+  data.faq[newIndex] = temp;
+  renderFaqTable();
 }
 
 function renderNotifTable() {
@@ -1430,6 +1565,143 @@ function renderNotifTable() {
 function escapeHtml(str) {
   if (!str) return '';
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ===== GALLERY IMAGE MANAGEMENT =====
+function renderGalleryImages(type) {
+  const key = type === 'wins' ? 'winsImages' : 'cashImages';
+  const gridId = type === 'wins' ? 'winsGalleryGrid' : 'cashGalleryGrid';
+  const grid = document.getElementById(gridId);
+  grid.innerHTML = '';
+  const images = data[key] || DEFAULTS[key] || [];
+  images.forEach((url, i) => {
+    const item = document.createElement('div');
+    item.className = 'gallery-item';
+    item.innerHTML = `
+      <img src="${escapeHtml(url)}" alt="Image ${i + 1}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+      <div class="gallery-item__placeholder" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px;opacity:.3"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      </div>
+      <div class="gallery-item__actions">
+        <button class="array-item__action" onclick="moveGalleryImage('${type}',${i},-1)" title="Move up"${i === 0 ? ' disabled' : ''}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><polyline points="18 15 12 9 6 15"/></svg>
+        </button>
+        <button class="array-item__action" onclick="moveGalleryImage('${type}',${i},1)" title="Move down"${i === images.length - 1 ? ' disabled' : ''}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <button class="array-item__delete" onclick="removeGalleryImage('${type}',${i})" title="Remove">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <input class="gallery-item__url" value="${escapeHtml(url)}" onchange="updateGalleryImage('${type}',${i},this.value)" placeholder="Image URL or path" />`;
+    grid.appendChild(item);
+  });
+}
+
+function removeGalleryImage(type, index) {
+  const key = type === 'wins' ? 'winsImages' : 'cashImages';
+  if (!data[key]) data[key] = JSON.parse(JSON.stringify(DEFAULTS[key] || []));
+  data[key].splice(index, 1);
+  renderGalleryImages(type);
+}
+
+function updateGalleryImage(type, index, value) {
+  const key = type === 'wins' ? 'winsImages' : 'cashImages';
+  if (!data[key]) data[key] = JSON.parse(JSON.stringify(DEFAULTS[key] || []));
+  data[key][index] = value;
+  renderGalleryImages(type);
+}
+
+function moveGalleryImage(type, index, direction) {
+  const key = type === 'wins' ? 'winsImages' : 'cashImages';
+  if (!data[key]) data[key] = JSON.parse(JSON.stringify(DEFAULTS[key] || []));
+  const newIndex = index + direction;
+  if (newIndex < 0 || newIndex >= data[key].length) return;
+  const temp = data[key][index];
+  data[key][index] = data[key][newIndex];
+  data[key][newIndex] = temp;
+  renderGalleryImages(type);
+}
+
+function collectGalleryImages(type) {
+  const key = type === 'wins' ? 'winsImages' : 'cashImages';
+  const gridId = type === 'wins' ? 'winsGalleryGrid' : 'cashGalleryGrid';
+  const inputs = document.querySelectorAll(`#${gridId} .gallery-item__url`);
+  const images = [];
+  inputs.forEach(inp => { if (inp.value.trim()) images.push(inp.value.trim()); });
+  return images.length > 0 ? images : (data[key] || DEFAULTS[key] || []);
+}
+
+async function uploadGalleryImage(type, fileInput) {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    showStatus('Please select an image file.', 'error');
+    fileInput.value = '';
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    showStatus('Image must be under 5MB.', 'error');
+    fileInput.value = '';
+    return;
+  }
+
+  let token = localStorage.getItem('supabaseAccessToken');
+  if (!token) { showStatus('You must be signed in to upload images.', 'error'); return; }
+
+  // Refresh token
+  const refreshToken = localStorage.getItem('supabaseRefreshToken');
+  try {
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+      body: JSON.stringify({ refresh_token: refreshToken })
+    });
+    if (r.ok) {
+      const d = await r.json();
+      localStorage.setItem('supabaseAccessToken', d.access_token);
+      localStorage.setItem('supabaseRefreshToken', d.refresh_token);
+      token = d.access_token;
+    }
+  } catch(_) {}
+
+  const ext = file.name.split('.').pop() || 'jpg';
+  const filename = `${type}_${Date.now()}.${ext}`;
+  const folder = type === 'wins' ? 'winning-slips' : 'cashout-proof';
+
+  showStatus('Uploading image...', 'success');
+
+  // Read file as ArrayBuffer and upload
+  const buffer = await file.arrayBuffer();
+  try {
+    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/gallery-images/${folder}/${filename}`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': file.type,
+        'x-upsert': 'true'
+      },
+      body: buffer
+    });
+    const text = await res.text();
+    if (!res.ok) {
+      let msg = 'Upload failed (HTTP ' + res.status + ')';
+      try { const j = JSON.parse(text); msg = j.message || j.error || msg; } catch(_) {}
+      throw new Error(msg);
+    }
+    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/gallery-images/${folder}/${filename}`;
+    const key = type === 'wins' ? 'winsImages' : 'cashImages';
+    if (!data[key]) data[key] = JSON.parse(JSON.stringify(DEFAULTS[key] || []));
+    data[key].push(publicUrl);
+    renderGalleryImages(type);
+    showStatus('Image uploaded successfully!', 'success');
+  } catch (err) {
+    showStatus('Upload failed: ' + err.message, 'error');
+  }
+  fileInput.value = '';
 }
 
 // ===== LOGOUT =====
@@ -1589,7 +1861,127 @@ async function resetToDefaults() {
     const link = document.querySelector(`.sidebar-nav a[data-section="${savedSection}"]`);
     if (link) link.click();
   }
+  loadInquiries();
 })();
+
+// ===== FORM INQUIRIES DASHBOARD =====
+let inquiriesData = [];
+let inquiriesPage = 1;
+const INQUIRIES_PER_PAGE = 15;
+
+async function loadInquiries() {
+  const token = localStorage.getItem('supabaseAccessToken');
+  if (!token) return;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/form_inquiries?select=*&order=created_at.desc`, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (!res.ok) throw new Error('Failed to load');
+    inquiriesData = await res.json();
+    inquiriesPage = 1;
+    renderInquiries();
+  } catch (err) {
+    document.getElementById('dashTableBody').innerHTML =
+      `<tr><td colspan="7" class="dash-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        <div>Could not load inquiries. Make sure the <code>form_inquiries</code> table exists.</div>
+      </td></tr>`;
+  }
+}
+
+function renderInquiries() {
+  const search = (document.getElementById('dashSearch').value || '').toLowerCase();
+  let filtered = inquiriesData;
+  if (search) {
+    filtered = inquiriesData.filter(r =>
+      (r.full_name || '').toLowerCase().includes(search) ||
+      (r.email || '').toLowerCase().includes(search) ||
+      (r.username || '').toLowerCase().includes(search) ||
+      (r.phone || '').toLowerCase().includes(search)
+    );
+  }
+
+  // Stats
+  const now = new Date();
+  const todayStr = now.toISOString().slice(0, 10);
+  const weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate() - 7);
+  document.getElementById('dashTotal').textContent = filtered.length;
+  document.getElementById('dashToday').textContent = filtered.filter(r => (r.created_at || '').slice(0, 10) === todayStr).length;
+  document.getElementById('dashThisWeek').textContent = filtered.filter(r => new Date(r.created_at) >= weekAgo).length;
+
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(filtered.length / INQUIRIES_PER_PAGE));
+  if (inquiriesPage > totalPages) inquiriesPage = totalPages;
+  const start = (inquiriesPage - 1) * INQUIRIES_PER_PAGE;
+  const page = filtered.slice(start, start + INQUIRIES_PER_PAGE);
+
+  const tbody = document.getElementById('dashTableBody');
+  if (page.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="dash-empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <div>No inquiries found.</div>
+    </td></tr>`;
+  } else {
+    tbody.innerHTML = page.map(r => {
+      const d = r.created_at ? new Date(r.created_at) : null;
+      const dateStr = d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+      const timeStr = d ? d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '';
+      return `<tr>
+        <td class="dash-date">${dateStr}<br><span style="opacity:.6">${timeStr}</span></td>
+        <td>${esc(r.full_name)}</td>
+        <td class="dash-email">${esc(r.email)}</td>
+        <td>${esc(r.username)}</td>
+        <td>${esc(r.phone)}</td>
+        <td>${esc(r.country)}</td>
+        <td><button class="dash-delete" onclick="deleteInquiry('${r.id}')" title="Delete">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Pagination buttons
+  const pag = document.getElementById('dashPagination');
+  if (totalPages <= 1) { pag.innerHTML = ''; return; }
+  let btns = '';
+  btns += `<button ${inquiriesPage === 1 ? 'disabled' : ''} onclick="inquiriesPage--;renderInquiries()">Prev</button>`;
+  for (let i = 1; i <= totalPages; i++) {
+    if (totalPages > 7 && i > 2 && i < totalPages - 1 && Math.abs(i - inquiriesPage) > 1) {
+      if (i === 3 || i === totalPages - 2) btns += `<button disabled>...</button>`;
+      continue;
+    }
+    btns += `<button class="${i === inquiriesPage ? 'active' : ''}" onclick="inquiriesPage=${i};renderInquiries()">${i}</button>`;
+  }
+  btns += `<button ${inquiriesPage === totalPages ? 'disabled' : ''} onclick="inquiriesPage++;renderInquiries()">Next</button>`;
+  pag.innerHTML = btns;
+}
+
+async function deleteInquiry(id) {
+  if (!confirm('Delete this inquiry? This cannot be undone.')) return;
+  const token = localStorage.getItem('supabaseAccessToken');
+  if (!token) { showStatus('You must be signed in to delete.', 'error'); return; }
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/form_inquiries?id=eq.${id}`, {
+      method: 'DELETE',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    inquiriesData = inquiriesData.filter(r => r.id !== id);
+    renderInquiries();
+    showStatus('Inquiry deleted.', 'success');
+  } catch (_) {
+    showStatus('Failed to delete inquiry.', 'error');
+  }
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+document.getElementById('dashSearch').addEventListener('input', () => { inquiriesPage = 1; renderInquiries(); });
 </script>
 </body>
 </html>
