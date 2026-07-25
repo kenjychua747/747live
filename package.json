@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@radix-ui/react-aspect-ratio": "^1.1.13",
+    "@supabase/supabase-js": "^2.110.8",
     "clsx": "2.1.1",
     "framer-motion": "^12.42.2",
     "lucide-react": "^1.25.0",

@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>747 Admin Panel</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
@@ -910,6 +911,11 @@ const DEFAULTS = {
   stickyCta: 'Join now'
 };
 
+// ===== SUPABASE INIT =====
+const SUPABASE_URL = 'https://agkuojclxealcjymbeos.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFna3VvamNseGVhbGNqeW1iZW9zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5NTgzMDcsImV4cCI6MjEwMDUzNDMwN30.oOFnkmDlaSDtxpDBbiQR6YODhqYaQo9QWYDBLzeZhlg';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 // ===== DATA MANAGEMENT =====
 let data = {};
 
@@ -1210,31 +1216,47 @@ function escapeHtml(str) {
 }
 
 // ===== AUTH =====
-function handleLogin() {
+async function handleLogin() {
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value.trim();
-  if (email === data.adminEmail && password === data.adminPassword) {
-    document.getElementById('loginPage').style.display = 'none';
-    document.getElementById('adminWrap').classList.add('active');
-    document.getElementById('loginError').style.display = 'none';
-  } else {
-    document.getElementById('loginError').style.display = 'block';
+  const errorEl = document.getElementById('loginError');
+
+  if (!email || !password) {
+    errorEl.textContent = 'Please enter email and password';
+    errorEl.style.display = 'block';
+    return;
   }
+
+  const { data: authData, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    errorEl.textContent = error.message === 'Invalid login credentials'
+      ? 'Invalid email or password'
+      : error.message;
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  errorEl.style.display = 'none';
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('adminWrap').classList.add('active');
 }
 
-function handleLogout() {
+async function handleLogout() {
   const overlay = document.getElementById('confirmOverlay');
   overlay.classList.add('active');
 }
 
-function confirmLogout(confirmed) {
+async function confirmLogout(confirmed) {
   const overlay = document.getElementById('confirmOverlay');
   overlay.classList.remove('active');
   if (!confirmed) return;
+  await supabaseClient.auth.signOut();
   document.getElementById('loginPage').style.display = 'flex';
   document.getElementById('adminWrap').classList.remove('active');
   document.getElementById('loginEmail').value = '';
   document.getElementById('loginPassword').value = '';
+  document.getElementById('loginError').style.display = 'none';
 }
 
 // ===== SIDEBAR NAV =====
@@ -1273,6 +1295,25 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('loginEmail').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') handleLogin();
+  });
+
+  // Check existing session
+  supabaseClient.auth.getSession().then(({ data: { session } }) => {
+    if (session) {
+      document.getElementById('loginPage').style.display = 'none';
+      document.getElementById('adminWrap').classList.add('active');
+    }
+  });
+
+  // Listen for auth state changes
+  supabaseClient.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_OUT') {
+      document.getElementById('loginPage').style.display = 'flex';
+      document.getElementById('adminWrap').classList.remove('active');
+      document.getElementById('loginEmail').value = '';
+      document.getElementById('loginPassword').value = '';
+      document.getElementById('loginError').style.display = 'none';
+    }
   });
 });
 
