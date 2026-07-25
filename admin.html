@@ -248,6 +248,9 @@ body {
 .gallery-item__url { width: 100%; padding: 8px 10px; background: var(--surface2); border: none; border-top: 1px solid var(--border); color: var(--text); font-size: 11px; outline: none; font-family: var(--font); }
 .gallery-item__url:focus { background: var(--bg); }
 
+/* Section save button */
+.section-save { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; }
+
 table.form-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
 table.form-table th, table.form-table td {
   padding: 8px 10px; border: 1px solid var(--border); font-size: 13px; text-align: left;
@@ -416,16 +419,6 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
   </aside>
 
   <div class="main-content">
-    <div class="header-actions">
-      <button class="action-btn action-btn--save" onclick="saveAll()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        Save Changes
-      </button>
-      <button class="action-btn action-btn--reset" onclick="resetToDefaults()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-        Reset Defaults
-      </button>
-    </div>
     <div class="status-msg" id="statusMsg"></div>
 
     <!-- Dashboard: Form Inquiries -->
@@ -1850,6 +1843,67 @@ async function resetToDefaults() {
   await saveData();
   populateForm();
   showStatus('Reset to defaults successfully!', 'success');
+}
+
+// ===== SECTION SAVE BUTTONS =====
+const SECTION_FIELDS = {
+  general: ['adminEmail', 'adminPassword'],
+  branding: ['siteTitle', 'faviconPath', 'logoPath', 'heroImage'],
+  links: ['partnerInviteUrl', 'facebookUrl', 'agentFacebookUrl', 'altFacebookUrl', 'messengerLoadingGc', 'messengerSportsTips'],
+  hero: ['heroHeadline', 'heroSubcopy', 'heroLogoTag', 'heroCtaPrimary', 'heroCtaSecondary', 'statPlayingNum', 'statPlayingSuffix', 'statPaidNum', 'statPaidSuffix', 'trustBadgeText', 'formTriggerText', 'formTriggerNote', 'formSubmitText', 'formFooterText'],
+  ticker: ['tickerLabel', 'tickerMessages'],
+  howitworks: ['hiwKicker', 'hiwHeading'],
+  benefits: ['benefitsKicker', 'benefitsHeading', 'benefitsCopy', 'benefitSlides', 'paySectionTitle', 'benefitsTagline'],
+  providers: ['provSearchPlaceholder', 'provNoResults', 'provKicker', 'provHeading'],
+  promoslides: ['sportsKicker'],
+  conversion: ['convBadge', 'convHeadline', 'convDesc', 'convPerks', 'convCta', 'convSidebarImg', 'convDisclaimer'],
+  promo: ['promoHeading', 'promoCopy1', 'promoCopy2', 'promoCtaLead', 'promoCtaText', 'promoVerified', 'promoAffiliate', 'promoVideo'],
+  agent: ['agentBadge', 'agentName', 'agentTagline'],
+  faq: ['faqKicker', 'faqHeading', 'faqCopy'],
+  galleries: ['winsHeading', 'winsCta', 'winsCtaUrl', 'winsCopy', 'cashHeading', 'cashCta', 'cashCtaUrl', 'cashCopy'],
+  chatbot: ['botName', 'botStatus', 'botWelcome', 'botFallback', 'botPlaceholder', 'botQuickReplies'],
+  notifications: ['notifInterval', 'notifDuration']
+};
+
+const SAVE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
+
+// Inject save buttons into all section cards (except dashboard)
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.section-card').forEach(card => {
+    const id = card.id.replace('sec-', '');
+    if (id === 'dashboard') return;
+    const divider = document.createElement('div');
+    divider.className = 'section-save';
+    divider.innerHTML = `<button class="btn btn-primary" onclick="saveSection('${id}')">${SAVE_ICON} Save Changes</button>`;
+    card.appendChild(divider);
+  });
+});
+
+async function saveSection(section) {
+  collectFromForm();
+  try {
+    await saveData();
+    // Special handling for general tab (auth + recovery)
+    if (section === 'general') {
+      const authUpdates = {};
+      if (data.adminEmail) authUpdates.email = data.adminEmail;
+      if (data.adminPassword) authUpdates.password = data.adminPassword;
+      if (Object.keys(authUpdates).length) await supabaseAuth.updateUser(authUpdates);
+      const recoveryQuestion = document.getElementById('recoveryQuestion').value === 'Custom'
+        ? document.getElementById('recoveryQuestionCustom').value
+        : document.getElementById('recoveryQuestion').value;
+      const recoveryAnswer = document.getElementById('recoveryAnswer').value;
+      await supabaseRest.updateCredentials({
+        email: data.adminEmail,
+        password: data.adminPassword,
+        recovery_question: recoveryQuestion,
+        recovery_answer: recoveryAnswer
+      });
+    }
+    showStatus('Changes saved!', 'success');
+  } catch (err) {
+    showStatus('Save failed: ' + err.message, 'error');
+  }
 }
 
 // ===== INIT =====
