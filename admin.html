@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>747 Admin Panel</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #07070d;
+  --surface: #0d0d18;
+  --surface2: #14142a;
+  --border: #1e1e3a;
+  --text: #e8e8f0;
+  --text2: #8888aa;
+  --accent: #66f89c;
+  --accent-dim: rgba(102,248,156,0.12);
+  --danger: #ff4466;
+  --radius: 12px;
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --sidebar-width: 250px;
+}
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* Login */
+.login-page {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; padding: 20px;
+}
+.login-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 40px; width: 100%; max-width: 400px;
+}
+.login-card h1 { font-size: 24px; margin-bottom: 4px; }
+.login-card p { color: var(--text2); font-size: 14px; margin-bottom: 24px; }
+.login-card label { display: block; font-size: 13px; color: var(--text2); margin-bottom: 6px; }
+.login-card input {
+  width: 100%; padding: 10px 14px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text); font-size: 14px; margin-bottom: 16px; outline: none;
+}
+.login-card input:focus { border-color: var(--accent); }
+.login-error { color: var(--danger); font-size: 13px; margin-bottom: 12px; display: none; }
+
+/* Admin layout */
+.admin-wrap { display: none; min-height: 100vh; }
+.admin-wrap.active { display: flex; }
+.sidebar {
+  width: var(--sidebar-width); background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+  background: linear-gradient(180deg, #0d0d18 0%, #0a0a14 100%);
+  box-shadow: 4px 0 30px rgba(0,0,0,.5);
+}
+.sidebar-header {
+  padding: 22px 20px 18px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+  position: relative;
+}
+.sidebar-header::after {
+  content: ''; position: absolute; bottom: -1px; left: 20px; right: 20px;
+  height: 1px; background: linear-gradient(90deg, var(--accent), transparent 70%);
+}
+.sidebar-header__icon {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), #3ad483);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 15px; color: #000;
+  box-shadow: 0 4px 12px rgba(102,248,156,.25);
+}
+.sidebar-header__text { font-weight: 700; font-size: 15px; letter-spacing: .3px; }
+.sidebar-header__text span { color: var(--accent); }
+.sidebar-header__badge {
+  margin-left: auto; font-size: 9px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .8px; padding: 3px 8px; border-radius: 4px;
+  background: rgba(102,248,156,.1); color: var(--accent); border: 1px solid rgba(102,248,156,.15);
+}
+.sidebar-nav { flex: 1; overflow-y: auto; padding: 12px 10px; }
+.sidebar-nav::-webkit-scrollbar { width: 4px; }
+.sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+.sidebar-nav::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+.sidebar-nav__group { margin-bottom: 4px; }
+.sidebar-nav__label {
+  font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.2px;
+  color: rgba(136,136,170,.5); padding: 16px 14px 6px;
+}
+.sidebar-nav a {
+  display: flex; align-items: center; gap: 10px; padding: 9px 14px;
+  border-radius: 8px; color: var(--text2); text-decoration: none; font-size: 13px;
+  cursor: pointer; transition: all .2s ease; position: relative;
+}
+.sidebar-nav a:hover {
+  background: rgba(255,255,255,.04); color: var(--text);
+}
+.sidebar-nav a.active {
+  background: var(--accent-dim); color: var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.sidebar-nav a svg {
+  width: 16px; height: 16px; flex-shrink: 0; opacity: .6;
+  transition: opacity .2s;
+}
+.sidebar-nav a:hover svg, .sidebar-nav a.active svg { opacity: 1; }
+.sidebar-footer {
+  padding: 14px 18px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(0,0,0,.15);
+}
+.sidebar-footer__avatar {
+  width: 28px; height: 28px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent), #3ad483);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #000;
+}
+.sidebar-footer__info { flex: 1; min-width: 0; }
+.sidebar-footer__name { font-size: 12px; font-weight: 600; color: var(--text); }
+.sidebar-footer__role { font-size: 10px; color: var(--text2); }
+.sidebar-footer button {
+  background: none; border: none; color: var(--text2); cursor: pointer;
+  font-size: 11px; padding: 5px 10px; border-radius: 6px;
+  transition: all .2s; border: 1px solid transparent;
+}
+.sidebar-footer button:hover {
+  color: var(--danger); border-color: rgba(255,68,102,.2); background: rgba(255,68,102,.08);
+}
+
+.main-content {
+  margin-left: var(--sidebar-width); flex: 1; padding: 30px 40px; max-width: 1100px;
+}
+
+/* Confirm Dialog */
+.confirm-overlay {
+  display: none; position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,.7); backdrop-filter: blur(4px);
+  align-items: center; justify-content: center;
+}
+.confirm-overlay.active { display: flex; }
+.confirm-dialog {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 28px 32px 24px; max-width: 380px; width: 90%;
+  box-shadow: 0 20px 60px rgba(0,0,0,.6);
+  animation: confirmIn .25s ease;
+}
+@keyframes confirmIn {
+  from { opacity: 0; transform: scale(.92) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.confirm-dialog__icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: rgba(255,68,102,.12);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 16px;
+}
+.confirm-dialog__icon svg { width: 22px; height: 22px; color: var(--danger); }
+.confirm-dialog h3 { font-size: 16px; margin-bottom: 6px; }
+.confirm-dialog p { font-size: 13px; color: var(--text2); margin-bottom: 22px; line-height: 1.5; }
+.confirm-dialog__actions { display: flex; gap: 10px; }
+.confirm-dialog__actions button { flex: 1; }
+.main-content h2 { font-size: 22px; margin-bottom: 4px; }
+.main-content > p { color: var(--text2); font-size: 14px; margin-bottom: 28px; }
+.section-card {
+  display: none; animation: fadeIn 0.25s ease;
+}
+.section-card.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
+.form-group input, .form-group textarea, .form-group select {
+  width: 100%; padding: 10px 14px; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text); font-size: 14px; outline: none; font-family: var(--font);
+}
+.form-group textarea { resize: vertical; min-height: 60px; }
+.form-group input:focus, .form-group textarea:focus { border-color: var(--accent); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-hint { font-size: 11px; color: var(--text2); margin-top: 4px; }
+
+.btn {
+  padding: 10px 24px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-primary { background: var(--accent); color: #000; }
+.btn-primary:hover { opacity: 0.85; }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { opacity: 0.85; }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+.btn-outline:hover { border-color: var(--text2); }
+.btn-sm { padding: 6px 14px; font-size: 12px; }
+
+.header-actions { display: flex; gap: 10px; margin-bottom: 28px; flex-wrap: wrap; }
+.status-msg {
+  padding: 10px 16px; border-radius: 6px; font-size: 13px; margin-bottom: 16px; display: none;
+}
+.status-msg.success { background: rgba(102,248,156,0.12); color: var(--accent); display: block; }
+.status-msg.error { background: rgba(255,68,102,0.12); color: var(--danger); display: block; }
+
+.array-item {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+  padding: 14px; margin-bottom: 10px; position: relative;
+}
+.array-item h4 { font-size: 13px; margin-bottom: 8px; color: var(--accent); }
+.array-item .remove-item {
+  position: absolute; top: 10px; right: 10px; background: none; border: none;
+  color: var(--danger); cursor: pointer; font-size: 18px; line-height: 1;
+}
+.add-item { margin-top: 8px; }
+
+table.form-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+table.form-table th, table.form-table td {
+  padding: 8px 10px; border: 1px solid var(--border); font-size: 13px; text-align: left;
+}
+table.form-table th { background: var(--surface); color: var(--text2); font-weight: 600; }
+table.form-table input, table.form-table textarea {
+  width: 100%; padding: 6px 8px; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 4px; color: var(--text); font-size: 13px; outline: none;
+}
+table.form-table input:focus, table.form-table textarea:focus { border-color: var(--accent); }
+
+.tab-section { margin-bottom: 24px; }
+.tab-section h3 { font-size: 15px; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+
+.accordion-item { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 8px; }
+.accordion-item__header {
+  padding: 12px 16px; cursor: pointer; display: flex; justify-content: space-between;
+  align-items: center; font-size: 14px; font-weight: 600;
+}
+.accordion-item__body { padding: 0 16px 16px; display: none; }
+.accordion-item.open .accordion-item__body { display: block; }
+
+/* Preview note */
+.preview-note { font-size: 12px; color: var(--text2); font-style: italic; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<div class="login-page" id="loginPage">
+  <div class="login-card">
+    <h1>747 Admin Panel</h1>
+    <p>Sign in to manage your site content.</p>
+    <div class="login-error" id="loginError">Invalid credentials</div>
+    <label for="loginEmail">Email</label>
+    <input type="email" id="loginEmail" placeholder="admin@example.com" />
+    <label for="loginPassword">Password</label>
+    <input type="password" id="loginPassword" placeholder="Enter password" />
+    <button class="btn btn-primary" onclick="handleLogin()" style="width:100%">Sign in</button>
+  </div>
+</div>
+
+<div class="admin-wrap" id="adminWrap">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-header__icon">7</div>
+      <div class="sidebar-header__text"><span>747</span> Admin</div>
+      <div class="sidebar-header__badge">v1.0</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav">
+      <div class="sidebar-nav__group">
+        <div class="sidebar-nav__label">General</div>
+        <a class="active" data-section="general">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          General Settings
+        </a>
+      </div>
+      <div class="sidebar-nav__group">
+        <div class="sidebar-nav__label">Content</div>
+        <a data-section="hero">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Hero Section
+        </a>
+        <a data-section="benefits">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          Benefits
+        </a>
+        <a data-section="providers">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          Providers
+        </a>
+        <a data-section="promoslides">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+          Promo Slides
+        </a>
+        <a data-section="conversion">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+          Conversion
+        </a>
+        <a data-section="promo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+          Promo Section
+        </a>
+        <a data-section="agent">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Agent Section
+        </a>
+        <a data-section="galleries">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Galleries
+        </a>
+      </div>
+      <div class="sidebar-nav__group">
+        <div class="sidebar-nav__label">Settings</div>
+        <a data-section="branding">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Branding
+        </a>
+        <a data-section="nav">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          Navigation
+        </a>
+        <a data-section="links">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          External Links
+        </a>
+        <a data-section="footer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20"/><path d="M4 16V4h16v12"/></svg>
+          Footer
+        </a>
+        <a data-section="ticker">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="14" y2="18"/></svg>
+          Ticker Bar
+        </a>
+      </div>
+      <div class="sidebar-nav__group">
+        <div class="sidebar-nav__label">Interaction</div>
+        <a data-section="howitworks">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          How It Works
+        </a>
+        <a data-section="faq">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          FAQ
+        </a>
+        <a data-section="chatbot">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Chatbot
+        </a>
+        <a data-section="notifications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          Win Notifications
+        </a>
+      </div>
+      <div class="sidebar-nav__group">
+        <div class="sidebar-nav__label">Other</div>
+        <a data-section="splash">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+          Splash / Misc
+        </a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-footer__avatar">A</div>
+      <div class="sidebar-footer__info">
+        <div class="sidebar-footer__name">Admin</div>
+        <div class="sidebar-footer__role">747 Management</div>
+      </div>
+      <button onclick="handleLogout()" title="Sign out">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="header-actions">
+      <button class="btn btn-primary btn-sm" onclick="saveAll()">Save All Changes</button>
+      <button class="btn btn-outline btn-sm" onclick="resetToDefaults()">Reset to Defaults</button>
+    </div>
+    <div class="status-msg" id="statusMsg"></div>
+
+    <!-- General Settings -->
+    <div class="section-card active" id="sec-general">
+      <h2>General Settings</h2>
+      <p>Admin login credentials used to access this panel.</p>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Admin Email</label>
+          <input type="email" id="adminEmail" />
+        </div>
+        <div class="form-group">
+          <label>Admin Password</label>
+          <input type="text" id="adminPassword" />
+        </div>
+      </div>
+      <div class="preview-note">These credentials are stored in localStorage on this browser. When you add Supabase, this will be migrated to your database.</div>
+    </div>
+
+    <!-- Branding -->
+    <div class="section-card" id="sec-branding">
+      <h2>Branding</h2>
+      <p>Site title, favicon, and logo configuration.</p>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Site Title (Browser Tab)</label>
+          <input id="siteTitle" />
+        </div>
+        <div class="form-group">
+          <label>Favicon Path</label>
+          <input id="faviconPath" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Logo Image Path</label>
+        <input id="logoPath" />
+      </div>
+      <div class="form-group">
+        <label>Hero Background Image Path</label>
+        <input id="heroImage" />
+      </div>
+    </div>
+
+    <!-- External Links -->
+    <div class="section-card" id="sec-links">
+      <h2>External Links</h2>
+      <p>All external URLs used throughout the site.</p>
+      <div class="form-group"><label>Partner Invite URL (primary CTA link)</label><input id="partnerInviteUrl" /></div>
+      <div class="form-group"><label>Facebook URL</label><input id="facebookUrl" /></div>
+      <div class="form-group"><label>Agent Facebook URL</label><input id="agentFacebookUrl" /></div>
+      <div class="form-group"><label>Alt Facebook Page URL</label><input id="altFacebookUrl" /></div>
+      <div class="form-group"><label>Messenger URL (Loading GC card)</label><input id="messengerLoadingGc" /></div>
+      <div class="form-group"><label>Messenger URL (Sports Tips card)</label><input id="messengerSportsTips" /></div>
+    </div>
+
+    <!-- Hero Section -->
+    <div class="section-card" id="sec-hero">
+      <h2>Hero Section</h2>
+      <p>Main headline, subcopy, CTAs, stats, and trust badge.</p>
+      <div class="tab-section">
+        <h3>Headline & Copy</h3>
+        <div class="form-group">
+          <label>Headline (use &lt;em&gt;LIVE&lt;/em&gt; for green emphasis)</label>
+          <input id="heroHeadline" />
+        </div>
+        <div class="form-group">
+          <label>Subcopy</label>
+          <textarea id="heroSubcopy" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Hero Logo Tag</label>
+          <input id="heroLogoTag" />
+        </div>
+      </div>
+      <div class="tab-section">
+        <h3>CTA Buttons</h3>
+        <div class="form-row">
+          <div class="form-group"><label>Primary CTA Text</label><input id="heroCtaPrimary" /></div>
+          <div class="form-group"><label>Secondary CTA Text</label><input id="heroCtaSecondary" /></div>
+        </div>
+      </div>
+      <div class="tab-section">
+        <h3>Stats Counters</h3>
+        <div class="form-row">
+          <div class="form-group"><label>Playing Now (number)</label><input type="number" id="statPlayingNum" /></div>
+          <div class="form-group"><label>Playing Now Suffix</label><input id="statPlayingSuffix" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Paid Monthly (number)</label><input type="number" step="0.1" id="statPaidNum" /></div>
+          <div class="form-group"><label>Paid Monthly Prefix + Suffix</label><input id="statPaidSuffix" /></div>
+        </div>
+      </div>
+      <div class="tab-section">
+        <h3>Trust Badge</h3>
+        <div class="form-group"><label>Trust Badge Text</label><input id="trustBadgeText" /></div>
+      </div>
+      <div class="tab-section">
+        <h3>Registration Form</h3>
+        <div class="form-group"><label>Form Trigger Text</label><input id="formTriggerText" /></div>
+        <div class="form-group"><label>Form Trigger Note</label><input id="formTriggerNote" /></div>
+        <div class="form-group"><label>Form Submit Button Text</label><input id="formSubmitText" /></div>
+        <div class="form-group"><label>Form Footer Text</label><textarea id="formFooterText" rows="2"></textarea></div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="section-card" id="sec-nav">
+      <h2>Navigation</h2>
+      <p>Desktop and mobile nav link labels.</p>
+      <div class="form-group"><label>Desktop Nav Items (comma separated)</label><input id="desktopNavItems" /></div>
+      <div class="form-group"><label>Mobile Menu Items (comma separated; external: prefix with "ext:")</label><input id="mobileNavItems" /></div>
+    </div>
+
+    <!-- Ticker -->
+    <div class="section-card" id="sec-ticker">
+      <h2>Ticker Bar</h2>
+      <p>Scrolling announcements in the ticker bar. One per line.</p>
+      <div class="form-group"><label>Ticker Label</label><input id="tickerLabel" /></div>
+      <div class="form-group"><label>Ticker Messages (one per line)</label><textarea id="tickerMessages" rows="5"></textarea></div>
+    </div>
+
+    <!-- How It Works -->
+    <div class="section-card" id="sec-howitworks">
+      <h2>How It Works</h2>
+      <p>3 steps with bilingual (English / Filipino) support.</p>
+      <div class="form-group"><label>Section Kicker</label><input id="hiwKicker" /></div>
+      <div class="form-group"><label>Section Heading (use &lt;em&gt;3 easy steps&lt;/em&gt;)</label><input id="hiwHeading" /></div>
+      <table class="form-table">
+        <thead><tr><th>Step</th><th>EN Title</th><th>TL Title</th><th>EN Description</th><th>TL Description</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><input id="hiw1enTitle" /></td><td><input id="hiw1tlTitle" /></td><td><textarea id="hiw1enDesc" rows="2"></textarea></td><td><textarea id="hiw1tlDesc" rows="2"></textarea></td></tr>
+          <tr><td>2</td><td><input id="hiw2enTitle" /></td><td><input id="hiw2tlTitle" /></td><td><textarea id="hiw2enDesc" rows="2"></textarea></td><td><textarea id="hiw2tlDesc" rows="2"></textarea></td></tr>
+          <tr><td>3</td><td><input id="hiw3enTitle" /></td><td><input id="hiw3tlTitle" /></td><td><textarea id="hiw3enDesc" rows="2"></textarea></td><td><textarea id="hiw3tlDesc" rows="2"></textarea></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Benefits -->
+    <div class="section-card" id="sec-benefits">
+      <h2>Benefits Section</h2>
+      <p>Invitation privileges, feature cards, payment methods.</p>
+      <div class="tab-section">
+        <h3>Section Text</h3>
+        <div class="form-row">
+          <div class="form-group"><label>Section Kicker</label><input id="benefitsKicker" /></div>
+          <div class="form-group"><label>Section Heading</label><input id="benefitsHeading" /></div>
+        </div>
+        <div class="form-group"><label>Section Copy</label><textarea id="benefitsCopy" rows="2"></textarea></div>
+      </div>
+      <div class="tab-section">
+        <h3>Banner Slides</h3>
+        <p class="form-hint">Image paths for the rotating banner. One per line.</p>
+        <textarea id="benefitSlides" rows="3"></textarea>
+      </div>
+      <div class="tab-section">
+        <h3>Feature Cards</h3>
+        <table class="form-table">
+          <thead><tr><th>Card</th><th>Label (strong text)</th><th>Suffix</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td><input id="bf1strong" /></td><td><input id="bf1suffix" /></td></tr>
+            <tr><td>2</td><td><input id="bf2strong" /></td><td><input id="bf2suffix" /></td></tr>
+            <tr><td>3</td><td><input id="bf3strong" /></td><td><input id="bf3suffix" /></td></tr>
+            <tr><td>4</td><td><input id="bf4strong" /></td><td><input id="bf4suffix" /></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tab-section">
+        <h3>Payment Methods Table</h3>
+        <p class="form-hint">Rows: Name, Logo Path, Min, Max, Fee, Speed</p>
+        <table class="form-table">
+          <thead><tr><th>Method</th><th>Logo Path</th><th>Min</th><th>Max</th><th>Fee</th><th>Speed</th></tr></thead>
+          <tbody>
+            <tr><td><input id="pay1name" /></td><td><input id="pay1logo" /></td><td><input id="pay1min" /></td><td><input id="pay1max" /></td><td><input id="pay1fee" /></td><td><input id="pay1speed" /></td></tr>
+            <tr><td><input id="pay2name" /></td><td><input id="pay2logo" /></td><td><input id="pay2min" /></td><td><input id="pay2max" /></td><td><input id="pay2fee" /></td><td><input id="pay2speed" /></td></tr>
+            <tr><td><input id="pay3name" /></td><td><input id="pay3logo" /></td><td><input id="pay3min" /></td><td><input id="pay3max" /></td><td><input id="pay3fee" /></td><td><input id="pay3speed" /></td></tr>
+            <tr><td><input id="pay4name" /></td><td><input id="pay4logo" /></td><td><input id="pay4min" /></td><td><input id="pay4max" /></td><td><input id="pay4fee" /></td><td><input id="pay4speed" /></td></tr>
+          </tbody>
+        </table>
+        <div class="form-group"><label>Payment Section Title</label><input id="paySectionTitle" /></div>
+      </div>
+      <div class="tab-section">
+        <h3>Tagline</h3>
+        <div class="form-group"><label>Tagline words (comma separated)</label><input id="benefitsTagline" /></div>
+      </div>
+    </div>
+
+    <!-- Providers -->
+    <div class="section-card" id="sec-providers">
+      <h2>Providers</h2>
+      <p>Game provider cards in the Discover section. 14 providers.</p>
+      <div class="form-group"><label>Search Placeholder</label><input id="provSearchPlaceholder" /></div>
+      <div class="form-group"><label>No Results Text</label><input id="provNoResults" /></div>
+      <div class="form-group"><label>Section Kicker</label><input id="provKicker" /></div>
+      <div class="form-group"><label>Section Heading</label><input id="provHeading" /></div>
+      <table class="form-table">
+        <thead><tr><th>#</th><th>Name</th><th>Kind</th><th>GIF Path</th><th>Accent Color</th></tr></thead>
+        <tbody id="providersTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Promo Slides -->
+    <div class="section-card" id="sec-promoslides">
+      <h2>Promo Slides</h2>
+      <p>5 promotional banner images in the Sports section carousel. One path per line.</p>
+      <textarea id="promoSlides" rows="6"></textarea>
+      <div class="form-group" style="margin-top:16px"><label>Section Kicker</label><input id="sportsKicker" /></div>
+    </div>
+
+    <!-- Conversion Section -->
+    <div class="section-card" id="sec-conversion">
+      <h2>Conversion / CTA Section</h2>
+      <p>"Looking for Players" section with perks list.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Badge</label><input id="convBadge" /></div>
+        <div class="form-group"><label>Headline</label><input id="convHeadline" /></div>
+      </div>
+      <div class="form-group"><label>Description</label><textarea id="convDesc" rows="2"></textarea></div>
+      <div class="form-group"><label>Perks (one per line)</label><textarea id="convPerks" rows="6"></textarea></div>
+      <div class="form-row">
+        <div class="form-group"><label>CTA Button Text</label><input id="convCta" /></div>
+        <div class="form-group"><label>Sidebar Image Path</label><input id="convSidebarImg" /></div>
+      </div>
+      <div class="form-group"><label>Disclaimer</label><textarea id="convDisclaimer" rows="2"></textarea></div>
+    </div>
+
+    <!-- Promo Section -->
+    <div class="section-card" id="sec-promo">
+      <h2>Promo Section (10% Cashback)</h2>
+      <p>Taglish promo content with video and Facebook CTA.</p>
+      <div class="form-group"><label>Heading</label><textarea id="promoHeading" rows="2"></textarea></div>
+      <div class="form-group"><label>Copy Line 1</label><input id="promoCopy1" /></div>
+      <div class="form-group"><label>Copy Line 2 (Mid East)</label><textarea id="promoCopy2" rows="2"></textarea></div>
+      <div class="form-group"><label>CTA Lead-in</label><input id="promoCtaLead" /></div>
+      <div class="form-group"><label>CTA Button Text</label><input id="promoCtaText" /></div>
+      <div class="form-group"><label>Verified Text</label><input id="promoVerified" /></div>
+      <div class="form-group"><label>Affiliate Text</label><input id="promoAffiliate" /></div>
+      <div class="form-group"><label>Video Path</label><input id="promoVideo" /></div>
+    </div>
+
+    <!-- Agent Section -->
+    <div class="section-card" id="sec-agent">
+      <h2>Agent Section</h2>
+      <p>Area Manager profile and 3 agent cards.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Badge</label><input id="agentBadge" /></div>
+        <div class="form-group"><label>Agent Name</label><input id="agentName" /></div>
+      </div>
+      <div class="form-group"><label>Tagline</label><textarea id="agentTagline" rows="2"></textarea></div>
+      <table class="form-table">
+        <thead><tr><th>Card</th><th>Title</th><th>Icon Path</th><th>Description</th><th>CTA Text</th><th>Link URL</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><input id="ac1title" /></td><td><input id="ac1icon" /></td><td><input id="ac1desc" /></td><td><input id="ac1cta" /></td><td><input id="ac1link" /></td></tr>
+          <tr><td>2</td><td><input id="ac2title" /></td><td><input id="ac2icon" /></td><td><input id="ac2desc" /></td><td><input id="ac2cta" /></td><td><input id="ac2link" /></td></tr>
+          <tr><td>3</td><td><input id="ac3title" /></td><td><input id="ac3icon" /></td><td><input id="ac3desc" /></td><td><input id="ac3cta" /></td><td><input id="ac3link" /></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- FAQ -->
+    <div class="section-card" id="sec-faq">
+      <h2>FAQ</h2>
+      <p>10 frequently asked questions with keyword matching for the chatbot.</p>
+      <div class="form-group"><label>Section Kicker</label><input id="faqKicker" /></div>
+      <div class="form-group"><label>Section Heading</label><input id="faqHeading" /></div>
+      <div class="form-group"><label>Section Copy</label><textarea id="faqCopy" rows="2"></textarea></div>
+      <table class="form-table">
+        <thead><tr><th>#</th><th>Question</th><th>Answer</th><th>Keywords (comma)</th></tr></thead>
+        <tbody id="faqTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Galleries -->
+    <div class="section-card" id="sec-galleries">
+      <h2>Galleries</h2>
+      <p>Winning Slips and Cash Out Proof galleries.</p>
+      <div class="tab-section">
+        <h3>Winning Slips</h3>
+        <div class="form-row">
+          <div class="form-group"><label>Section Heading</label><input id="winsHeading" /></div>
+          <div class="form-group"><label>Image Count</label><input type="number" id="winsCount" /></div>
+        </div>
+        <div class="form-group"><label>Section Copy</label><textarea id="winsCopy" rows="2"></textarea></div>
+        <div class="form-group"><label>CTA Text</label><input id="winsCta" /></div>
+      </div>
+      <div class="tab-section">
+        <h3>Cash Out Proof</h3>
+        <div class="form-row">
+          <div class="form-group"><label>Section Heading</label><input id="cashHeading" /></div>
+          <div class="form-group"><label>Image Count</label><input type="number" id="cashCount" /></div>
+        </div>
+        <div class="form-group"><label>Section Copy</label><textarea id="cashCopy" rows="2"></textarea></div>
+        <div class="form-group"><label>CTA Text</label><input id="cashCta" /></div>
+      </div>
+    </div>
+
+    <!-- Chatbot -->
+    <div class="section-card" id="sec-chatbot">
+      <h2>Chatbot</h2>
+      <p>747 Live Assistant chatbot configuration.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Bot Name</label><input id="botName" /></div>
+        <div class="form-group"><label>Status</label><input id="botStatus" /></div>
+      </div>
+      <div class="form-group"><label>Welcome Message</label><textarea id="botWelcome" rows="2"></textarea></div>
+      <div class="form-group"><label>Fallback Reply</label><textarea id="botFallback" rows="2"></textarea></div>
+      <div class="form-group"><label>Input Placeholder</label><input id="botPlaceholder" /></div>
+      <div class="form-group"><label>Quick Replies (one per line)</label><textarea id="botQuickReplies" rows="4"></textarea></div>
+    </div>
+
+    <!-- Win Notifications -->
+    <div class="section-card" id="sec-notifications">
+      <h2>Win Notifications</h2>
+      <p>Fake social-proof toast notifications shown every 14 seconds.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Show Interval (ms)</label><input type="number" id="notifInterval" /></div>
+        <div class="form-group"><label>Display Duration (ms)</label><input type="number" id="notifDuration" /></div>
+      </div>
+      <table class="form-table">
+        <thead><tr><th>#</th><th>Name</th><th>Amount</th><th>Game</th></tr></thead>
+        <tbody id="notifTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Footer -->
+    <div class="section-card" id="sec-footer">
+      <h2>Footer</h2>
+      <p>NeoMinimalFooter configuration.</p>
+      <div class="form-group"><label>Brand Text</label><input id="footerBrand" /></div>
+      <div class="form-group"><label>Description</label><textarea id="footerDesc" rows="2"></textarea></div>
+      <div class="form-group"><label>Email Placeholder</label><input id="footerEmailPlaceholder" /></div>
+      <div class="form-group"><label>Footer Mark</label><input id="footerMark" /></div>
+      <p class="form-hint" style="margin-top:12px">Link columns (Platform, Company, Connect) and social links are managed via the External Links section above.</p>
+    </div>
+
+    <!-- Splash / Misc -->
+    <div class="section-card" id="sec-splash">
+      <h2>Splash Screen &amp; Misc</h2>
+      <p>Splash screen appearance and miscellaneous text.</p>
+      <div class="tab-section">
+        <h3>Splash Screen</h3>
+        <div class="form-group"><label>Tagline</label><input id="splashTagline" /></div>
+        <div class="form-row">
+          <div class="form-group"><label>Visible Duration (ms)</label><input type="number" id="splashDuration" /></div>
+          <div class="form-group"><label>Content Ready Delay (ms)</label><input type="number" id="splashReady" /></div>
+        </div>
+      </div>
+      <div class="tab-section">
+        <h3>Cookie Consent Bar</h3>
+        <div class="form-group"><label>Cookie Bar Text</label><textarea id="cookieText" rows="2"></textarea></div>
+        <div class="form-group"><label>Accept Button Text</label><input id="cookieBtn" /></div>
+      </div>
+      <div class="tab-section">
+        <h3>Sticky CTA</h3>
+        <div class="form-group"><label>Sticky CTA Text</label><input id="stickyCta" /></div>
+      </div>
+      <div class="tab-section">
+        <h3>Chatbot Fallback &amp; Quick Replies</h3>
+        <p class="form-hint">Managed in the Chatbot section above.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-dialog">
+    <div class="confirm-dialog__icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    </div>
+    <h3>Sign out?</h3>
+    <p>You will be logged out of the admin panel and need to sign in again.</p>
+    <div class="confirm-dialog__actions">
+      <button class="btn btn-outline" onclick="confirmLogout(false)">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmLogout(true)">Sign out</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== DEFAULT DATA =====
+const DEFAULTS = {
+  adminEmail: 'admin@747live.com',
+  adminPassword: 'admin123',
+  siteTitle: '747 Free Online Betting Site',
+  faviconPath: '/favicon.png',
+  logoPath: '/images/logo.jpg',
+  heroImage: '/images/hero.jpg',
+  partnerInviteUrl: 'https://www.messenger.com/j/AbakhHJ975SWCzqw/',
+  facebookUrl: 'https://m.me/100022590198280',
+  agentFacebookUrl: 'https://www.facebook.com/Yjnek#',
+  altFacebookUrl: 'https://www.facebook.com/share/1BriKGwHZ2/?mibextid=wwXIfr',
+  messengerLoadingGc: 'https://m.me/j/AbYgP-t5JeYDO3R7/?send_source=gc:copy_invite_link_c',
+  messengerSportsTips: 'https://m.me/j/AbYoJLM_qK2rnSQh/',
+  heroHeadline: 'Play <em>747 LIVE</em> &amp; win real cash.',
+  heroSubcopy: 'Sign up through my link for a Welcome Bonus + Cashback. Casino, live sports, eSports & VIP rewards — Saudi Riyals accepted.',
+  heroLogoTag: 'Official Agent',
+  heroCtaPrimary: 'Register through my link',
+  heroCtaSecondary: 'Why join',
+  statPlayingNum: 3163,
+  statPlayingSuffix: '+',
+  statPaidNum: 2.4,
+  statPaidSuffix: 'B+',
+  trustBadgeText: 'Verified Partner — 100% secure registration',
+  formTriggerText: 'Register Account',
+  formTriggerNote: '10% cash back + exclusive GCs',
+  formSubmitText: 'Register now',
+  formFooterText: '10% CASH BACK sa total na LOSS BETS twice a month — plus exclusive access to all GCs!',
+  desktopNavItems: 'Benefits, Discover, Sports, Promo',
+  mobileNavItems: 'Benefits, Discover, Sports, Why 747LIVE, ext:Facebook',
+  tickerLabel: 'Now in the lounge',
+  tickerMessages: 'TWICE MONTHLY CASHBACK\nSAUDI RIYALS ACCEPTED\n24/7 LIVE SPORTS TIPS\nMONTHLY VIP RAFFLE',
+  hiwKicker: 'How it works',
+  hiwHeading: 'Get started in <em>3 easy steps</em>',
+  hiw: [
+    { enTitle: 'Register', tlTitle: 'Magrehistro', enDesc: 'Click the register button and fill in your details through our partner platform.', tlDesc: 'I-click ang register button at punan ang iyong detalye.' },
+    { enTitle: 'Deposit', tlTitle: 'Mag-deposito', enDesc: 'Choose from GCash, GOtyme, STC Pay, or Barq. No hidden fees, instant processing.', tlDesc: 'Pumili ng GCash, GOtyme, STC Pay, o Barq. Walang dagdag na bayad.' },
+    { enTitle: 'Play & Win', tlTitle: 'Maglaro at Manalo', enDesc: 'Access live casino, sports betting, slots, and arcade games. Start winning today!', tlDesc: 'Mag-access sa live casino, sports betting, slots, at arcade games. Manalo na!' }
+  ],
+  benefitsKicker: 'Invitation privileges',
+  benefitsHeading: 'A more rewarding way to <em>step inside.</em>',
+  benefitsCopy: 'Selected benefits to look for when you continue through the partner platform.',
+  benefitSlides: '/images/ga.jpg\n/images/ge.jpg',
+  benefitFeatures: [
+    { strong: '24/7', suffix: 'SUPPORT' },
+    { strong: 'FAST', suffix: 'CASH IN / CASH OUT' },
+    { strong: 'NO', suffix: 'CASH OUT FEE' },
+    { strong: 'PLAY SMART', suffix: 'WIN BIG' }
+  ],
+  paySectionTitle: 'AVAILABLE CASH IN METHOD',
+  payments: [
+    { name: 'GCash', logo: '/images/gcash.jpg', min: 'P100', max: 'P100,000', fee: 'Free', speed: 'Instant' },
+    { name: 'GOtyme', logo: '/images/gotyme.jpg', min: 'P100', max: 'P50,000', fee: 'Free', speed: 'Instant' },
+    { name: 'STC Pay', logo: '/images/stc.jpg', min: 'SAR 10', max: 'SAR 50,000', fee: 'Free', speed: 'Instant' },
+    { name: 'Barq', logo: '/images/barq.png', min: 'SAR 10', max: 'SAR 50,000', fee: 'Free', speed: 'Instant' }
+  ],
+  benefitsTagline: 'FAST., SAFE., SECURE.',
+  provSearchPlaceholder: 'Search games, providers, categories...',
+  provNoResults: 'No results found for',
+  provKicker: 'Curated entertainment',
+  provHeading: 'Find your <em>table,</em> your tempo.',
+  providers: [
+    { name: 'Live Sports', kind: 'Sports', asset: '/images/provider-live-sports.gif', hue: '#67f79d' },
+    { name: 'Pre-match', kind: 'Sports', asset: '/images/provider-pre-match.gif', hue: '#ec6800' },
+    { name: 'Live Casino', kind: 'Tables', asset: '/images/provider-live-casino.gif', hue: '#5c17a2' },
+    { name: 'Evolution', kind: 'Live tables', asset: '/images/provider-evolution.gif', hue: '#e4b551' },
+    { name: 'JILI', kind: 'Slots', asset: '/images/provider-jili.gif', hue: '#f83700' },
+    { name: 'Casino', kind: 'Tables', asset: '/images/provider-casino.gif', hue: '#66f89c' },
+    { name: 'Pragmatic Play', kind: 'Slots', asset: '/images/provider-pragmatic-play.gif', hue: '#ef5d2d' },
+    { name: 'Fachai', kind: 'Arcade', asset: '/images/provider-fachai.gif', hue: '#e9bb43' },
+    { name: 'CreedRoomz', kind: 'Live tables', asset: '/images/provider-creedroomz.gif', hue: '#5d6dff' },
+    { name: 'Dragon Gaming', kind: 'Slots', asset: '/images/provider-dragon-gaming.gif', hue: '#d93723' },
+    { name: '747 News', kind: 'Updates', asset: '/images/provider-747-news.gif', hue: '#66f89c' },
+    { name: '747 Hearts', kind: 'Tables', asset: '/images/provider-747-hearts.gif', hue: '#f56b9a' },
+    { name: 'PopOK', kind: 'Arcade', asset: '/images/provider-popok.gif', hue: '#75a9ff' },
+    { name: 'Amigo', kind: 'Games', asset: '/images/provider-amigo.gif', hue: '#f1a343' }
+  ],
+  promoSlides: [
+    '/images/promo-1.webp',
+    '/images/promo-2.webp',
+    '/images/promo-3.webp',
+    '/images/promo-4.webp',
+    '/images/promo-5.webp'
+  ],
+  sportsKicker: 'Sports & Promotions',
+  convBadge: '747LIVE invitation',
+  convHeadline: 'Looking for Players and Sports Lovers!',
+  convDesc: 'Sali na sa aming exclusive sports community at e-enjoy ang mga member perks:',
+  convPerks: '2% Bonus 1st Cash In\n10% Loss Rebates Twice Monthly\nBirthday Bonus Gift\nVIP Sports Group Access\nMonthly Raffle',
+  convCta: 'Get started',
+  convSidebarImg: '/images/z.jpg',
+  convDisclaimer: "You'll be redirected to continue your registration through our partner platform.",
+  promoHeading: '10% Cashback / Rebates\nFree Registration',
+  promoCopy1: 'kaya ano pang hinihintay mo MESSAGE na 🫶🏼',
+  promoCopy2: 'Kung nandito ka sa Mid.Est sakto para sayo to\nMeron din SPORTS TIPS GC para sayo.\n24/7 Loading GC at customer service',
+  promoCtaLead: 'Message na dito 👉🏼',
+  promoCtaText: 'Message on Facebook',
+  promoVerified: 'Legit na legit blue check verified by META kaya safe na safe ka 😉',
+  promoAffiliate: 'Pwede ka din mag apply as Affiliate 😉',
+  promoVideo: '/images/vid.mp4',
+  agentBadge: '747 AREA MANAGER',
+  agentName: 'Kenj Chua',
+  agentTagline: '747 Free Online Betting Site — Free Sports Picks sa baba plus 10% REBATES',
+  agentCards: [
+    { title: 'Registration', icon: '/images/a.jpg', desc: 'Click and Message for details', cta: 'Register now', link: '' },
+    { title: '24/7 Loading Gc', icon: '/images/b.jpg', desc: 'Click and Message for details', cta: 'Join now', link: '' },
+    { title: 'Free Sports GC Tips', icon: '/images/c.jpg', desc: 'Click and Message for details', cta: 'Join now', link: '' }
+  ],
+  faqKicker: 'FAQ',
+  faqHeading: 'Frequently asked <em>questions</em>',
+  faqCopy: 'Quick answers to the most common questions about 747 Live.',
+  faq: [
+    { q: 'What is 747 Live?', a: 'Ang 747 Live ay isang premium gaming platform na may live casino, sports betting, at arcade games. Ito ay independent invitation portal para ma-access mo ang platform.', keywords: 'what is, 747 live, about, platform' },
+    { q: 'How do I register?', a: 'Click lang ang "Register now" button sa page na ito. Ire-redirect ka sa official partner platform para matapos ang registration mo.', keywords: 'register, sign up, join, create account, how to' },
+    { q: 'Is there a welcome bonus?', a: 'Oo naman! Kapag nag-register ka through our partner link, may exclusive welcome bonuses, cashback, at promotions na àwait sa\'yo.', keywords: 'bonus, welcome, promo, cashback, rebate' },
+    { q: 'What games are available?', a: 'Marami kang pagpipilian — live dealer tables tulad ng baccarat, blackjack, roulette, sports betting, arcade games, at slot experiences mula sa top providers.', keywords: 'game, slot, casino, sports, bet, play, available' },
+    { q: 'Is this the official site?', a: 'Hindi po. Independent promotional website lang ito — hindi kami ang operator ng gaming platform. Ang registration ay sa official partner link namin dumadaan.', keywords: 'official, real, legit, legitimate, scam' },
+    { q: 'Is it safe?', a: 'Ang partner platform ay gumagamit ng industry-standard security. Laging magsugal nang responsable at siguraduhing 18 years old ka pataas.', keywords: 'safe, secure, security, trust, reliable' },
+    { q: 'What payment methods are accepted?', a: 'Tumatanggap kami ng GCash, GOtyme, STC Pay, at Barq. Mabilis ang cash in at cash out — walang hidden fees.', keywords: 'payment, cash in, deposit, gcash, barq, stc, gotyme' },
+    { q: 'What VIP perks are available?', a: 'May 2% bonus sa first cash in, 10% loss rebates dalawang beses sa isang buwan, birthday bonus, VIP sports group access, at monthly raffle ang mga members.', keywords: 'vip, raffle, member, perks, privilege' },
+    { q: 'Who can play?', a: 'Dapat 18 years old or pataas para gumamit ng platform na ito. Lage naming pino-promote ang responsible gaming.', keywords: 'age, 18, minor, legal' },
+    { q: 'How do I contact support?', a: 'Pwede mo kaming i-message directly sa Facebook — 24/7 ang support namin.', keywords: 'contact, support, help, customer, message, facebook' }
+  ],
+  winsHeading: 'Winning Slips',
+  winsCount: 8,
+  winsCopy: 'See the latest winning slips from our community members.',
+  winsCta: 'Start winning today',
+  cashHeading: 'Cash Out Proof',
+  cashCount: 7,
+  cashCopy: 'Real cash outs from our community members.',
+  cashCta: 'Get your cash out now',
+  botName: '747 Live Assistant',
+  botStatus: 'Online',
+  botWelcome: "Hi! I'm the 747 Live smart assistant. Ask me anything about registration, bonuses, games, or promotions!",
+  botFallback: 'Thanks for your question! For detailed assistance, you can message me directly on Facebook or register through the platform. Is there anything else I can help with?',
+  botPlaceholder: 'Type your question...',
+  botQuickReplies: 'What is 747 Live?\nHow do I register?\nWhat games are available?\nWhat payment methods are accepted?',
+  winNotifications: [
+    { name: 'John D.', amount: 'P25,000', game: 'Live Casino' },
+    { name: 'Maria S.', amount: 'P12,400', game: 'JILI Slots' },
+    { name: 'Ahmed R.', amount: 'SAR 3,200', game: 'Sports Betting' },
+    { name: 'Ken J.', amount: 'P48,700', game: 'Evolution' },
+    { name: 'Sarah L.', amount: 'P8,900', game: 'Pragmatic Play' },
+    { name: 'Omar K.', amount: 'SAR 5,500', game: 'Live Casino' },
+    { name: 'Carlos M.', amount: 'P32,100', game: 'Fachai Arcade' },
+    { name: 'Fatima Z.', amount: 'SAR 8,000', game: 'CreedRoomz' },
+    { name: 'Mike T.', amount: 'P15,600', game: 'Sports Betting' },
+    { name: 'Rosa P.', amount: 'P22,300', game: 'Dragon Gaming' }
+  ],
+  notifInterval: 14000,
+  notifDuration: 5000,
+  footerBrand: '747 LIVE',
+  footerDesc: 'Independent invitation portal for an elevated partner gaming experience. Casino, live sports, eSports & VIP rewards.',
+  footerEmailPlaceholder: 'Enter your email...',
+  footerMark: '// 747 FREE ONLINE BETTING SITE',
+  splashTagline: '747 Free Online Betting Site',
+  splashDuration: 2800,
+  splashReady: 3400,
+  cookieText: 'We use cookies to improve your experience. By continuing, you agree to our use of cookies.',
+  cookieBtn: 'Accept',
+  stickyCta: 'Join now'
+};
+
+// ===== DATA MANAGEMENT =====
+let data = {};
+
+function loadData() {
+  const saved = localStorage.getItem('adminData');
+  if (saved) {
+    try { data = JSON.parse(saved); } catch(e) { data = {}; }
+  }
+  // Merge with defaults for any missing keys
+  data = { ...DEFAULTS, ...data };
+  // Deep merge arrays
+  for (const key of ['hiw', 'benefitFeatures', 'payments', 'providers', 'agentCards', 'faq', 'winNotifications']) {
+    if (Array.isArray(DEFAULTS[key]) && (!data[key] || !Array.isArray(data[key]))) {
+      data[key] = DEFAULTS[key];
+    }
+  }
+  if (!data.promoSlides || !Array.isArray(data.promoSlides)) data.promoSlides = [...DEFAULTS.promoSlides];
+  // Fix old data where agentCards link might be empty - use defaults
+  if (data.agentCards && Array.isArray(data.agentCards)) {
+    data.agentCards = data.agentCards.map((c, i) => ({
+      ...DEFAULTS.agentCards[i],
+      ...c
+    }));
+  }
+  saveData();
+}
+
+function saveData() {
+  localStorage.setItem('adminData', JSON.stringify(data));
+}
+
+function saveAll() {
+  collectFromForm();
+  saveData();
+  showStatus('All changes saved successfully!', 'success');
+}
+
+function collectFromForm() {
+  // Simple text fields
+  const textFields = [
+    'adminEmail', 'adminPassword', 'siteTitle', 'faviconPath', 'logoPath', 'heroImage',
+    'partnerInviteUrl', 'facebookUrl', 'agentFacebookUrl', 'altFacebookUrl',
+    'messengerLoadingGc', 'messengerSportsTips',
+    'heroHeadline', 'heroSubcopy', 'heroLogoTag', 'heroCtaPrimary', 'heroCtaSecondary',
+    'statPlayingNum', 'statPlayingSuffix', 'statPaidNum', 'statPaidSuffix',
+    'trustBadgeText', 'formTriggerText', 'formTriggerNote', 'formSubmitText', 'formFooterText',
+    'desktopNavItems', 'mobileNavItems', 'tickerLabel', 'tickerMessages',
+    'hiwKicker', 'hiwHeading',
+    'benefitsKicker', 'benefitsHeading', 'benefitsCopy', 'benefitSlides',
+    'paySectionTitle', 'benefitsTagline',
+    'provSearchPlaceholder', 'provNoResults', 'provKicker', 'provHeading',
+    'promoSlidesTextarea', 'sportsKicker',
+    'convBadge', 'convHeadline', 'convDesc', 'convPerks', 'convCta', 'convSidebarImg', 'convDisclaimer',
+    'promoHeading', 'promoCopy1', 'promoCopy2', 'promoCtaLead', 'promoCtaText', 'promoVerified', 'promoAffiliate', 'promoVideo',
+    'agentBadge', 'agentName', 'agentTagline',
+    'faqKicker', 'faqHeading', 'faqCopy',
+    'winsHeading', 'winsCount', 'winsCopy', 'winsCta',
+    'cashHeading', 'cashCount', 'cashCopy', 'cashCta',
+    'botName', 'botStatus', 'botWelcome', 'botFallback', 'botPlaceholder', 'botQuickReplies',
+    'notifInterval', 'notifDuration',
+    'footerBrand', 'footerDesc', 'footerEmailPlaceholder', 'footerMark',
+    'splashTagline', 'splashDuration', 'splashReady',
+    'cookieText', 'cookieBtn', 'stickyCta'
+  ];
+  for (const id of textFields) {
+    const el = document.getElementById(id);
+    if (el) {
+      const val = el.type === 'number' ? parseFloat(el.value) : el.value;
+      data[id] = val;
+    }
+  }
+
+  // How It Works
+  data.hiw = [
+    { enTitle: document.getElementById('hiw1enTitle')?.value || '', tlTitle: document.getElementById('hiw1tlTitle')?.value || '', enDesc: document.getElementById('hiw1enDesc')?.value || '', tlDesc: document.getElementById('hiw1tlDesc')?.value || '' },
+    { enTitle: document.getElementById('hiw2enTitle')?.value || '', tlTitle: document.getElementById('hiw2tlTitle')?.value || '', enDesc: document.getElementById('hiw2enDesc')?.value || '', tlDesc: document.getElementById('hiw2tlDesc')?.value || '' },
+    { enTitle: document.getElementById('hiw3enTitle')?.value || '', tlTitle: document.getElementById('hiw3tlTitle')?.value || '', enDesc: document.getElementById('hiw3enDesc')?.value || '', tlDesc: document.getElementById('hiw3tlDesc')?.value || '' }
+  ];
+
+  // Benefit Features
+  data.benefitFeatures = [
+    { strong: document.getElementById('bf1strong')?.value || '', suffix: document.getElementById('bf1suffix')?.value || '' },
+    { strong: document.getElementById('bf2strong')?.value || '', suffix: document.getElementById('bf2suffix')?.value || '' },
+    { strong: document.getElementById('bf3strong')?.value || '', suffix: document.getElementById('bf3suffix')?.value || '' },
+    { strong: document.getElementById('bf4strong')?.value || '', suffix: document.getElementById('bf4suffix')?.value || '' }
+  ];
+
+  // Payments
+  data.payments = [
+    { name: document.getElementById('pay1name')?.value || '', logo: document.getElementById('pay1logo')?.value || '', min: document.getElementById('pay1min')?.value || '', max: document.getElementById('pay1max')?.value || '', fee: document.getElementById('pay1fee')?.value || '', speed: document.getElementById('pay1speed')?.value || '' },
+    { name: document.getElementById('pay2name')?.value || '', logo: document.getElementById('pay2logo')?.value || '', min: document.getElementById('pay2min')?.value || '', max: document.getElementById('pay2max')?.value || '', fee: document.getElementById('pay2fee')?.value || '', speed: document.getElementById('pay2speed')?.value || '' },
+    { name: document.getElementById('pay3name')?.value || '', logo: document.getElementById('pay3logo')?.value || '', min: document.getElementById('pay3min')?.value || '', max: document.getElementById('pay3max')?.value || '', fee: document.getElementById('pay3fee')?.value || '', speed: document.getElementById('pay3speed')?.value || '' },
+    { name: document.getElementById('pay4name')?.value || '', logo: document.getElementById('pay4logo')?.value || '', min: document.getElementById('pay4min')?.value || '', max: document.getElementById('pay4max')?.value || '', fee: document.getElementById('pay4fee')?.value || '', speed: document.getElementById('pay4speed')?.value || '' }
+  ];
+
+  // Providers
+  const provRows = document.querySelectorAll('#providersTableBody tr');
+  data.providers = [];
+  provRows.forEach(row => {
+    const inputs = row.querySelectorAll('input');
+    if (inputs.length >= 5) {
+      data.providers.push({ name: inputs[0].value, kind: inputs[1].value, asset: inputs[2].value, hue: inputs[3].value });
+    }
+  });
+
+  // Promo slides
+  data.promoSlides = document.getElementById('promoSlides')?.value.split('\n').filter(s => s.trim()) || [];
+
+  // Agent Cards
+  for (let i = 1; i <= 3; i++) {
+    const idx = i - 1;
+    data.agentCards[idx] = {
+      title: document.getElementById(`ac${i}title`)?.value || '',
+      icon: document.getElementById(`ac${i}icon`)?.value || '',
+      desc: document.getElementById(`ac${i}desc`)?.value || '',
+      cta: document.getElementById(`ac${i}cta`)?.value || '',
+      link: document.getElementById(`ac${i}link`)?.value || ''
+    };
+  }
+
+  // FAQ
+  const faqRows = document.querySelectorAll('#faqTableBody tr');
+  data.faq = [];
+  faqRows.forEach(row => {
+    const inputs = row.querySelectorAll('input, textarea');
+    if (inputs.length >= 3) {
+      data.faq.push({ q: inputs[0].value, a: inputs[1].value, keywords: inputs[2].value });
+    }
+  });
+
+  // Win Notifications
+  const notifRows = document.querySelectorAll('#notifTableBody tr');
+  data.winNotifications = [];
+  notifRows.forEach(row => {
+    const inputs = row.querySelectorAll('input');
+    if (inputs.length >= 3) {
+      data.winNotifications.push({ name: inputs[0].value, amount: inputs[1].value, game: inputs[2].value });
+    }
+  });
+}
+
+function populateForm() {
+  // Simple text fields
+  const textFields = [
+    'adminEmail', 'adminPassword', 'siteTitle', 'faviconPath', 'logoPath', 'heroImage',
+    'partnerInviteUrl', 'facebookUrl', 'agentFacebookUrl', 'altFacebookUrl',
+    'messengerLoadingGc', 'messengerSportsTips',
+    'heroHeadline', 'heroSubcopy', 'heroLogoTag', 'heroCtaPrimary', 'heroCtaSecondary',
+    'trustBadgeText', 'formTriggerText', 'formTriggerNote', 'formSubmitText', 'formFooterText',
+    'desktopNavItems', 'mobileNavItems', 'tickerLabel', 'tickerMessages',
+    'hiwKicker', 'hiwHeading',
+    'benefitsKicker', 'benefitsHeading', 'benefitsCopy',
+    'paySectionTitle', 'benefitsTagline',
+    'provSearchPlaceholder', 'provNoResults', 'provKicker', 'provHeading',
+    'sportsKicker',
+    'convBadge', 'convHeadline', 'convDesc', 'convPerks', 'convCta', 'convSidebarImg', 'convDisclaimer',
+    'promoHeading', 'promoCopy1', 'promoCopy2', 'promoCtaLead', 'promoCtaText', 'promoVerified', 'promoAffiliate', 'promoVideo',
+    'agentBadge', 'agentName', 'agentTagline',
+    'faqKicker', 'faqHeading', 'faqCopy',
+    'winsHeading', 'winsCopy', 'winsCta',
+    'cashHeading', 'cashCopy', 'cashCta',
+    'botName', 'botStatus', 'botWelcome', 'botFallback', 'botPlaceholder', 'botQuickReplies',
+    'footerBrand', 'footerDesc', 'footerEmailPlaceholder', 'footerMark',
+    'splashTagline',
+    'cookieText', 'cookieBtn', 'stickyCta'
+  ];
+  for (const id of textFields) {
+    const el = document.getElementById(id);
+    if (el) el.value = data[id] !== undefined ? data[id] : '';
+  }
+
+  // Number fields
+  const numFields = ['statPlayingNum', 'statPaidNum', 'winsCount', 'cashCount', 'notifInterval', 'notifDuration', 'splashDuration', 'splashReady'];
+  for (const id of numFields) {
+    const el = document.getElementById(id);
+    if (el) el.value = data[id] !== undefined ? data[id] : '';
+  }
+
+  // Strings that need special mapping
+  document.getElementById('statPlayingSuffix').value = data.statPlayingSuffix || '';
+  document.getElementById('statPaidSuffix').value = data.statPaidSuffix || '';
+
+  // Benefit slides
+  document.getElementById('benefitSlides').value = Array.isArray(data.benefitSlides) ? data.benefitSlides.join('\n') : (data.benefitSlides || '');
+
+  // How It Works
+  if (data.hiw && data.hiw[0]) {
+    document.getElementById('hiw1enTitle').value = data.hiw[0].enTitle || '';
+    document.getElementById('hiw1tlTitle').value = data.hiw[0].tlTitle || '';
+    document.getElementById('hiw1enDesc').value = data.hiw[0].enDesc || '';
+    document.getElementById('hiw1tlDesc').value = data.hiw[0].tlDesc || '';
+    document.getElementById('hiw2enTitle').value = data.hiw[1].enTitle || '';
+    document.getElementById('hiw2tlTitle').value = data.hiw[1].tlTitle || '';
+    document.getElementById('hiw2enDesc').value = data.hiw[1].enDesc || '';
+    document.getElementById('hiw2tlDesc').value = data.hiw[1].tlDesc || '';
+    document.getElementById('hiw3enTitle').value = data.hiw[2].enTitle || '';
+    document.getElementById('hiw3tlTitle').value = data.hiw[2].tlTitle || '';
+    document.getElementById('hiw3enDesc').value = data.hiw[2].enDesc || '';
+    document.getElementById('hiw3tlDesc').value = data.hiw[2].tlDesc || '';
+  }
+
+  // Benefit Features
+  if (data.benefitFeatures) {
+    document.getElementById('bf1strong').value = data.benefitFeatures[0]?.strong || '';
+    document.getElementById('bf1suffix').value = data.benefitFeatures[0]?.suffix || '';
+    document.getElementById('bf2strong').value = data.benefitFeatures[1]?.strong || '';
+    document.getElementById('bf2suffix').value = data.benefitFeatures[1]?.suffix || '';
+    document.getElementById('bf3strong').value = data.benefitFeatures[2]?.strong || '';
+    document.getElementById('bf3suffix').value = data.benefitFeatures[2]?.suffix || '';
+    document.getElementById('bf4strong').value = data.benefitFeatures[3]?.strong || '';
+    document.getElementById('bf4suffix').value = data.benefitFeatures[3]?.suffix || '';
+  }
+
+  // Payments
+  if (data.payments) {
+    for (let i = 1; i <= 4; i++) {
+      const p = data.payments[i - 1] || {};
+      document.getElementById(`pay${i}name`).value = p.name || '';
+      document.getElementById(`pay${i}logo`).value = p.logo || '';
+      document.getElementById(`pay${i}min`).value = p.min || '';
+      document.getElementById(`pay${i}max`).value = p.max || '';
+      document.getElementById(`pay${i}fee`).value = p.fee || '';
+      document.getElementById(`pay${i}speed`).value = p.speed || '';
+    }
+  }
+
+  // Providers table
+  renderProvidersTable();
+
+  // Promo slides
+  document.getElementById('promoSlides').value = (data.promoSlides || []).join('\n');
+
+  // Conversion perks
+  document.getElementById('convPerks').value = data.convPerks || '';
+
+  // Agent cards
+  if (data.agentCards) {
+    for (let i = 1; i <= 3; i++) {
+      const c = data.agentCards[i - 1] || {};
+      document.getElementById(`ac${i}title`).value = c.title || '';
+      document.getElementById(`ac${i}icon`).value = c.icon || '';
+      document.getElementById(`ac${i}desc`).value = c.desc || '';
+      document.getElementById(`ac${i}cta`).value = c.cta || '';
+      document.getElementById(`ac${i}link`).value = c.link || '';
+    }
+  }
+
+  // FAQ table
+  renderFaqTable();
+
+  // Win Notifications table
+  renderNotifTable();
+}
+
+function renderProvidersTable() {
+  const tbody = document.getElementById('providersTableBody');
+  tbody.innerHTML = '';
+  (data.providers || DEFAULTS.providers).forEach((p, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td style="color:var(--text2);font-size:12px">${i + 1}</td>
+      <td><input value="${escapeHtml(p.name)}" /></td>
+      <td><input value="${escapeHtml(p.kind)}" /></td>
+      <td><input value="${escapeHtml(p.asset)}" /></td>
+      <td><input value="${escapeHtml(p.hue)}" style="width:100px" /></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderFaqTable() {
+  const tbody = document.getElementById('faqTableBody');
+  tbody.innerHTML = '';
+  (data.faq || DEFAULTS.faq).forEach((item, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td style="color:var(--text2);font-size:12px">${i + 1}</td>
+      <td><input value="${escapeHtml(item.q)}" /></td>
+      <td><textarea rows="2">${escapeHtml(item.a)}</textarea></td>
+      <td><input value="${escapeHtml(item.keywords || '')}" /></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderNotifTable() {
+  const tbody = document.getElementById('notifTableBody');
+  tbody.innerHTML = '';
+  (data.winNotifications || DEFAULTS.winNotifications).forEach((n, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td style="color:var(--text2);font-size:12px">${i + 1}</td>
+      <td><input value="${escapeHtml(n.name)}" /></td>
+      <td><input value="${escapeHtml(n.amount)}" /></td>
+      <td><input value="${escapeHtml(n.game)}" /></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ===== AUTH =====
+function handleLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value.trim();
+  if (email === data.adminEmail && password === data.adminPassword) {
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('adminWrap').classList.add('active');
+    document.getElementById('loginError').style.display = 'none';
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+  }
+}
+
+function handleLogout() {
+  const overlay = document.getElementById('confirmOverlay');
+  overlay.classList.add('active');
+}
+
+function confirmLogout(confirmed) {
+  const overlay = document.getElementById('confirmOverlay');
+  overlay.classList.remove('active');
+  if (!confirmed) return;
+  document.getElementById('loginPage').style.display = 'flex';
+  document.getElementById('adminWrap').classList.remove('active');
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPassword').value = '';
+}
+
+// ===== SIDEBAR NAV =====
+document.querySelectorAll('.sidebar-nav a').forEach(link => {
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    document.querySelectorAll('.sidebar-nav a').forEach(l => l.classList.remove('active'));
+    this.classList.add('active');
+    document.querySelectorAll('.section-card').forEach(s => s.classList.remove('active'));
+    const section = document.getElementById('sec-' + this.dataset.section);
+    if (section) section.classList.add('active');
+    localStorage.setItem('adminActiveSection', this.dataset.section);
+  });
+});
+
+// ===== STATUS =====
+function showStatus(msg, type) {
+  const el = document.getElementById('statusMsg');
+  el.textContent = msg;
+  el.className = 'status-msg ' + type;
+  setTimeout(() => { el.className = 'status-msg'; }, 4000);
+}
+
+function resetToDefaults() {
+  if (!confirm('Reset all data to defaults? This cannot be undone.')) return;
+  data = JSON.parse(JSON.stringify(DEFAULTS));
+  saveData();
+  populateForm();
+  showStatus('Reset to defaults successfully!', 'success');
+}
+
+// ===== ENTER KEY ON LOGIN =====
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('loginPassword').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleLogin();
+  });
+  document.getElementById('loginEmail').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleLogin();
+  });
+});
+
+// ===== INIT =====
+loadData();
+populateForm();
+const savedSection = localStorage.getItem('adminActiveSection');
+if (savedSection) {
+  const link = document.querySelector(`.sidebar-nav a[data-section="${savedSection}"]`);
+  if (link) link.click();
+}
+</script>
+</body>
+</html>
