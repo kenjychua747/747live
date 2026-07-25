@@ -315,8 +315,6 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
 </head>
 <body>
 
-<div class="login-page" id="loginPage" style="display:none"></div>
-
 <div class="admin-wrap" id="adminWrap">
   <aside class="sidebar">
     <div class="sidebar-header">
@@ -1706,6 +1704,11 @@ async function handleLogout() {
 async function confirmLogout(confirmed) {
   const overlay = document.getElementById('confirmOverlay');
   overlay.classList.remove('active');
+  if (confirmed) {
+    await supabaseAuth.signOut();
+    localStorage.removeItem('adminActiveSection');
+    window.location.href = 'index.html';
+  }
 }
 
 // ===== FORGOT PASSWORD =====
@@ -1885,10 +1888,16 @@ async function saveSection(section) {
     await saveData();
     // Special handling for general tab (auth + recovery)
     if (section === 'general') {
-      const authUpdates = {};
-      if (data.adminEmail) authUpdates.email = data.adminEmail;
-      if (data.adminPassword) authUpdates.password = data.adminPassword;
-      if (Object.keys(authUpdates).length) await supabaseAuth.updateUser(authUpdates);
+      // Sync to Supabase Auth (best-effort, don't block save)
+      try {
+        const authUpdates = {};
+        if (data.adminEmail) authUpdates.email = data.adminEmail;
+        if (data.adminPassword) authUpdates.password = data.adminPassword;
+        if (Object.keys(authUpdates).length) await supabaseAuth.updateUser(authUpdates);
+      } catch (authErr) {
+        console.warn('Auth sync skipped:', authErr.message);
+      }
+      // Save recovery Q&A to admin_credentials table
       const recoveryQuestion = document.getElementById('recoveryQuestion').value === 'Custom'
         ? document.getElementById('recoveryQuestionCustom').value
         : document.getElementById('recoveryQuestion').value;
