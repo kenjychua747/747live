@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ImageGallery } from "@/components/ui/image-gallery";
 import { NeoMinimalFooter } from "@/components/ui/neo-minimal-footer";
+import { createClient } from "@supabase/supabase-js";
 import {
   ArrowUpRight,
   ArrowUpToLine,
@@ -11,6 +12,8 @@ import {
   ExternalLink,
   Gift,
   Globe,
+  Lock,
+  Mail,
   Menu,
   MessageSquare,
   Play,
@@ -182,15 +185,48 @@ export default function App() {
   const logoClickRef = useRef(0);
   const logoTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
+  // Supabase Auth
+  const supabase = useRef(createClient(
+    import.meta.env.VITE_SUPABASE_URL || '',
+    import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+  )).current;
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
+
   function handleLogoClick() {
     logoClickRef.current += 1;
     if (logoTimerRef.current) clearTimeout(logoTimerRef.current);
     if (logoClickRef.current >= 3) {
       logoClickRef.current = 0;
       setAdminModalOpen(true);
+      setLoginEmail("");
+      setLoginPassword("");
+      setLoginError("");
     } else {
       logoTimerRef.current = setTimeout(() => { logoClickRef.current = 0; }, 1000);
     }
+  }
+
+  async function handleAdminLogin() {
+    if (!loginEmail.trim() || !loginPassword.trim()) {
+      setLoginError("Please enter email and password");
+      return;
+    }
+    setLoginLoading(true);
+    setLoginError("");
+    const { error } = await supabase.auth.signInWithPassword({
+      email: loginEmail.trim(),
+      password: loginPassword,
+    });
+    setLoginLoading(false);
+    if (error) {
+      setLoginError(error.message === "Invalid login credentials" ? "Invalid email or password" : error.message);
+      return;
+    }
+    setAdminModalOpen(false);
+    window.open("/admin.html", "_blank");
   }
 
   const winNotifications = [
@@ -1211,12 +1247,32 @@ export default function App() {
             >
               <div className="admin-modal__icon"><ShieldCheck size={24} /></div>
               <h3 className="admin-modal__title">Admin Access</h3>
-              <p className="admin-modal__desc">Sign in to manage site content, update sections, and configure settings.</p>
-              <a className="button button--primary button--large" href="/admin.html" target="_blank" rel="noreferrer" style={{ width: '100%', justifyContent: 'center' }}>
-                Open Admin Panel <ArrowUpRight size={18} />
-              </a>
-              <button className="admin-modal__close" type="button" onClick={() => setAdminModalOpen(false)}>
-                <X size={16} /> Cancel
+              <p className="admin-modal__desc">Sign in with your admin credentials.</p>
+
+              {loginError && <div className="admin-modal__error">{loginError}</div>}
+
+              <div className="admin-modal__field">
+                <label><Mail size={14} /> Email</label>
+                <input type="email" placeholder="admin@example.com" value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAdminLogin()} />
+              </div>
+              <div className="admin-modal__field">
+                <label><Lock size={14} /> Password</label>
+                <input type="password" placeholder="Enter password" value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAdminLogin()} />
+              </div>
+
+              <button className="button button--primary button--large" onClick={handleAdminLogin}
+                disabled={loginLoading}
+                style={{ width: '100%', justifyContent: 'center', opacity: loginLoading ? 0.6 : 1 }}>
+                {loginLoading ? 'Signing in...' : 'Sign in'}
+              </button>
+
+              <button className="admin-modal__close" type="button" onClick={() => setAdminModalOpen(false)}
+                style={{ width: '100%', marginTop: 10, justifyContent: 'center' }}>
+                Cancel
               </button>
             </motion.div>
           </motion.div>

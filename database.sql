@@ -7,10 +7,12 @@
 -- Single-row table enforced by CHECK(id=1).
 -- Username/password editable from the admin dashboard General Settings tab.
 CREATE TABLE admin_credentials (
-  id        INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
-  email     TEXT NOT NULL DEFAULT 'admin@747live.com',
-  password  TEXT NOT NULL DEFAULT 'admin123',
-  updated_at TIMESTAMPTZ DEFAULT now()
+  id                INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+  email             TEXT NOT NULL DEFAULT 'admin@747live.com',
+  password          TEXT NOT NULL DEFAULT 'admin123',
+  recovery_question TEXT NOT NULL DEFAULT '',
+  recovery_answer   TEXT NOT NULL DEFAULT '',
+  updated_at        TIMESTAMPTZ DEFAULT now()
 );
 
 -- ==================== BRANDING ====================
@@ -331,7 +333,8 @@ CREATE INDEX idx_win_notifications_sort ON win_notifications(sort_order);
 
 -- Default admin credentials (password: admin123)
 -- Change these from the admin dashboard General Settings tab.
-INSERT INTO admin_credentials (email, password) VALUES ('admin@747live.com', 'admin123');
+INSERT INTO admin_credentials (email, password, recovery_question, recovery_answer)
+VALUES ('admin@747live.com', 'admin123', 'What is your favorite color?', 'blue');
 
 -- Branding
 INSERT INTO branding (site_title, favicon_path, logo_path, hero_image) VALUES
