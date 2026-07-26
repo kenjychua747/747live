@@ -50,10 +50,13 @@ body {
 }
 .sidebar-header__icon {
   width: 34px; height: 34px; border-radius: 10px;
-  background: linear-gradient(135deg, var(--accent), #3ad483);
+  background: var(--surface2);
   display: flex; align-items: center; justify-content: center;
-  font-weight: 800; font-size: 15px; color: #000;
+  overflow: hidden;
   box-shadow: 0 4px 12px rgba(102,248,156,.25);
+}
+.sidebar-header__icon img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
 }
 .sidebar-header__text { font-weight: 700; font-size: 15px; letter-spacing: .3px; }
 .sidebar-header__text span { color: var(--accent); }
@@ -95,9 +98,12 @@ body {
 }
 .sidebar-footer__avatar {
   width: 28px; height: 28px; border-radius: 8px;
-  background: linear-gradient(135deg, var(--accent), #3ad483);
+  background: var(--surface2);
   display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 700; color: #000;
+  overflow: hidden;
+}
+.sidebar-footer__avatar img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
 }
 .sidebar-footer__info { flex: 1; min-width: 0; }
 .sidebar-footer__name { font-size: 12px; font-weight: 600; color: var(--text); }
@@ -161,6 +167,8 @@ body {
 .form-group input:focus, .form-group textarea:focus { border-color: var(--accent); }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .form-hint { font-size: 11px; color: var(--text2); margin-top: 4px; }
+.checkbox-label { display: flex !important; align-items: center; gap: 8px; cursor: pointer; font-weight: 500; }
+.checkbox-label input[type="checkbox"] { width: auto; cursor: pointer; }
 
 .btn {
   padding: 10px 24px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600;
@@ -210,10 +218,14 @@ body {
 }
 .action-btn--reset:active { transform: translateY(0); }
 .status-msg {
-  padding: 10px 16px; border-radius: 6px; font-size: 13px; margin-bottom: 16px; display: none;
+  position: fixed; top: 0; left: var(--sidebar-width); right: 0; z-index: 200;
+  padding: 14px 24px; font-size: 14px; font-weight: 600; display: none;
+  box-shadow: 0 4px 20px rgba(0,0,0,.4); animation: slideDown 0.25s ease;
 }
-.status-msg.success { background: rgba(102,248,156,0.12); color: var(--accent); display: block; }
-.status-msg.error { background: rgba(255,68,102,0.12); color: var(--danger); display: block; }
+@keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+.status-msg.success { background: #0a2e1a; color: #66f89c; display: block; }
+.status-msg.error { background: #2e0a14; color: #ff4466; display: block; }
+.status-msg.warning { background: #2e2a0a; color: #f8d166; display: block; }
 
 .array-item {
   background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
@@ -240,6 +252,10 @@ body {
 
 /* Gallery image management */
 .gallery-manage { margin-top: 8px; }
+.hero-image-manage { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+.hero-image-preview { width: 240px; height: 135px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); background: var(--surface2); flex-shrink: 0; }
+.hero-image-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.hero-image-actions { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; padding-top: 4px; }
 .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; margin-bottom: 12px; }
 .gallery-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; position: relative; }
 .gallery-item img { width: 100%; height: 140px; object-fit: cover; display: block; background: var(--surface2); }
@@ -261,6 +277,64 @@ table.form-table input, table.form-table textarea {
   border-radius: 4px; color: var(--text); font-size: 13px; outline: none;
 }
 table.form-table input:focus, table.form-table textarea:focus { border-color: var(--accent); }
+
+/* Win Notifications premium cards */
+.notif-list { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.notif-list__header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,.02);
+}
+.notif-card {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 18px; border-bottom: 1px solid var(--border);
+  transition: background .2s; position: relative;
+}
+.notif-card:last-child { border-bottom: none; }
+.notif-card:hover { background: rgba(102,248,156,.03); }
+.notif-card__handle {
+  display: flex; flex-direction: column; gap: 2px; cursor: grab; opacity: .3;
+  transition: opacity .2s; flex-shrink: 0; padding: 4px;
+}
+.notif-card:hover .notif-card__handle { opacity: .6; }
+.notif-card__handle line { stroke: var(--text2); stroke-width: 1.5; stroke-linecap: round; }
+.notif-card__preview {
+  display: flex; align-items: center; gap: 10px;
+  flex: 1; min-width: 0;
+}
+.notif-card__avatar {
+  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--accent), #3ad483);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: #000;
+  box-shadow: 0 2px 8px rgba(102,248,156,.2);
+}
+.notif-card__fields {
+  display: flex; align-items: center; gap: 8px; flex: 1; flex-wrap: wrap;
+}
+.notif-card__field {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 6px 10px; color: var(--text);
+  font-size: 13px; outline: none; font-family: var(--font);
+  transition: border-color .2s; min-width: 0;
+}
+.notif-card__field:focus { border-color: var(--accent); }
+.notif-card__field--name { width: 130px; }
+.notif-card__field--amount { width: 100px; }
+.notif-card__field--game { width: 130px; }
+.notif-card__separator { color: var(--text2); font-size: 12px; flex-shrink: 0; }
+.notif-card__actions {
+  display: flex; gap: 2px; flex-shrink: 0;
+  opacity: 0; transition: opacity .2s;
+}
+.notif-card:hover .notif-card__actions { opacity: 1; }
+.notif-card__action {
+  background: none; border: none; color: var(--text2); cursor: pointer;
+  padding: 5px; border-radius: 6px; transition: all .2s; display: inline-flex;
+}
+.notif-card__action:hover:not(:disabled) { color: var(--accent); background: rgba(102,248,156,.1); }
+.notif-card__action:disabled { opacity: .25; cursor: not-allowed; }
+.notif-card__delete:hover { color: var(--danger) !important; background: rgba(255,68,102,.1) !important; }
 
 .tab-section { margin-bottom: 24px; }
 .tab-section h3 { font-size: 15px; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
@@ -318,7 +392,7 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
 <div class="admin-wrap" id="adminWrap">
   <aside class="sidebar">
     <div class="sidebar-header">
-      <div class="sidebar-header__icon">7</div>
+      <div class="sidebar-header__icon"><img src="/images/logo.jpg" alt="747" /></div>
       <div class="sidebar-header__text"><span>747</span> Admin</div>
       <div class="sidebar-header__badge">v1.0</div>
     </div>
@@ -371,18 +445,6 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
           General Settings
         </a>
-        <a data-section="branding">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          Branding
-        </a>
-        <a data-section="links">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-          External Links
-        </a>
-        <a data-section="ticker">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="14" y2="18"/></svg>
-          Ticker Bar
-        </a>
       </div>
       <div class="sidebar-nav__group">
         <div class="sidebar-nav__label">Interaction</div>
@@ -394,10 +456,6 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
           FAQ
         </a>
-        <a data-section="chatbot">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          Chatbot
-        </a>
         <a data-section="notifications">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           Win Notifications
@@ -405,7 +463,7 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
       </div>
     </nav>
     <div class="sidebar-footer">
-      <div class="sidebar-footer__avatar">A</div>
+      <div class="sidebar-footer__avatar"><img src="/images/logo.jpg" alt="Admin" /></div>
       <div class="sidebar-footer__info">
         <div class="sidebar-footer__name">Admin</div>
         <div class="sidebar-footer__role">747 Management</div>
@@ -438,13 +496,17 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
         </div>
       </div>
       <div class="dash-toolbar">
-        <input type="text" id="dashSearch" placeholder="Search name, email, username..." style="max-width:300px" />
-        <button class="btn btn-outline btn-sm" onclick="loadInquiries()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-          Refresh
-        </button>
-
-      </div>
+         <input type="text" id="dashSearch" placeholder="Search name, email, username..." style="max-width:300px" />
+         <div style="display:flex;gap:4px">
+           <button class="btn btn-outline btn-sm" onclick="setInquiriesSort('date')" id="sortDate">Date</button>
+           <button class="btn btn-outline btn-sm" onclick="setInquiriesSort('alpha')" id="sortAlpha">A-Z</button>
+           <button class="btn btn-outline btn-sm" onclick="setInquiriesSort('country')" id="sortCountry">Country</button>
+         </div>
+         <button class="btn btn-outline btn-sm" onclick="loadInquiries()">
+           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+           Refresh
+         </button>
+       </div>
       <div class="dash-table-wrap">
         <table class="dash-table" id="dashTable">
           <thead>
@@ -459,85 +521,51 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
             </tr>
           </thead>
           <tbody id="dashTableBody">
-            <tr><td colspan="7" style="text-align:center;color:var(--text2);padding:40px">Loading inquiries...</td></tr>
+            <tr><td colspan="7" class="dash-empty">Loading inquiries...</td></tr>
           </tbody>
-        </table>
-      </div>
-      <div class="dash-pagination" id="dashPagination"></div>
-    </div>
+       </table>
+       </div>
+     </div>
 
-    <!-- General Settings -->
+     <!-- General Settings -->
     <div class="section-card" id="sec-general">
       <h2>General Settings</h2>
-      <p>Admin login credentials used to access this panel. Changes sync to Supabase Auth on save.</p>
-      <div class="form-row">
+
+      <div class="tab-section">
+        <h3>Admin Login Credentials</h3>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:12px">These are synced to Supabase Auth on save.</p>
         <div class="form-group">
-          <label>Admin Email</label>
-          <input type="email" id="adminEmail" />
+          <label>Email</label>
+          <input type="email" id="adminEmail" placeholder="admin@example.com" />
         </div>
         <div class="form-group">
-          <label>Admin Password</label>
-          <input type="text" id="adminPassword" />
+          <label>Password</label>
+          <input type="text" id="adminPassword" placeholder="New password" />
         </div>
       </div>
+
       <div class="tab-section">
         <h3>Password Recovery</h3>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Used in the login modal to verify identity before resetting credentials.</p>
         <div class="form-group">
           <label>Recovery Question</label>
           <select id="recoveryQuestion">
-            <option value="What is your favorite color?">What is your favorite color?</option>
-            <option value="What is your pet's name?">What is your pet's name?</option>
-            <option value="What city were you born in?">What city were you born in?</option>
+            <option value="">Select a question…</option>
             <option value="What is your mother's maiden name?">What is your mother's maiden name?</option>
-            <option value="What was your childhood nickname?">What was your childhood nickname?</option>
-            <option value="Custom">Custom</option>
+            <option value="What is the name of your first pet?">What is the name of your first pet?</option>
+            <option value="What was the name of your elementary school?">What was the name of your elementary school?</option>
+            <option value="Custom">Custom question…</option>
           </select>
         </div>
         <div class="form-group" id="customQuestionGroup" style="display:none">
           <label>Custom Recovery Question</label>
-          <input id="recoveryQuestionCustom" placeholder="Type your custom question..." />
+          <input type="text" id="recoveryQuestionCustom" placeholder="Type your own question" />
         </div>
         <div class="form-group">
           <label>Recovery Answer</label>
-          <input id="recoveryAnswer" type="text" />
+          <input type="text" id="recoveryAnswer" placeholder="Answer to your recovery question" />
         </div>
       </div>
-    </div>
-
-    <!-- Branding -->
-    <div class="section-card" id="sec-branding">
-      <h2>Branding</h2>
-      <p>Site title, favicon, and logo configuration.</p>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Site Title (Browser Tab)</label>
-          <input id="siteTitle" />
-        </div>
-        <div class="form-group">
-          <label>Favicon Path</label>
-          <input id="faviconPath" />
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Logo Image Path</label>
-        <input id="logoPath" />
-      </div>
-      <div class="form-group">
-        <label>Hero Background Image Path</label>
-        <input id="heroImage" />
-      </div>
-    </div>
-
-    <!-- External Links -->
-    <div class="section-card" id="sec-links">
-      <h2>External Links</h2>
-      <p>All external URLs used throughout the site.</p>
-      <div class="form-group"><label>Partner Invite URL (primary CTA link)</label><input id="partnerInviteUrl" /></div>
-      <div class="form-group"><label>Facebook URL</label><input id="facebookUrl" /></div>
-      <div class="form-group"><label>Agent Facebook URL</label><input id="agentFacebookUrl" /></div>
-      <div class="form-group"><label>Alt Facebook Page URL</label><input id="altFacebookUrl" /></div>
-      <div class="form-group"><label>Messenger URL (Loading GC card)</label><input id="messengerLoadingGc" /></div>
-      <div class="form-group"><label>Messenger URL (Sports Tips card)</label><input id="messengerSportsTips" /></div>
     </div>
 
     <!-- Hero Section -->
@@ -547,8 +575,14 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
       <div class="tab-section">
         <h3>Headline & Copy</h3>
         <div class="form-group">
-          <label>Headline (wrap LIVE in em tags for green emphasis)</label>
+          <label>Headline</label>
           <input id="heroHeadline" />
+        </div>
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="heroHeadlineEm" />
+            Emphasize "LIVE" in green
+          </label>
         </div>
         <div class="form-group">
           <label>Subcopy</label>
@@ -563,7 +597,11 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
         <h3>CTA Buttons</h3>
         <div class="form-row">
           <div class="form-group"><label>Primary CTA Text</label><input id="heroCtaPrimary" /></div>
+          <div class="form-group"><label>Primary CTA URL</label><input id="heroCtaPrimaryUrl" placeholder="https://..." /></div>
+        </div>
+        <div class="form-row">
           <div class="form-group"><label>Secondary CTA Text</label><input id="heroCtaSecondary" /></div>
+          <div class="form-group"><label>Secondary CTA URL (leave blank to scroll to Benefits)</label><input id="heroCtaSecondaryUrl" placeholder="https://..." /></div>
         </div>
       </div>
       <div class="tab-section">
@@ -588,14 +626,34 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
         <div class="form-group"><label>Form Submit Button Text</label><input id="formSubmitText" /></div>
         <div class="form-group"><label>Form Footer Text</label><textarea id="formFooterText" rows="2"></textarea></div>
       </div>
-    </div>
-
-    <!-- Ticker -->
-    <div class="section-card" id="sec-ticker">
-      <h2>Ticker Bar</h2>
-      <p>Scrolling announcements in the ticker bar. One per line.</p>
-      <div class="form-group"><label>Ticker Label</label><input id="tickerLabel" /></div>
-      <div class="form-group"><label>Ticker Messages (one per line)</label><textarea id="tickerMessages" rows="5"></textarea></div>
+      <div class="tab-section">
+        <h3>Background</h3>
+        <div class="form-group">
+          <label>Hero Background Image</label>
+          <div class="hero-image-manage">
+            <div class="hero-image-preview" id="heroImagePreview">
+              <img src="/images/hero.jpg" alt="Hero background" />
+            </div>
+            <div class="hero-image-actions">
+              <label class="btn btn-outline btn-sm add-item gallery-upload-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Upload Image
+                <input type="file" accept="image/*" onchange="uploadHeroImage(this)" style="display:none" />
+              </label>
+              <span style="font-size:12px;color:var(--text2)">or paste URL below</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Image URL (auto-filled on upload)</label>
+          <input id="heroImage" placeholder="/images/hero.jpg" />
+        </div>
+      </div>
+      <div class="tab-section">
+        <h3>Ticker Bar</h3>
+        <div class="form-group"><label>Ticker Label</label><input id="tickerLabel" /></div>
+        <div class="form-group"><label>Ticker Messages (one per line)</label><textarea id="tickerMessages" rows="5"></textarea></div>
+      </div>
     </div>
 
     <!-- How It Works -->
@@ -603,7 +661,8 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
       <h2>How It Works</h2>
       <p>3 steps with bilingual (English / Filipino) support.</p>
       <div class="form-group"><label>Section Kicker</label><input id="hiwKicker" /></div>
-      <div class="form-group"><label>Section Heading (use &lt;em&gt;3 easy steps&lt;/em&gt;)</label><input id="hiwHeading" /></div>
+      <div class="form-group"><label>Section Heading</label><input id="hiwHeadingText" placeholder="Get started in 3 easy steps" /></div>
+      <div class="form-group"><label>Emphasize word(s) (italic)</label><input id="hiwHeadingEm" placeholder="3 easy steps" /></div>
       <table class="form-table">
         <thead><tr><th>Step</th><th>EN Title</th><th>TL Title</th><th>EN Description</th><th>TL Description</th></tr></thead>
         <tbody>
@@ -622,44 +681,58 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
         <h3>Section Text</h3>
         <div class="form-row">
           <div class="form-group"><label>Section Kicker</label><input id="benefitsKicker" /></div>
-          <div class="form-group"><label>Section Heading</label><input id="benefitsHeading" /></div>
+          <div class="form-group"><label>Section Heading</label><input id="benefitsHeadingText" placeholder="A more rewarding way to step inside." /></div>
+        <div class="form-group"><label>Emphasize word(s) (italic)</label><input id="benefitsHeadingEm" placeholder="step inside." /></div>
         </div>
         <div class="form-group"><label>Section Copy</label><textarea id="benefitsCopy" rows="2"></textarea></div>
       </div>
       <div class="tab-section">
         <h3>Banner Slides</h3>
-        <p class="form-hint">Image paths for the rotating banner. One per line.</p>
-        <textarea id="benefitSlides" rows="3"></textarea>
+        <p class="form-hint">Upload or manage banner images for the rotating carousel.</p>
+        <div class="gallery-manage">
+          <div class="gallery-grid" id="benefitSlidesGrid"></div>
+          <label class="btn btn-outline btn-sm add-item gallery-upload-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Upload Banner Image
+            <input type="file" accept="image/*" onchange="uploadBenefitSlide(this)" style="display:none" />
+          </label>
+        </div>
       </div>
       <div class="tab-section">
         <h3>Feature Cards</h3>
+        <p class="form-hint">Add, edit, or remove benefit feature cards.</p>
+        <button class="btn btn-outline btn-sm add-item" onclick="addBenefitFeature()" style="margin-bottom:12px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Feature Card
+        </button>
         <table class="form-table">
-          <thead><tr><th>Card</th><th>Label (strong text)</th><th>Suffix</th></tr></thead>
-          <tbody>
-            <tr><td>1</td><td><input id="bf1strong" /></td><td><input id="bf1suffix" /></td></tr>
-            <tr><td>2</td><td><input id="bf2strong" /></td><td><input id="bf2suffix" /></td></tr>
-            <tr><td>3</td><td><input id="bf3strong" /></td><td><input id="bf3suffix" /></td></tr>
-            <tr><td>4</td><td><input id="bf4strong" /></td><td><input id="bf4suffix" /></td></tr>
-          </tbody>
+          <thead><tr><th style="width:40px">#</th><th>Label (strong text)</th><th>Suffix</th><th style="width:80px">Actions</th></tr></thead>
+          <tbody id="benefitFeaturesTableBody"></tbody>
         </table>
       </div>
       <div class="tab-section">
         <h3>Payment Methods Table</h3>
-        <p class="form-hint">Rows: Name, Logo Path, Min, Max, Fee, Speed</p>
+        <p class="form-hint">Click the logo image to upload, or paste a URL. Rows: Name, Logo, Min, Max, Fee, Speed.</p>
         <table class="form-table">
-          <thead><tr><th>Method</th><th>Logo Path</th><th>Min</th><th>Max</th><th>Fee</th><th>Speed</th></tr></thead>
-          <tbody>
-            <tr><td><input id="pay1name" /></td><td><input id="pay1logo" /></td><td><input id="pay1min" /></td><td><input id="pay1max" /></td><td><input id="pay1fee" /></td><td><input id="pay1speed" /></td></tr>
-            <tr><td><input id="pay2name" /></td><td><input id="pay2logo" /></td><td><input id="pay2min" /></td><td><input id="pay2max" /></td><td><input id="pay2fee" /></td><td><input id="pay2speed" /></td></tr>
-            <tr><td><input id="pay3name" /></td><td><input id="pay3logo" /></td><td><input id="pay3min" /></td><td><input id="pay3max" /></td><td><input id="pay3fee" /></td><td><input id="pay3speed" /></td></tr>
-            <tr><td><input id="pay4name" /></td><td><input id="pay4logo" /></td><td><input id="pay4min" /></td><td><input id="pay4max" /></td><td><input id="pay4fee" /></td><td><input id="pay4speed" /></td></tr>
-          </tbody>
+          <thead><tr><th>Method</th><th>Logo</th><th>Min</th><th>Max</th><th>Fee</th><th>Speed</th></tr></thead>
+          <tbody id="paymentsTableBody"></tbody>
         </table>
-        <div class="form-group"><label>Payment Section Title</label><input id="paySectionTitle" /></div>
+        <button class="btn btn-outline btn-sm add-item" onclick="addPayment()" style="margin-top:10px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Payment Method
+        </button>
+        <div class="form-group" style="margin-top:16px"><label>Payment Section Title</label><input id="paySectionTitle" /></div>
       </div>
       <div class="tab-section">
         <h3>Tagline</h3>
         <div class="form-group"><label>Tagline words (comma separated)</label><input id="benefitsTagline" /></div>
+      </div>
+      <div class="tab-section">
+        <h3>Facebook Link</h3>
+        <div class="form-row">
+          <div class="form-group"><label>Button Text</label><input id="benefitsFbText" placeholder="Follow us on Facebook" /></div>
+          <div class="form-group"><label>Facebook URL</label><input id="benefitsFbUrl" placeholder="https://www.facebook.com/..." /></div>
+        </div>
       </div>
     </div>
 
@@ -670,9 +743,17 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
       <div class="form-group"><label>Search Placeholder</label><input id="provSearchPlaceholder" /></div>
       <div class="form-group"><label>No Results Text</label><input id="provNoResults" /></div>
       <div class="form-group"><label>Section Kicker</label><input id="provKicker" /></div>
-      <div class="form-group"><label>Section Heading</label><input id="provHeading" /></div>
+      <div class="form-group"><label>Section Heading</label><input id="provHeadingText" placeholder="Find your table, your tempo." /></div>
+      <div class="form-group"><label>Emphasize word(s) (italic)</label><input id="provHeadingEm" placeholder="table," /></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:13px;font-weight:600;color:var(--text2)">Provider List</span>
+        <button class="btn btn-outline btn-sm add-item" onclick="addProviderRow()" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Provider
+        </button>
+      </div>
       <table class="form-table">
-        <thead><tr><th>#</th><th>Name</th><th>Kind</th><th>GIF Path</th><th>Accent Color</th></tr></thead>
+        <thead><tr><th>#</th><th>Name</th><th>Kind</th><th>GIF Path</th><th>Link</th><th></th></tr></thead>
         <tbody id="providersTableBody"></tbody>
       </table>
     </div>
@@ -680,9 +761,19 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
     <!-- Promo Slides -->
     <div class="section-card" id="sec-promoslides">
       <h2>Promo Slides</h2>
-      <p>5 promotional banner images in the Sports section carousel. One path per line.</p>
-      <textarea id="promoSlides" rows="6"></textarea>
-      <div class="form-group" style="margin-top:16px"><label>Section Kicker</label><input id="sportsKicker" /></div>
+      <p>Promotional banner images in the Sports section carousel.</p>
+      <div class="form-row">
+        <div class="form-group"><label>Section Kicker</label><input id="sportsKicker" /></div>
+        <div class="form-group"><label>Carousel Link URL</label><input id="sportsCtaUrl" placeholder="https://..." /></div>
+      </div>
+      <div class="gallery-manage">
+        <div class="gallery-grid" id="promoSlidesGrid"></div>
+        <label class="btn btn-outline btn-sm add-item gallery-upload-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Upload Slide
+          <input type="file" accept="image/*" onchange="uploadPromoSlide(this)" style="display:none" />
+        </label>
+      </div>
     </div>
 
     <!-- Conversion Section -->
@@ -697,7 +788,15 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
       <div class="form-group"><label>Perks (one per line)</label><textarea id="convPerks" rows="6"></textarea></div>
       <div class="form-row">
         <div class="form-group"><label>CTA Button Text</label><input id="convCta" /></div>
-        <div class="form-group"><label>Sidebar Image Path</label><input id="convSidebarImg" /></div>
+        <div class="form-group"><label>CTA Link URL</label><input id="convCtaUrl" placeholder="https://..." /></div>
+      </div>
+      <div class="form-group">
+        <label>Sidebar Image</label>
+        <div id="convSidebarPreview" onclick="document.getElementById('convSidebarUpload').click()" title="Click to upload image" style="width:100%;height:160px;border-radius:8px;overflow:hidden;background:var(--surface2);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:border-color .2s">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:32px;height:32px;color:var(--text2);opacity:.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span style="position:absolute;bottom:8px;font-size:11px;color:var(--text2)">Click to upload image</span>
+        </div>
+        <input type="file" id="convSidebarUpload" accept="image/*" onchange="uploadConvSidebar(this)" style="display:none" />
       </div>
       <div class="form-group"><label>Disclaimer</label><textarea id="convDisclaimer" rows="2"></textarea></div>
     </div>
@@ -711,9 +810,16 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
       <div class="form-group"><label>Copy Line 2 (Mid East)</label><textarea id="promoCopy2" rows="2"></textarea></div>
       <div class="form-group"><label>CTA Lead-in</label><input id="promoCtaLead" /></div>
       <div class="form-group"><label>CTA Button Text</label><input id="promoCtaText" /></div>
+      <div class="form-group"><label>CTA Button URL</label><input id="promoCtaUrl" /></div>
       <div class="form-group"><label>Verified Text</label><input id="promoVerified" /></div>
       <div class="form-group"><label>Affiliate Text</label><input id="promoAffiliate" /></div>
-      <div class="form-group"><label>Video Path</label><input id="promoVideo" /></div>
+      <div class="form-group"><label>Video</label>
+        <div id="promoVideoPreview" onclick="document.getElementById('promoVideoUpload').click()" title="Click to upload video" style="width:100%;height:180px;border-radius:8px;overflow:hidden;background:var(--surface2);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:border-color .2s">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:36px;height:36px;color:var(--text2);opacity:.5"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+          <span style="position:absolute;bottom:8px;font-size:11px;color:var(--text2)">Click to upload video</span>
+        </div>
+        <input type="file" id="promoVideoUpload" accept="image/*,video/*" onchange="uploadPromoVideo(this)" style="display:none" />
+      </div>
     </div>
 
     <!-- Agent Section -->
@@ -726,11 +832,11 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
       </div>
       <div class="form-group"><label>Tagline</label><textarea id="agentTagline" rows="2"></textarea></div>
       <table class="form-table">
-        <thead><tr><th>Card</th><th>Title</th><th>Icon Path</th><th>Description</th><th>CTA Text</th><th>Link URL</th></tr></thead>
+        <thead><tr><th>Card</th><th>Title</th><th>Icon</th><th>Description</th><th>CTA Text</th><th>Link URL</th></tr></thead>
         <tbody>
-          <tr><td>1</td><td><input id="ac1title" /></td><td><input id="ac1icon" /></td><td><input id="ac1desc" /></td><td><input id="ac1cta" /></td><td><input id="ac1link" /></td></tr>
-          <tr><td>2</td><td><input id="ac2title" /></td><td><input id="ac2icon" /></td><td><input id="ac2desc" /></td><td><input id="ac2cta" /></td><td><input id="ac2link" /></td></tr>
-          <tr><td>3</td><td><input id="ac3title" /></td><td><input id="ac3icon" /></td><td><input id="ac3desc" /></td><td><input id="ac3cta" /></td><td><input id="ac3link" /></td></tr>
+          <tr><td>1</td><td><input id="ac1title" /></td><td><div style="display:flex;gap:4px;align-items:center"><input id="ac1icon" style="flex:1" /><label class="btn btn-outline btn-sm" style="padding:4px 8px;cursor:pointer;flex-shrink:0" title="Upload icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><input type="file" accept="image/*" onchange="uploadAgentIcon(1, this)" style="display:none" /></label></div></td><td><input id="ac1desc" /></td><td><input id="ac1cta" /></td><td><input id="ac1link" /></td></tr>
+          <tr><td>2</td><td><input id="ac2title" /></td><td><div style="display:flex;gap:4px;align-items:center"><input id="ac2icon" style="flex:1" /><label class="btn btn-outline btn-sm" style="padding:4px 8px;cursor:pointer;flex-shrink:0" title="Upload icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><input type="file" accept="image/*" onchange="uploadAgentIcon(2, this)" style="display:none" /></label></div></td><td><input id="ac2desc" /></td><td><input id="ac2cta" /></td><td><input id="ac2link" /></td></tr>
+          <tr><td>3</td><td><input id="ac3title" /></td><td><div style="display:flex;gap:4px;align-items:center"><input id="ac3icon" style="flex:1" /><label class="btn btn-outline btn-sm" style="padding:4px 8px;cursor:pointer;flex-shrink:0" title="Upload icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><input type="file" accept="image/*" onchange="uploadAgentIcon(3, this)" style="display:none" /></label></div></td><td><input id="ac3desc" /></td><td><input id="ac3cta" /></td><td><input id="ac3link" /></td></tr>
         </tbody>
       </table>
     </div>
@@ -742,10 +848,10 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
       <div class="form-group"><label>Section Kicker</label><input id="faqKicker" /></div>
       <div class="form-group"><label>Section Heading</label><input id="faqHeading" /></div>
       <div class="form-group"><label>Section Copy</label><textarea id="faqCopy" rows="2"></textarea></div>
-      <button class="btn btn-outline btn-sm add-item" onclick="addFaq()" style="margin-bottom:12px">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Add FAQ
-      </button>
+       <button class="btn btn-outline btn-sm add-item" onclick="openFaqModal()" style="margin-bottom:12px">
+         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+         Add FAQ
+       </button>
       <table class="form-table">
         <thead><tr><th style="width:40px">#</th><th>Question</th><th>Answer</th><th>Keywords (comma)</th><th style="width:40px"></th></tr></thead>
         <tbody id="faqTableBody"></tbody>
@@ -792,32 +898,24 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
       </div>
     </div>
 
-    <!-- Chatbot -->
-    <div class="section-card" id="sec-chatbot">
-      <h2>Chatbot</h2>
-      <p>747 Live Assistant chatbot configuration.</p>
-      <div class="form-row">
-        <div class="form-group"><label>Bot Name</label><input id="botName" /></div>
-        <div class="form-group"><label>Status</label><input id="botStatus" /></div>
-      </div>
-      <div class="form-group"><label>Welcome Message</label><textarea id="botWelcome" rows="2"></textarea></div>
-      <div class="form-group"><label>Fallback Reply</label><textarea id="botFallback" rows="2"></textarea></div>
-      <div class="form-group"><label>Input Placeholder</label><input id="botPlaceholder" /></div>
-      <div class="form-group"><label>Quick Replies (one per line)</label><textarea id="botQuickReplies" rows="4"></textarea></div>
-    </div>
-
     <!-- Win Notifications -->
     <div class="section-card" id="sec-notifications">
       <h2>Win Notifications</h2>
-      <p>Fake social-proof toast notifications shown every 14 seconds.</p>
-      <div class="form-row">
+      <p style="margin-bottom:16px">Fake social-proof toast notifications shown on the website.</p>
+      <div class="form-row" style="display:none">
         <div class="form-group"><label>Show Interval (ms)</label><input type="number" id="notifInterval" /></div>
         <div class="form-group"><label>Display Duration (ms)</label><input type="number" id="notifDuration" /></div>
       </div>
-      <table class="form-table">
-        <thead><tr><th>#</th><th>Name</th><th>Amount</th><th>Game</th></tr></thead>
-        <tbody id="notifTableBody"></tbody>
-      </table>
+      <div class="notif-list" id="notifList">
+        <div class="notif-list__header">
+          <span style="font-size:13px;font-weight:600;color:var(--text2)">Preview</span>
+          <button class="btn btn-outline btn-sm" onclick="addNotifRow()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Notification
+          </button>
+        </div>
+        <div id="notifCardContainer"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -858,6 +956,20 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
   </div>
 </div>
 
+<div class="confirm-overlay" id="notifModalOverlay">
+  <div class="confirm-dialog" style="max-width:440px">
+    <h3>Add Win Notification</h3>
+    <p style="margin-bottom:16px">A new toast notification will appear on the website.</p>
+    <div class="form-group"><label>Name</label><input id="notifModalName" placeholder="e.g. John D." /></div>
+    <div class="form-group"><label>Amount</label><input id="notifModalAmount" placeholder="e.g. ₱25,000" /></div>
+    <div class="form-group"><label>Game</label><input id="notifModalGame" placeholder="e.g. Live Casino" /></div>
+    <div class="confirm-dialog__actions" style="margin-top:16px">
+      <button class="btn btn-outline" onclick="closeNotifModal()" style="flex:1">Cancel</button>
+      <button class="btn btn-primary" onclick="saveNotifModal()" style="flex:1">Add</button>
+    </div>
+  </div>
+</div>
+
 <div class="confirm-overlay" id="confirmOverlay">
   <div class="confirm-dialog">
     <div class="confirm-dialog__icon">
@@ -868,6 +980,68 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
     <div class="confirm-dialog__actions">
       <button class="btn btn-outline" onclick="confirmLogout(false)">Cancel</button>
       <button class="btn btn-danger" onclick="confirmLogout(true)">Sign out</button>
+    </div>
+  </div>
+</div>
+
+<!-- Provider Modal -->
+<div class="confirm-overlay" id="providerModal">
+  <div class="confirm-dialog" style="max-width:480px">
+    <h3 style="margin-bottom:16px">Add Provider</h3>
+    <div class="form-group">
+      <label>Name</label>
+      <input id="providerModalName" />
+    </div>
+    <div class="form-group">
+      <label>Kind</label>
+      <input id="providerModalKind" />
+    </div>
+    <div class="form-group">
+      <label>GIF Image</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="providerModalAsset" style="flex:1" placeholder="/images/provider-...gif" />
+        <label class="btn btn-outline btn-sm" style="padding:8px 12px;cursor:pointer;flex-shrink:0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Upload
+          <input type="file" accept="image/*" onchange="uploadProviderModalGif(this)" style="display:none" />
+        </label>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Link</label>
+      <input id="providerModalLink" placeholder="https://..." />
+    </div>
+    <div class="confirm-dialog__actions" style="margin-top:24px">
+      <button class="btn btn-outline" onclick="closeProviderModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveProviderModal()">Add Provider</button>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ Modal -->
+<div class="confirm-overlay" id="faqModalOverlay">
+  <div class="confirm-dialog" style="max-width:520px">
+    <div class="confirm-dialog__header">
+      <h3 id="faqModalTitle">Add FAQ</h3>
+      <button class="confirm-dialog__close" onclick="closeFaqModal()" title="Close">&times;</button>
+    </div>
+    <div class="confirm-dialog__body">
+      <div class="form-group">
+        <label>Question</label>
+        <input id="faqModalQ" placeholder="Enter FAQ question" />
+      </div>
+      <div class="form-group">
+        <label>Answer</label>
+        <textarea id="faqModalA" rows="4" placeholder="Enter FAQ answer"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Keywords (comma-separated)</label>
+        <input id="faqModalK" placeholder="e.g. refund, return policy" />
+      </div>
+    </div>
+    <div class="confirm-dialog__actions">
+      <button class="btn btn-outline" onclick="closeFaqModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveFaqModal()">Save</button>
     </div>
   </div>
 </div>
@@ -891,7 +1065,9 @@ const DEFAULTS = {
   heroSubcopy: 'Sign up through my link for a Welcome Bonus + Cashback. Casino, live sports, eSports & VIP rewards — Saudi Riyals accepted.',
   heroLogoTag: 'Official Agent',
   heroCtaPrimary: 'Register through my link',
+  heroCtaPrimaryUrl: 'https://www.messenger.com/j/AbakhHJ975SWCzqw/',
   heroCtaSecondary: 'Why join',
+  heroCtaSecondaryUrl: '',
   statPlayingNum: 3163,
   statPlayingSuffix: '+',
   statPaidNum: 2.4,
@@ -928,25 +1104,27 @@ const DEFAULTS = {
     { name: 'Barq', logo: '/images/barq.png', min: 'SAR 10', max: 'SAR 50,000', fee: 'Free', speed: 'Instant' }
   ],
   benefitsTagline: 'FAST., SAFE., SECURE.',
+  benefitsFbText: 'Follow us on Facebook',
+  benefitsFbUrl: 'https://www.facebook.com/profile.php?id=100022590198280',
   provSearchPlaceholder: 'Search games, providers, categories...',
   provNoResults: 'No results found for',
   provKicker: 'Curated entertainment',
   provHeading: 'Find your <em>table,</em> your tempo.',
   providers: [
-    { name: 'Live Sports', kind: 'Sports', asset: '/images/provider-live-sports.gif', hue: '#67f79d' },
-    { name: 'Pre-match', kind: 'Sports', asset: '/images/provider-pre-match.gif', hue: '#ec6800' },
-    { name: 'Live Casino', kind: 'Tables', asset: '/images/provider-live-casino.gif', hue: '#5c17a2' },
-    { name: 'Evolution', kind: 'Live tables', asset: '/images/provider-evolution.gif', hue: '#e4b551' },
-    { name: 'JILI', kind: 'Slots', asset: '/images/provider-jili.gif', hue: '#f83700' },
-    { name: 'Casino', kind: 'Tables', asset: '/images/provider-casino.gif', hue: '#66f89c' },
-    { name: 'Pragmatic Play', kind: 'Slots', asset: '/images/provider-pragmatic-play.gif', hue: '#ef5d2d' },
-    { name: 'Fachai', kind: 'Arcade', asset: '/images/provider-fachai.gif', hue: '#e9bb43' },
-    { name: 'CreedRoomz', kind: 'Live tables', asset: '/images/provider-creedroomz.gif', hue: '#5d6dff' },
-    { name: 'Dragon Gaming', kind: 'Slots', asset: '/images/provider-dragon-gaming.gif', hue: '#d93723' },
-    { name: '747 News', kind: 'Updates', asset: '/images/provider-747-news.gif', hue: '#66f89c' },
-    { name: '747 Hearts', kind: 'Tables', asset: '/images/provider-747-hearts.gif', hue: '#f56b9a' },
-    { name: 'PopOK', kind: 'Arcade', asset: '/images/provider-popok.gif', hue: '#75a9ff' },
-    { name: 'Amigo', kind: 'Games', asset: '/images/provider-amigo.gif', hue: '#f1a343' }
+    { name: 'Live Sports', kind: 'Sports', asset: '/images/provider-live-sports.gif', hue: '#67f79d', link: 'https://www.messenger.com/j/AbakhHJ975SWCzqw/' },
+    { name: 'Pre-match', kind: 'Sports', asset: '/images/provider-pre-match.gif', hue: '#ec6800', link: 'https://www.messenger.com/j/AbakhHJ975SWCzqw/' },
+    { name: 'Live Casino', kind: 'Tables', asset: '/images/provider-live-casino.gif', hue: '#5c17a2', link: 'https://www.messenger.com/j/AbakhHJ975SWCzqw/' },
+    { name: 'Evolution', kind: 'Live tables', asset: '/images/provider-evolution.gif', hue: '#e4b551', link: 'https://www.messenger.com/j/AbakhHJ975SWCzqw/' },
+    { name: 'JILI', kind: 'Slots', asset: '/images/provider-jili.gif', hue: '#f83700', link: 'https://www.messenger.com/j/AbakhHJ975SWCzqw/' },
+    { name: 'Casino', kind: 'Tables', asset: '/images/provider-casino.gif', hue: '#66f89c', link: 'https://www.messenger.com/j/AbakhHJ975SWCzqw/' },
+    { name: 'Pragmatic Play', kind: 'Slots', asset: '/images/provider-pragmatic-play.gif', hue: '#ef5d2d', link: 'https://www.messenger.com/j/AbakhHJ975SWCzqw/' },
+    { name: 'Fachai', kind: 'Arcade', asset: '/images/provider-fachai.gif', hue: '#e9bb43', link: 'https://www.messenger.com/j/AbakhHJ975SWCzqw/' },
+    { name: 'CreedRoomz', kind: 'Live tables', asset: '/images/provider-creedroomz.gif', hue: '#5d6dff', link: 'https://www.messenger.com/j/AbakhHJ975SWCzqw/' },
+    { name: 'Dragon Gaming', kind: 'Slots', asset: '/images/provider-dragon-gaming.gif', hue: '#d93723', link: 'https://www.messenger.com/j/AbakhHJ975SWCzqw/' },
+    { name: '747 News', kind: 'Updates', asset: '/images/provider-747-news.gif', hue: '#66f89c', link: 'https://www.messenger.com/j/AbakhHJ975SWCzqw/' },
+    { name: '747 Hearts', kind: 'Tables', asset: '/images/provider-747-hearts.gif', hue: '#f56b9a', link: 'https://www.messenger.com/j/AbakhHJ975SWCzqw/' },
+    { name: 'PopOK', kind: 'Arcade', asset: '/images/provider-popok.gif', hue: '#75a9ff', link: 'https://www.messenger.com/j/AbakhHJ975SWCzqw/' },
+    { name: 'Amigo', kind: 'Games', asset: '/images/provider-amigo.gif', hue: '#f1a343', link: 'https://www.messenger.com/j/AbakhHJ975SWCzqw/' }
   ],
   promoSlides: [
     '/images/promo-1.webp',
@@ -956,11 +1134,13 @@ const DEFAULTS = {
     '/images/promo-5.webp'
   ],
   sportsKicker: 'Sports & Promotions',
+  sportsCtaUrl: 'https://www.messenger.com/j/AbakhHJ975SWCzqw/',
   convBadge: '747LIVE invitation',
   convHeadline: 'Looking for Players and Sports Lovers!',
   convDesc: 'Sali na sa aming exclusive sports community at e-enjoy ang mga member perks:',
   convPerks: '2% Bonus 1st Cash In\n10% Loss Rebates Twice Monthly\nBirthday Bonus Gift\nVIP Sports Group Access\nMonthly Raffle',
   convCta: 'Get started',
+  convCtaUrl: 'https://www.messenger.com/j/AbakhHJ975SWCzqw/',
   convSidebarImg: '/images/z.jpg',
   convDisclaimer: "You'll be redirected to continue your registration through our partner platform.",
   promoHeading: '10% Cashback / Rebates\nFree Registration',
@@ -971,6 +1151,7 @@ const DEFAULTS = {
   promoVerified: 'Legit na legit blue check verified by META kaya safe na safe ka 😉',
   promoAffiliate: 'Pwede ka din mag apply as Affiliate 😉',
   promoVideo: '/images/vid.mp4',
+  promoCtaUrl: 'https://www.facebook.com/share/1BriKGwHZ2/?mibextid=wwXIfr',
   agentBadge: '747 AREA MANAGER',
   agentName: 'Kenj Chua',
   agentTagline: '747 Free Online Betting Site — Free Sports Picks sa baba plus 10% REBATES',
@@ -1004,12 +1185,6 @@ const DEFAULTS = {
   cashCopy: 'Real cash outs from our community members.',
   cashCta: 'Get your cash out now',
   cashCtaUrl: 'https://www.messenger.com/j/AbakhHJ975SWCzqw/',
-  botName: '747 Live Assistant',
-  botStatus: 'Online',
-  botWelcome: "Hi! I'm the 747 Live smart assistant. Ask me anything about registration, bonuses, games, or promotions!",
-  botFallback: 'Thanks for your question! For detailed assistance, you can message me directly on Facebook or register through the platform. Is there anything else I can help with?',
-  botPlaceholder: 'Type your question...',
-  botQuickReplies: 'What is 747 Live?\nHow do I register?\nWhat games are available?\nWhat payment methods are accepted?',
   winNotifications: [
     { name: 'John D.', amount: 'P25,000', game: 'Live Casino' },
     { name: 'Maria S.', amount: 'P12,400', game: 'JILI Slots' },
@@ -1092,9 +1267,30 @@ const supabaseAuth = {
     return { session: null };
   },
 
+  async refreshSession() {
+    const refreshToken = localStorage.getItem('supabaseRefreshToken');
+    if (!refreshToken) return false;
+    try {
+      const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+        body: JSON.stringify({ refresh_token: refreshToken })
+      });
+      if (!res.ok) return false;
+      const data = await res.json();
+      localStorage.setItem('supabaseAccessToken', data.access_token);
+      localStorage.setItem('supabaseRefreshToken', data.refresh_token);
+      return true;
+    } catch { return false; }
+  },
+
   async updateUser(fields) {
-    const token = localStorage.getItem('supabaseAccessToken');
-    if (!token) throw new Error('Not authenticated');
+    let token = getAccessToken();
+    if (!token) {
+      const refreshed = await this.refreshSession();
+      if (!refreshed) throw new Error('Session expired. Please log in again.');
+      token = getAccessToken();
+    }
     const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
       method: 'PUT',
       headers: {
@@ -1106,6 +1302,10 @@ const supabaseAuth = {
     });
     if (!res.ok) {
       const err = await res.json();
+      console.warn('[Auth updateUser] API error:', err);
+      if (err.msg && err.msg.toLowerCase().includes('already')) {
+        return { alreadyInUse: true };
+      }
       throw new Error(err.msg || 'Failed to update credentials in Supabase Auth');
     }
     return res.json();
@@ -1115,7 +1315,7 @@ const supabaseAuth = {
 // ===== SUPABASE REST (admin_credentials table) =====
 const supabaseRest = {
   async getCredentials() {
-    const token = localStorage.getItem('supabaseAccessToken');
+    const token = getAccessToken();
     const res = await fetch(`${SUPABASE_URL}/rest/v1/admin_credentials?id=eq.1&select=*`, {
       headers: {
         'apikey': SUPABASE_ANON_KEY,
@@ -1128,7 +1328,7 @@ const supabaseRest = {
   },
 
   async updateCredentials(fields) {
-    const token = localStorage.getItem('supabaseAccessToken');
+    const token = getAccessToken();
     if (!token) throw new Error('Not authenticated');
     const res = await fetch(`${SUPABASE_URL}/rest/v1/admin_credentials?id=eq.1`, {
       method: 'PATCH',
@@ -1166,7 +1366,14 @@ async function loadData() {
   }
   // Deep merge arrays
   for (const key of ['hiw', 'benefitFeatures', 'payments', 'providers', 'agentCards', 'faq', 'winNotifications']) {
-    if (Array.isArray(DEFAULTS[key]) && (!data[key] || !Array.isArray(data[key]))) {
+    if (Array.isArray(DEFAULTS[key]) && (!data[key] || !Array.isArray(data[key]) || data[key].length === 0)) {
+      data[key] = JSON.parse(JSON.stringify(DEFAULTS[key]));
+    }
+    // Also replace arrays where every entry is empty (all values falsy)
+    if (Array.isArray(data[key]) && data[key].length > 0 && data[key].every(item => {
+      if (typeof item !== 'object' || item === null) return false;
+      return Object.values(item).every(v => !v);
+    })) {
       data[key] = DEFAULTS[key];
     }
   }
@@ -1174,55 +1381,90 @@ async function loadData() {
   if (data.agentCards && Array.isArray(data.agentCards)) {
     data.agentCards = data.agentCards.map((c, i) => ({ ...DEFAULTS.agentCards[i], ...c }));
   }
+  if (data.providers && Array.isArray(data.providers)) {
+    data.providers = data.providers.map((p, i) => ({ ...(DEFAULTS.providers[i] || { name: '', kind: '', asset: '', hue: '#66f89c', link: '' }), ...p }));
+  }
+}
+
+function getAccessToken() {
+  const t = localStorage.getItem('supabaseAccessToken');
+  if (t) return t;
+  try {
+    const session = JSON.parse(localStorage.getItem('sb-agkuojclxealcjymbeos-auth-token'));
+    if (session?.access_token) return session.access_token;
+  } catch {}
+  return null;
 }
 
 async function saveData() {
-  const token = localStorage.getItem('supabaseAccessToken');
-  if (!token) return;
+  const token = getAccessToken();
+  if (!token) throw new Error('Not logged in. Please refresh and sign in again.');
   const payload = {};
   for (const k of Object.keys(data)) {
-    if (k !== 'adminEmail' && k !== 'adminPassword') {
-      payload[k] = data[k];
-    }
+    payload[k] = data[k];
   }
-  await fetch(`${SUPABASE_URL}/rest/v1/site_config?id=eq.1`, {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/site_config?id=eq.1`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
       'apikey': SUPABASE_ANON_KEY,
-      'Authorization': `Bearer ${token}`
+      'Authorization': `Bearer ${token}`,
+      'Prefer': 'return=minimal'
     },
     body: JSON.stringify({ config: payload, updated_at: new Date().toISOString() })
   });
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    throw new Error(`Supabase save failed (${res.status}): ${errText || res.statusText}`);
+  }
 }
 
 async function saveAll() {
   collectFromForm();
-
   try {
-    // Save site config to Supabase
-    await saveData();
-
-    // Sync email/password to Supabase Auth
-    const authUpdates = {};
-    if (data.adminEmail) authUpdates.email = data.adminEmail;
-    if (data.adminPassword) authUpdates.password = data.adminPassword;
-    if (Object.keys(authUpdates).length) {
-      await supabaseAuth.updateUser(authUpdates);
+    // Sync email/password to Supabase Auth (only if changed)
+    const newEmail = data.adminEmail || '';
+    const newPassword = data.adminPassword || '';
+    const emailChanged = newEmail !== _originalAdminEmail;
+    const passwordChanged = newPassword !== _originalAdminPassword;
+    if (emailChanged || passwordChanged) {
+      const fields = {};
+      if (emailChanged) fields.email = newEmail;
+      if (passwordChanged) fields.password = newPassword;
+      const result = await supabaseAuth.updateUser(fields);
+      if (result && result.alreadyInUse) {
+        showStatus('Email already in use by another account.', 'error');
+        return;
+      }
+      _originalAdminEmail = newEmail || _originalAdminEmail;
+      _originalAdminPassword = newPassword || _originalAdminPassword;
     }
-
-    // Sync recovery Q&A to admin_credentials table
-    const recoveryQuestion = document.getElementById('recoveryQuestion').value === 'Custom'
-      ? document.getElementById('recoveryQuestionCustom').value
-      : document.getElementById('recoveryQuestion').value;
-    const recoveryAnswer = document.getElementById('recoveryAnswer').value;
-    await supabaseRest.updateCredentials({
-      email: data.adminEmail,
-      password: data.adminPassword,
-      recovery_question: recoveryQuestion,
-      recovery_answer: recoveryAnswer
-    });
-
+    // Save recovery Q&A to admin_credentials table
+    const token = getAccessToken();
+    if (token) {
+      const rqEl = document.getElementById('recoveryQuestion');
+      const raEl = document.getElementById('recoveryAnswer');
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/admin_credentials?id=eq.1`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          email: data.adminEmail || '',
+          password: data.adminPassword || '',
+          recovery_question: rqEl ? rqEl.value : '',
+          recovery_answer: raEl ? raEl.value : '',
+          updated_at: new Date().toISOString()
+        })
+      });
+      if (!res.ok) {
+        const errText = await res.text().catch(() => '');
+        throw new Error(`Failed to save recovery data (${res.status}): ${errText}`);
+      }
+    }
+    await saveData();
     showStatus('All changes saved to Supabase!', 'success');
   } catch (err) {
     showStatus('Save failed: ' + err.message, 'error');
@@ -1232,25 +1474,26 @@ async function saveAll() {
 function collectFromForm() {
   // Simple text fields
   const textFields = [
-    'adminEmail', 'adminPassword', 'siteTitle', 'faviconPath', 'logoPath', 'heroImage',
+    'adminEmail', 'adminPassword',
+    'recoveryQuestionCustom',
+    'siteTitle', 'heroImage',
     'partnerInviteUrl', 'facebookUrl', 'agentFacebookUrl', 'altFacebookUrl',
     'messengerLoadingGc', 'messengerSportsTips',
-    'heroHeadline', 'heroSubcopy', 'heroLogoTag', 'heroCtaPrimary', 'heroCtaSecondary',
+    'heroHeadline', 'heroSubcopy', 'heroLogoTag', 'heroCtaPrimary', 'heroCtaPrimaryUrl', 'heroCtaSecondary', 'heroCtaSecondaryUrl',
     'statPlayingNum', 'statPlayingSuffix', 'statPaidNum', 'statPaidSuffix',
     'trustBadgeText', 'formTriggerText', 'formTriggerNote', 'formSubmitText', 'formFooterText',
     'tickerLabel', 'tickerMessages',
-    'hiwKicker', 'hiwHeading',
-    'benefitsKicker', 'benefitsHeading', 'benefitsCopy', 'benefitSlides',
-    'paySectionTitle', 'benefitsTagline',
-    'provSearchPlaceholder', 'provNoResults', 'provKicker', 'provHeading',
-    'promoSlidesTextarea', 'sportsKicker',
-    'convBadge', 'convHeadline', 'convDesc', 'convPerks', 'convCta', 'convSidebarImg', 'convDisclaimer',
-    'promoHeading', 'promoCopy1', 'promoCopy2', 'promoCtaLead', 'promoCtaText', 'promoVerified', 'promoAffiliate', 'promoVideo',
+    'hiwKicker',
+    'benefitsKicker', 'benefitsCopy',
+    'paySectionTitle', 'benefitsTagline', 'benefitsFbText', 'benefitsFbUrl',
+    'provSearchPlaceholder', 'provNoResults', 'provKicker',
+    'sportsKicker', 'sportsCtaUrl',
+    'convBadge', 'convHeadline', 'convDesc', 'convPerks', 'convCta', 'convCtaUrl', 'convSidebarImg', 'convDisclaimer',
+    'promoHeading', 'promoCopy1', 'promoCopy2', 'promoCtaLead', 'promoCtaText', 'promoCtaUrl', 'promoVerified', 'promoAffiliate',
     'agentBadge', 'agentName', 'agentTagline',
     'faqKicker', 'faqHeading', 'faqCopy',
     'winsHeading', 'winsCopy', 'winsCta', 'winsCtaUrl',
     'cashHeading', 'cashCopy', 'cashCta', 'cashCtaUrl',
-    'botName', 'botStatus', 'botWelcome', 'botFallback', 'botPlaceholder', 'botQuickReplies',
     'notifInterval', 'notifDuration'
   ];
   for (const id of textFields) {
@@ -1261,9 +1504,53 @@ function collectFromForm() {
     }
   }
 
+  // Handle headline emphasis checkbox
+  const heroHeadlineEmEl = document.getElementById('heroHeadlineEm');
+  if (heroHeadlineEmEl && heroHeadlineEmEl.checked && data.heroHeadline) {
+    data.heroHeadline = data.heroHeadline.replace(/<\/?em>/gi, '').replace(/\bLIVE\b/gi, '<em>LIVE</em>');
+  } else if (data.heroHeadline) {
+    data.heroHeadline = data.heroHeadline.replace(/<\/?em>/gi, '');
+  }
+
+  // Build benefits heading from plain text + emphasis
+  try {
+    const headingText = document.getElementById('benefitsHeadingText')?.value || '';
+    const headingEm = document.getElementById('benefitsHeadingEm')?.value || '';
+    if (headingText && headingEm) {
+      data.benefitsHeading = headingText.replace(headingEm, `<em>${headingEm}</em>`);
+    } else {
+      data.benefitsHeading = headingText;
+    }
+  } catch(_) {}
+
+  // Build providers heading from plain text + emphasis
+  try {
+    const provHeadingText = document.getElementById('provHeadingText')?.value || '';
+    const provHeadingEm = document.getElementById('provHeadingEm')?.value || '';
+    if (provHeadingText && provHeadingEm) {
+      data.provHeading = provHeadingText.replace(provHeadingEm, `<em>${provHeadingEm}</em>`);
+    } else {
+      data.provHeading = provHeadingText;
+    }
+  } catch(_) {}
+
+  // Build how-it-works heading from plain text + emphasis
+  try {
+    const hiwHeadingText = document.getElementById('hiwHeadingText')?.value || '';
+    const hiwHeadingEm = document.getElementById('hiwHeadingEm')?.value || '';
+    if (hiwHeadingText && hiwHeadingEm) {
+      data.hiwHeading = hiwHeadingText.replace(hiwHeadingEm, `<em>${hiwHeadingEm}</em>`);
+    } else {
+      data.hiwHeading = hiwHeadingText;
+    }
+  } catch(_) {}
+
   // Gallery images
   data.winsImages = collectGalleryImages('wins');
   data.cashImages = collectGalleryImages('cash');
+  
+  // Benefit slides
+  data.benefitSlides = collectBenefitSlides();
 
   // How It Works
   data.hiw = [
@@ -1273,33 +1560,25 @@ function collectFromForm() {
   ];
 
   // Benefit Features
-  data.benefitFeatures = [
-    { strong: document.getElementById('bf1strong')?.value || '', suffix: document.getElementById('bf1suffix')?.value || '' },
-    { strong: document.getElementById('bf2strong')?.value || '', suffix: document.getElementById('bf2suffix')?.value || '' },
-    { strong: document.getElementById('bf3strong')?.value || '', suffix: document.getElementById('bf3suffix')?.value || '' },
-    { strong: document.getElementById('bf4strong')?.value || '', suffix: document.getElementById('bf4suffix')?.value || '' }
-  ];
+  data.benefitFeatures = collectBenefitFeatures();
 
   // Payments
-  data.payments = [
-    { name: document.getElementById('pay1name')?.value || '', logo: document.getElementById('pay1logo')?.value || '', min: document.getElementById('pay1min')?.value || '', max: document.getElementById('pay1max')?.value || '', fee: document.getElementById('pay1fee')?.value || '', speed: document.getElementById('pay1speed')?.value || '' },
-    { name: document.getElementById('pay2name')?.value || '', logo: document.getElementById('pay2logo')?.value || '', min: document.getElementById('pay2min')?.value || '', max: document.getElementById('pay2max')?.value || '', fee: document.getElementById('pay2fee')?.value || '', speed: document.getElementById('pay2speed')?.value || '' },
-    { name: document.getElementById('pay3name')?.value || '', logo: document.getElementById('pay3logo')?.value || '', min: document.getElementById('pay3min')?.value || '', max: document.getElementById('pay3max')?.value || '', fee: document.getElementById('pay3fee')?.value || '', speed: document.getElementById('pay3speed')?.value || '' },
-    { name: document.getElementById('pay4name')?.value || '', logo: document.getElementById('pay4logo')?.value || '', min: document.getElementById('pay4min')?.value || '', max: document.getElementById('pay4max')?.value || '', fee: document.getElementById('pay4fee')?.value || '', speed: document.getElementById('pay4speed')?.value || '' }
-  ];
+  data.payments = collectPayments();
 
   // Providers
+  const oldProviders = data.providers || [];
   const provRows = document.querySelectorAll('#providersTableBody tr');
   data.providers = [];
-  provRows.forEach(row => {
+  provRows.forEach((row, i) => {
     const inputs = row.querySelectorAll('input');
     if (inputs.length >= 5) {
-      data.providers.push({ name: inputs[0].value, kind: inputs[1].value, asset: inputs[2].value, hue: inputs[3].value });
+      const old = oldProviders[i] || {};
+      data.providers.push({ name: inputs[0].value, kind: inputs[1].value, asset: inputs[2].value, link: inputs[4].value, hue: old.hue || '#66f89c' });
     }
   });
 
-  // Promo slides
-  data.promoSlides = document.getElementById('promoSlides')?.value.split('\n').filter(s => s.trim()) || [];
+  // Promo slides — read from DOM gallery inputs
+  collectPromoSlides();
 
   // Agent Cards
   for (let i = 1; i <= 3; i++) {
@@ -1313,21 +1592,15 @@ function collectFromForm() {
     };
   }
 
-  // FAQ
-  const faqRows = document.querySelectorAll('#faqTableBody tr');
-  data.faq = [];
-  faqRows.forEach(row => {
-    const inputs = row.querySelectorAll('input, textarea');
-    if (inputs.length >= 3) {
-      data.faq.push({ q: inputs[0].value, a: inputs[1].value, keywords: inputs[2].value });
-    }
-  });
-
   // Win Notifications
-  const notifRows = document.querySelectorAll('#notifTableBody tr');
+  collectNotifFields();
+}
+
+function collectNotifFields() {
+  const notifCards = document.querySelectorAll('#notifCardContainer .notif-card');
   data.winNotifications = [];
-  notifRows.forEach(row => {
-    const inputs = row.querySelectorAll('input');
+  notifCards.forEach(card => {
+    const inputs = card.querySelectorAll('.notif-card__field');
     if (inputs.length >= 3) {
       data.winNotifications.push({ name: inputs[0].value, amount: inputs[1].value, game: inputs[2].value });
     }
@@ -1337,145 +1610,226 @@ function collectFromForm() {
 function populateForm() {
   // Simple text fields
   const textFields = [
-    'adminEmail', 'adminPassword', 'siteTitle', 'faviconPath', 'logoPath', 'heroImage',
+    'adminEmail', 'adminPassword',
+    'siteTitle', 'heroImage',
     'partnerInviteUrl', 'facebookUrl', 'agentFacebookUrl', 'altFacebookUrl',
     'messengerLoadingGc', 'messengerSportsTips',
-    'heroHeadline', 'heroSubcopy', 'heroLogoTag', 'heroCtaPrimary', 'heroCtaSecondary',
+    'heroHeadline', 'heroSubcopy', 'heroLogoTag', 'heroCtaPrimary', 'heroCtaPrimaryUrl', 'heroCtaSecondary', 'heroCtaSecondaryUrl',
     'trustBadgeText', 'formTriggerText', 'formTriggerNote', 'formSubmitText', 'formFooterText',
     'tickerLabel', 'tickerMessages',
-    'hiwKicker', 'hiwHeading',
-    'benefitsKicker', 'benefitsHeading', 'benefitsCopy',
-    'paySectionTitle', 'benefitsTagline',
-    'provSearchPlaceholder', 'provNoResults', 'provKicker', 'provHeading',
-    'sportsKicker',
-    'convBadge', 'convHeadline', 'convDesc', 'convPerks', 'convCta', 'convSidebarImg', 'convDisclaimer',
-    'promoHeading', 'promoCopy1', 'promoCopy2', 'promoCtaLead', 'promoCtaText', 'promoVerified', 'promoAffiliate', 'promoVideo',
+    'hiwKicker',
+    'benefitsKicker', 'benefitsCopy',
+    'paySectionTitle', 'benefitsTagline', 'benefitsFbText', 'benefitsFbUrl',
+    'provSearchPlaceholder', 'provNoResults', 'provKicker',
+    'sportsKicker', 'sportsCtaUrl',
+    'convBadge', 'convHeadline', 'convDesc', 'convPerks', 'convCta', 'convCtaUrl', 'convSidebarImg', 'convDisclaimer',
+    'promoHeading', 'promoCopy1', 'promoCopy2', 'promoCtaLead', 'promoCtaText', 'promoCtaUrl', 'promoVerified', 'promoAffiliate',
     'agentBadge', 'agentName', 'agentTagline',
     'faqKicker', 'faqHeading', 'faqCopy',
     'winsHeading', 'winsCopy', 'winsCta', 'winsCtaUrl',
-    'cashHeading', 'cashCopy', 'cashCta', 'cashCtaUrl',
-    'botName', 'botStatus', 'botWelcome', 'botFallback', 'botPlaceholder', 'botQuickReplies'
+    'cashHeading', 'cashCopy', 'cashCta', 'cashCtaUrl'
   ];
   for (const id of textFields) {
-    const el = document.getElementById(id);
-    if (el) el.value = data[id] !== undefined ? data[id] : '';
+    try {
+      const el = document.getElementById(id);
+      if (el) el.value = data[id] !== undefined ? data[id] : '';
+    } catch(_) {}
   }
+
+  // Fallback: show partnerInviteUrl in heroCtaPrimaryUrl if not set
+  try {
+    const ctaPrimaryUrlEl = document.getElementById('heroCtaPrimaryUrl');
+    if (ctaPrimaryUrlEl && !ctaPrimaryUrlEl.value && data.partnerInviteUrl) {
+      ctaPrimaryUrlEl.value = data.partnerInviteUrl;
+    }
+  } catch(_) {}
+
+  // Update hero image preview
+  try {
+    const heroImg = data.heroImage || DEFAULTS.heroImage;
+    const preview = document.querySelector('.hero-image-preview img');
+    if (preview && heroImg) {
+      preview.src = heroImg.startsWith('http') ? heroImg : heroImg;
+    }
+  } catch(_) {}
 
   // Number fields
   const numFields = ['statPlayingNum', 'statPaidNum', 'notifInterval', 'notifDuration'];
   for (const id of numFields) {
-    const el = document.getElementById(id);
-    if (el) el.value = data[id] !== undefined ? data[id] : '';
+    try {
+      const el = document.getElementById(id);
+      if (el) el.value = data[id] !== undefined ? data[id] : '';
+    } catch(_) {}
   }
 
   // Strings that need special mapping
-  document.getElementById('statPlayingSuffix').value = data.statPlayingSuffix || '';
-  document.getElementById('statPaidSuffix').value = data.statPaidSuffix || '';
+  try {
+    const el1 = document.getElementById('statPlayingSuffix');
+    if (el1) el1.value = data.statPlayingSuffix || '';
+    const el2 = document.getElementById('statPaidSuffix');
+    if (el2) el2.value = data.statPaidSuffix || '';
+  } catch(_) {}
+
+  // Handle headline emphasis checkbox (strip em tags for clean display)
+  try {
+    const heroHeadlineEmEl = document.getElementById('heroHeadlineEm');
+    const headlineEl = document.getElementById('heroHeadline');
+    if (headlineEl && data.heroHeadline !== undefined) {
+      const stored = String(data.heroHeadline);
+      const hasEm = /<em>LIVE<\/em>/i.test(stored);
+      headlineEl.value = stored.replace(/<\/?em>/gi, '');
+      if (heroHeadlineEmEl) heroHeadlineEmEl.checked = hasEm;
+    }
+  } catch(_) {}
+
+  // Split benefits heading into plain text + emphasis fields
+  try {
+    const headingStored = String(data.benefitsHeading || '');
+    const emMatch = headingStored.match(/<em>(.*?)<\/em>/i);
+    const headingEl = document.getElementById('benefitsHeadingText');
+    const emEl = document.getElementById('benefitsHeadingEm');
+    if (headingEl) headingEl.value = headingStored.replace(/<\/?em>/gi, '');
+    if (emEl) emEl.value = emMatch ? emMatch[1] : '';
+  } catch(_) {}
+
+  // Split providers heading into plain text + emphasis fields
+  try {
+    const provStored = String(data.provHeading || '');
+    const provEmMatch = provStored.match(/<em>(.*?)<\/em>/i);
+    const provHeadingEl = document.getElementById('provHeadingText');
+    const provEmEl = document.getElementById('provHeadingEm');
+    if (provHeadingEl) provHeadingEl.value = provStored.replace(/<\/?em>/gi, '');
+    if (provEmEl) provEmEl.value = provEmMatch ? provEmMatch[1] : '';
+  } catch(_) {}
+
+  // Split how-it-works heading into plain text + emphasis fields
+  try {
+    const hiwStored = String(data.hiwHeading || '');
+    const hiwEmMatch = hiwStored.match(/<em>(.*?)<\/em>/i);
+    const hiwHeadingEl = document.getElementById('hiwHeadingText');
+    const hiwEmEl = document.getElementById('hiwHeadingEm');
+    if (hiwHeadingEl) hiwHeadingEl.value = hiwStored.replace(/<\/?em>/gi, '');
+    if (hiwEmEl) hiwEmEl.value = hiwEmMatch ? hiwEmMatch[1] : '';
+  } catch(_) {}
 
   // Benefit slides
-  document.getElementById('benefitSlides').value = Array.isArray(data.benefitSlides) ? data.benefitSlides.join('\n') : (data.benefitSlides || '');
-
-  // How It Works
-  if (data.hiw && data.hiw[0]) {
-    document.getElementById('hiw1enTitle').value = data.hiw[0].enTitle || '';
-    document.getElementById('hiw1tlTitle').value = data.hiw[0].tlTitle || '';
-    document.getElementById('hiw1enDesc').value = data.hiw[0].enDesc || '';
-    document.getElementById('hiw1tlDesc').value = data.hiw[0].tlDesc || '';
-    document.getElementById('hiw2enTitle').value = data.hiw[1].enTitle || '';
-    document.getElementById('hiw2tlTitle').value = data.hiw[1].tlTitle || '';
-    document.getElementById('hiw2enDesc').value = data.hiw[1].enDesc || '';
-    document.getElementById('hiw2tlDesc').value = data.hiw[1].tlDesc || '';
-    document.getElementById('hiw3enTitle').value = data.hiw[2].enTitle || '';
-    document.getElementById('hiw3tlTitle').value = data.hiw[2].tlTitle || '';
-    document.getElementById('hiw3enDesc').value = data.hiw[2].enDesc || '';
-    document.getElementById('hiw3tlDesc').value = data.hiw[2].tlDesc || '';
-  }
-
-  // Benefit Features
-  if (data.benefitFeatures) {
-    document.getElementById('bf1strong').value = data.benefitFeatures[0]?.strong || '';
-    document.getElementById('bf1suffix').value = data.benefitFeatures[0]?.suffix || '';
-    document.getElementById('bf2strong').value = data.benefitFeatures[1]?.strong || '';
-    document.getElementById('bf2suffix').value = data.benefitFeatures[1]?.suffix || '';
-    document.getElementById('bf3strong').value = data.benefitFeatures[2]?.strong || '';
-    document.getElementById('bf3suffix').value = data.benefitFeatures[2]?.suffix || '';
-    document.getElementById('bf4strong').value = data.benefitFeatures[3]?.strong || '';
-    document.getElementById('bf4suffix').value = data.benefitFeatures[3]?.suffix || '';
-  }
-
-  // Payments
-  if (data.payments) {
-    for (let i = 1; i <= 4; i++) {
-      const p = data.payments[i - 1] || {};
-      document.getElementById(`pay${i}name`).value = p.name || '';
-      document.getElementById(`pay${i}logo`).value = p.logo || '';
-      document.getElementById(`pay${i}min`).value = p.min || '';
-      document.getElementById(`pay${i}max`).value = p.max || '';
-      document.getElementById(`pay${i}fee`).value = p.fee || '';
-      document.getElementById(`pay${i}speed`).value = p.speed || '';
-    }
-  }
-
-  // Providers table
-  renderProvidersTable();
+  try { renderBenefitSlides(); } catch(_) {}
 
   // Promo slides
-  document.getElementById('promoSlides').value = (data.promoSlides || []).join('\n');
+  try { renderPromoSlides(); } catch(_) {}
+
+  // Promo video/image preview
+  try {
+    const preview = document.getElementById('promoVideoPreview');
+    if (preview && data.promoVideo) {
+      const isVideo = /\.(mp4|webm|ogg|mov|avi)$/i.test(data.promoVideo);
+      preview.innerHTML = isVideo
+        ? `<video src="${escapeHtml(data.promoVideo)}" style="width:100%;height:100%;object-fit:contain" autoplay muted loop playsInline></video>`
+        : `<img src="${escapeHtml(data.promoVideo)}" style="width:100%;height:100%;object-fit:contain" />`;
+    }
+  } catch(_) {}
+
+  // How It Works
+  try {
+    if (data.hiw && Array.isArray(data.hiw)) {
+      const hiwFields = ['enTitle', 'tlTitle', 'enDesc', 'tlDesc'];
+      for (let s = 1; s <= 3; s++) {
+        const entry = data.hiw[s - 1] || {};
+        for (const f of hiwFields) {
+          const el = document.getElementById(`hiw${s}${f}`);
+          if (el) el.value = entry[f] || '';
+        }
+      }
+    }
+  } catch(_) {}
+
+  // Benefit Features
+  try { renderBenefitFeaturesTable(); } catch(_) {}
+
+  // Payments - render dynamic table with upload support
+  try { renderPaymentsTable(); } catch(_) {}
+
+  // Providers table
+  try { renderProvidersTable(); } catch(_) {}
+
+  // Promo slides
+  try { document.getElementById('promoSlides').value = (data.promoSlides || []).join('\n'); } catch(_) {}
 
   // Conversion perks
-  document.getElementById('convPerks').value = data.convPerks || '';
+  try { document.getElementById('convPerks').value = data.convPerks || ''; } catch(_) {}
+  // Conversion CTA URL - fallback to partner invite
+  try {
+    const el = document.getElementById('convCtaUrl');
+    if (el) el.value = data.convCtaUrl || data.partnerInviteUrl || DEFAULTS.convCtaUrl || '';
+  } catch(_) {}
+  // Update conversion sidebar preview
+  try { updateConvSidebarPreview(); } catch(_) {}
 
   // Agent cards
-  if (data.agentCards) {
-    for (let i = 1; i <= 3; i++) {
-      const c = data.agentCards[i - 1] || {};
-      document.getElementById(`ac${i}title`).value = c.title || '';
-      document.getElementById(`ac${i}icon`).value = c.icon || '';
-      document.getElementById(`ac${i}desc`).value = c.desc || '';
-      document.getElementById(`ac${i}cta`).value = c.cta || '';
-      document.getElementById(`ac${i}link`).value = c.link || '';
+  try {
+    if (data.agentCards) {
+      for (let i = 1; i <= 3; i++) {
+        const c = data.agentCards[i - 1] || {};
+        const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+        setVal(`ac${i}title`, c.title);
+        setVal(`ac${i}icon`, c.icon);
+        setVal(`ac${i}desc`, c.desc);
+        setVal(`ac${i}cta`, c.cta);
+        setVal(`ac${i}link`, c.link);
+      }
     }
-  }
+  } catch(_) {}
 
   // FAQ table
-  renderFaqTable();
+  try { renderFaqTable(); } catch(_) {}
 
   // Win Notifications table
-  renderNotifTable();
+  try { renderNotifTable(); } catch(_) {}
 
   // Galleries
-  renderGalleryImages('wins');
-  renderGalleryImages('cash');
+  try { renderGalleryImages('wins'); } catch(_) {}
+  try { renderGalleryImages('cash'); } catch(_) {}
 
-  // Load recovery data from Supabase
-  loadRecoveryData();
+  // Load recovery Q&A
+  try { loadRecoveryData(); } catch(_) {}
 }
 
+let _originalAdminEmail = '';
+let _originalAdminPassword = '';
+
 async function loadRecoveryData() {
-  if (!localStorage.getItem('supabaseAccessToken')) return;
   try {
     const creds = await supabaseRest.getCredentials();
+    const emailEl = document.getElementById('adminEmail');
+    const passEl = document.getElementById('adminPassword');
+    const questionEl = document.getElementById('recoveryQuestion');
+    const answerEl = document.getElementById('recoveryAnswer');
+    const customEl = document.getElementById('recoveryQuestionCustom');
+    const group = document.getElementById('customQuestionGroup');
     if (creds) {
-      const q = creds.recovery_question || '';
-      const customQ = document.getElementById('recoveryQuestion');
-      const customOpt = customQ.querySelector('option[value="Custom"]');
-      const customGroup = document.getElementById('customQuestionGroup');
-
-      // Check if question matches a preset
-      const preset = Array.from(customQ.options).some(o => o.value === q && o.value !== 'Custom');
-      if (preset) {
-        customQ.value = q;
-        customGroup.style.display = 'none';
-      } else if (q) {
-        customQ.value = 'Custom';
-        document.getElementById('recoveryQuestionCustom').value = q;
-        customGroup.style.display = 'block';
+      _originalAdminEmail = creds.email || '';
+      _originalAdminPassword = creds.password || '';
+      if (emailEl && creds.email) emailEl.value = creds.email;
+      if (passEl && creds.password) passEl.value = creds.password;
+      if (questionEl && creds.recovery_question) questionEl.value = creds.recovery_question;
+      if (answerEl && creds.recovery_answer) answerEl.value = creds.recovery_answer;
+      if (creds.recovery_question === 'Custom') {
+        if (group) group.style.display = 'block';
+        if (customEl) customEl.value = data.recoveryQuestionCustom || '';
       }
-      document.getElementById('recoveryAnswer').value = creds.recovery_answer || '';
+    } else {
+      _originalAdminEmail = data.adminEmail || '';
+      _originalAdminPassword = data.adminPassword || '';
+      if (emailEl && data.adminEmail) emailEl.value = data.adminEmail;
+      if (passEl && data.adminPassword) passEl.value = data.adminPassword;
+      if (questionEl && data.recoveryQuestion) questionEl.value = data.recoveryQuestion;
+      if (answerEl && data.recoveryAnswer) answerEl.value = data.recoveryAnswer;
+      if (data.recoveryQuestion === 'Custom') {
+        if (group) group.style.display = 'block';
+        if (customEl) customEl.value = data.recoveryQuestionCustom || '';
+      }
     }
-  } catch (e) {
-    // Table may not exist yet, silently ignore
-  }
+  } catch(_) {}
 }
 
 function renderProvidersTable() {
@@ -1486,10 +1840,50 @@ function renderProvidersTable() {
     tr.innerHTML = `<td style="color:var(--text2);font-size:12px">${i + 1}</td>
       <td><input value="${escapeHtml(p.name)}" /></td>
       <td><input value="${escapeHtml(p.kind)}" /></td>
-      <td><input value="${escapeHtml(p.asset)}" /></td>
-      <td><input value="${escapeHtml(p.hue)}" style="width:100px" /></td>`;
+      <td><div style="display:flex;gap:4px;align-items:center"><input value="${escapeHtml(p.asset)}" style="flex:1" /><label class="btn btn-outline btn-sm" style="padding:4px 8px;cursor:pointer;flex-shrink:0" title="Upload GIF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><input type="file" accept="image/*" onchange="uploadProviderGif(${i}, this)" style="display:none" /></label></div></td>
+      <td><input value="${escapeHtml(p.link || '')}" placeholder="https://..." /></td>
+      <td style="white-space:nowrap">
+        <button class="array-item__delete" onclick="deleteProviderRow(${i})" title="Delete provider">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
+      </td>`;
     tbody.appendChild(tr);
   });
+}
+
+function addProviderRow() {
+  document.getElementById('providerModalName').value = '';
+  document.getElementById('providerModalKind').value = '';
+  document.getElementById('providerModalAsset').value = '';
+  document.getElementById('providerModalLink').value = '';
+  document.getElementById('providerModal').classList.add('active');
+}
+
+function closeProviderModal() {
+  document.getElementById('providerModal').classList.remove('active');
+}
+
+function saveProviderModal() {
+  const name = document.getElementById('providerModalName').value.trim();
+  const kind = document.getElementById('providerModalKind').value.trim();
+  const asset = document.getElementById('providerModalAsset').value.trim();
+  const link = document.getElementById('providerModalLink').value.trim();
+  if (!name || !kind) {
+    showStatus('Please fill in Name and Kind.', 'error');
+    return;
+  }
+  if (!data.providers) data.providers = JSON.parse(JSON.stringify(DEFAULTS.providers));
+  data.providers.push({ name, kind, asset: asset || '', link, hue: '#66f89c' });
+  renderProvidersTable();
+  closeProviderModal();
+  showStatus('Provider added successfully.', 'success');
+}
+
+function deleteProviderRow(index) {
+  if (!data.providers) data.providers = JSON.parse(JSON.stringify(DEFAULTS.providers));
+  if (!confirm('Delete this provider?')) return;
+  data.providers.splice(index, 1);
+  renderProvidersTable();
 }
 
 function renderFaqTable() {
@@ -1498,18 +1892,20 @@ function renderFaqTable() {
   const faq = data.faq || DEFAULTS.faq;
   faq.forEach((item, i) => {
     const tr = document.createElement('tr');
+    tr.style.cursor = 'pointer';
+    tr.onclick = () => openFaqModal(i);
     tr.innerHTML = `<td style="color:var(--text2);font-size:12px">${i + 1}</td>
-      <td><input value="${escapeHtml(item.q)}" /></td>
-      <td><textarea rows="2">${escapeHtml(item.a)}</textarea></td>
-      <td><input value="${escapeHtml(item.keywords || '')}" /></td>
+      <td>${escapeHtml(item.q)}</td>
+      <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(item.a)}</td>
+      <td style="color:var(--text2);font-size:12px">${escapeHtml(item.keywords || '')}</td>
       <td style="white-space:nowrap">
-        <button class="array-item__action" onclick="moveFaq(${i},-1)" title="Move up"${i === 0 ? ' disabled' : ''}>
+        <button class="array-item__action" onclick="event.stopPropagation();moveFaq(${i},-1)" title="Move up"${i === 0 ? ' disabled' : ''}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="18 15 12 9 6 15"/></svg>
         </button>
-        <button class="array-item__action" onclick="moveFaq(${i},1)" title="Move down"${i === faq.length - 1 ? ' disabled' : ''}>
+        <button class="array-item__action" onclick="event.stopPropagation();moveFaq(${i},1)" title="Move down"${i === faq.length - 1 ? ' disabled' : ''}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
-        <button class="array-item__delete" onclick="deleteFaq(${i})" title="Delete FAQ">
+        <button class="array-item__delete" onclick="event.stopPropagation();deleteFaq(${i})" title="Delete FAQ">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
         </button>
       </td>`;
@@ -1517,10 +1913,54 @@ function renderFaqTable() {
   });
 }
 
-function addFaq() {
-  if (!data.faq) data.faq = JSON.parse(JSON.stringify(DEFAULTS.faq));
-  data.faq.push({ q: '', a: '', keywords: '' });
+function openFaqModal(index) {
+  const overlay = document.getElementById('faqModalOverlay');
+  const title = document.getElementById('faqModalTitle');
+  const qEl = document.getElementById('faqModalQ');
+  const aEl = document.getElementById('faqModalA');
+  const kEl = document.getElementById('faqModalK');
+  if (index >= 0 && data.faq && index < data.faq.length) {
+    title.textContent = 'Edit FAQ';
+    qEl.value = data.faq[index].q || '';
+    aEl.value = data.faq[index].a || '';
+    kEl.value = data.faq[index].keywords || '';
+    overlay.dataset.editIndex = index;
+  } else {
+    title.textContent = 'Add FAQ';
+    qEl.value = '';
+    aEl.value = '';
+    kEl.value = '';
+    overlay.dataset.editIndex = '';
+  }
+  overlay.classList.add('active');
+}
+
+function closeFaqModal() {
+  document.getElementById('faqModalOverlay').classList.remove('active');
+}
+
+function saveFaqModal() {
+  const q = document.getElementById('faqModalQ').value.trim();
+  const a = document.getElementById('faqModalA').value.trim();
+  const k = document.getElementById('faqModalK').value.trim();
+  if (!q || !a) { showStatus('Please fill in the question and answer.', 'error'); return; }
+  if (!data.faq) data.faq = [];
+  const idx = document.getElementById('faqModalOverlay').dataset.editIndex;
+  if (idx !== '') {
+    data.faq[parseInt(idx)] = { q, a, keywords: k };
+  } else {
+    data.faq.push({ q, a, keywords: k });
+  }
+  closeFaqModal();
   renderFaqTable();
+  (async () => {
+    try {
+      await saveData();
+      showStatus('FAQ saved!', 'success');
+    } catch (err) {
+      showStatus('FAQ save failed: ' + err.message, 'error');
+    }
+  })();
 }
 
 function deleteFaq(index) {
@@ -1541,16 +1981,113 @@ function moveFaq(index, direction) {
 }
 
 function renderNotifTable() {
-  const tbody = document.getElementById('notifTableBody');
-  tbody.innerHTML = '';
-  (data.winNotifications || DEFAULTS.winNotifications).forEach((n, i) => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td style="color:var(--text2);font-size:12px">${i + 1}</td>
-      <td><input value="${escapeHtml(n.name)}" /></td>
-      <td><input value="${escapeHtml(n.amount)}" /></td>
-      <td><input value="${escapeHtml(n.game)}" /></td>`;
-    tbody.appendChild(tr);
+  const container = document.getElementById('notifCardContainer');
+  container.innerHTML = '';
+  const notifs = data.winNotifications || DEFAULTS.winNotifications;
+  notifs.forEach((n, i) => {
+    const card = document.createElement('div');
+    card.className = 'notif-card';
+    card.draggable = true;
+    card.dataset.index = i;
+    card.innerHTML = `<div class="notif-card__handle">
+        <svg width="10" height="10" viewBox="0 0 10 10"><line x1="1" y1="2" x2="9" y2="2"/><line x1="1" y1="5" x2="9" y2="5"/><line x1="1" y1="8" x2="9" y2="8"/></svg>
+      </div>
+      <div class="notif-card__preview">
+        <div class="notif-card__avatar">${escapeHtml((n.name || '?')[0])}</div>
+        <div class="notif-card__fields">
+          <input class="notif-card__field notif-card__field--name" value="${escapeHtml(n.name)}" placeholder="Name" />
+          <span class="notif-card__separator">won</span>
+          <input class="notif-card__field notif-card__field--amount" value="${escapeHtml(n.amount)}" placeholder="Amount" />
+          <span class="notif-card__separator">on</span>
+          <input class="notif-card__field notif-card__field--game" value="${escapeHtml(n.game)}" placeholder="Game" />
+        </div>
+      </div>
+      <div class="notif-card__actions">
+        <button class="notif-card__action" onclick="moveNotifRow(${i},-1)" title="Move up"${i === 0 ? ' disabled' : ''}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="18 15 12 9 6 15"/></svg>
+        </button>
+        <button class="notif-card__action" onclick="moveNotifRow(${i},1)" title="Move down"${i === notifs.length - 1 ? ' disabled' : ''}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <button class="notif-card__action notif-card__delete" onclick="deleteNotifRow(${i})" title="Delete">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>`;
+    // Drag events
+    card.addEventListener('dragstart', (e) => {
+      collectNotifFields();
+      e.dataTransfer.effectAllowed = 'move';
+      card.style.opacity = '0.4';
+      window._dragNotifIndex = i;
+    });
+    card.addEventListener('dragend', () => {
+      card.style.opacity = '1';
+      container.querySelectorAll('.notif-card').forEach(c => c.style.borderTop = '');
+    });
+    card.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      card.style.borderTop = '2px solid var(--accent)';
+    });
+    card.addEventListener('dragleave', () => {
+      card.style.borderTop = '';
+    });
+    card.addEventListener('drop', (e) => {
+      e.preventDefault();
+      card.style.borderTop = '';
+      const fromIndex = window._dragNotifIndex;
+      const toIndex = i;
+      if (fromIndex === undefined || fromIndex === toIndex) return;
+      collectNotifFields();
+      const item = data.winNotifications.splice(fromIndex, 1)[0];
+      data.winNotifications.splice(toIndex, 0, item);
+      renderNotifTable();
+    });
+    container.appendChild(card);
   });
+}
+
+function addNotifRow() {
+  document.getElementById('notifModalName').value = '';
+  document.getElementById('notifModalAmount').value = '';
+  document.getElementById('notifModalGame').value = '';
+  document.getElementById('notifModalOverlay').classList.add('active');
+  document.getElementById('notifModalName').focus();
+}
+
+function closeNotifModal() {
+  document.getElementById('notifModalOverlay').classList.remove('active');
+}
+
+function saveNotifModal() {
+  const name = document.getElementById('notifModalName').value.trim();
+  const amount = document.getElementById('notifModalAmount').value.trim();
+  const game = document.getElementById('notifModalGame').value.trim();
+  if (!name || !amount || !game) {
+    showStatus('Please fill in all fields.', 'error');
+    return;
+  }
+  if (!data.winNotifications) data.winNotifications = JSON.parse(JSON.stringify(DEFAULTS.winNotifications));
+  data.winNotifications.push({ name, amount, game });
+  closeNotifModal();
+  renderNotifTable();
+}
+
+function deleteNotifRow(index) {
+  if (!data.winNotifications) data.winNotifications = JSON.parse(JSON.stringify(DEFAULTS.winNotifications));
+  if (!confirm('Delete this notification?')) return;
+  data.winNotifications.splice(index, 1);
+  renderNotifTable();
+}
+
+function moveNotifRow(index, direction) {
+  if (!data.winNotifications) data.winNotifications = JSON.parse(JSON.stringify(DEFAULTS.winNotifications));
+  const newIndex = index + direction;
+  if (newIndex < 0 || newIndex >= data.winNotifications.length) return;
+  const temp = data.winNotifications[index];
+  data.winNotifications[index] = data.winNotifications[newIndex];
+  data.winNotifications[newIndex] = temp;
+  renderNotifTable();
 }
 
 function escapeHtml(str) {
@@ -1623,6 +2160,395 @@ function collectGalleryImages(type) {
   return images.length > 0 ? images : (data[key] || DEFAULTS[key] || []);
 }
 
+// ===== BENEFIT SLIDES MANAGEMENT =====
+function renderBenefitSlides() {
+  const grid = document.getElementById('benefitSlidesGrid');
+  grid.innerHTML = '';
+  let slides = data.benefitSlides || DEFAULTS.benefitSlides || [];
+  if (typeof slides === 'string') slides = slides.split('\n').filter(s => s.trim());
+  if (!Array.isArray(slides)) slides = [];
+  slides = slides.filter(s => s && s.trim());
+  slides.forEach((url, i) => {
+    const item = document.createElement('div');
+    item.className = 'gallery-item';
+    item.innerHTML = `
+      <img src="${escapeHtml(url)}" alt="Slide ${i + 1}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+      <div class="gallery-item__placeholder" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px;opacity:.3"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      </div>
+      <div class="gallery-item__actions">
+        <button class="array-item__action" onclick="moveBenefitSlide(${i},-1)" title="Move up"${i === 0 ? ' disabled' : ''}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><polyline points="18 15 12 9 6 15"/></svg>
+        </button>
+        <button class="array-item__action" onclick="moveBenefitSlide(${i},1)" title="Move down"${i === slides.length - 1 ? ' disabled' : ''}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <button class="array-item__delete" onclick="removeBenefitSlide(${i})" title="Remove">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <input class="gallery-item__url" value="${escapeHtml(url)}" onchange="updateBenefitSlide(${i},this.value)" placeholder="Image URL or path" />`;
+    grid.appendChild(item);
+  });
+}
+
+function removeBenefitSlide(index) {
+  if (!Array.isArray(data.benefitSlides)) data.benefitSlides = typeof data.benefitSlides === 'string' ? data.benefitSlides.split('\n').filter(s => s.trim()) : [...(DEFAULTS.benefitSlides || [])];
+  data.benefitSlides.splice(index, 1);
+  renderBenefitSlides();
+}
+
+function updateBenefitSlide(index, value) {
+  if (!Array.isArray(data.benefitSlides)) data.benefitSlides = typeof data.benefitSlides === 'string' ? data.benefitSlides.split('\n').filter(s => s.trim()) : [...(DEFAULTS.benefitSlides || [])];
+  data.benefitSlides[index] = value;
+  renderBenefitSlides();
+}
+
+function moveBenefitSlide(index, direction) {
+  if (!Array.isArray(data.benefitSlides)) data.benefitSlides = typeof data.benefitSlides === 'string' ? data.benefitSlides.split('\n').filter(s => s.trim()) : [...(DEFAULTS.benefitSlides || [])];
+  const newIndex = index + direction;
+  if (newIndex < 0 || newIndex >= data.benefitSlides.length) return;
+  const temp = data.benefitSlides[index];
+  data.benefitSlides[index] = data.benefitSlides[newIndex];
+  data.benefitSlides[newIndex] = temp;
+  renderBenefitSlides();
+}
+
+function collectBenefitSlides() {
+  const inputs = document.querySelectorAll('#benefitSlidesGrid .gallery-item__url');
+  const images = [];
+  inputs.forEach(inp => { if (inp.value.trim()) images.push(inp.value.trim()); });
+  return images.length > 0 ? images : [];
+}
+
+async function uploadBenefitSlide(fileInput) {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    showStatus('Please select an image file.', 'error');
+    fileInput.value = '';
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    showStatus('Image must be under 5MB.', 'error');
+    fileInput.value = '';
+    return;
+  }
+
+  let token = getAccessToken();
+  if (!token) { showStatus('You must be signed in to upload images.', 'error'); return; }
+
+  // Refresh token
+  const refreshToken = localStorage.getItem('supabaseRefreshToken');
+  try {
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+      body: JSON.stringify({ refresh_token: refreshToken })
+    });
+    if (r.ok) {
+      const d = await r.json();
+      localStorage.setItem('supabaseAccessToken', d.access_token);
+      localStorage.setItem('supabaseRefreshToken', d.refresh_token);
+      token = d.access_token;
+    }
+  } catch(_) {}
+
+  const ext = file.name.split('.').pop() || 'jpg';
+  const filename = `banner_${Date.now()}.${ext}`;
+
+  showStatus('Uploading banner image...', 'success');
+
+  const buffer = await file.arrayBuffer();
+  try {
+    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/gallery-images/banners/${filename}`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': file.type,
+        'x-upsert': 'true'
+      },
+      body: buffer
+    });
+    const text = await res.text();
+    if (!res.ok) {
+      let msg = 'Upload failed (HTTP ' + res.status + ')';
+      try { const j = JSON.parse(text); msg = j.message || j.error || msg; } catch(_) {}
+      throw new Error(msg);
+    }
+    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/gallery-images/banners/${filename}`;
+    if (!Array.isArray(data.benefitSlides)) {
+      data.benefitSlides = typeof data.benefitSlides === 'string' ? data.benefitSlides.split('\n').filter(s => s.trim()) : [...(DEFAULTS.benefitSlides || [])];
+    }
+    data.benefitSlides.push(publicUrl);
+    renderBenefitSlides();
+    showStatus('Banner image uploaded successfully!', 'success');
+  } catch (err) {
+    showStatus('Upload failed: ' + err.message, 'error');
+  }
+  fileInput.value = '';
+}
+
+// ===== BENEFIT FEATURES MANAGEMENT =====
+function renderBenefitFeaturesTable() {
+  const tbody = document.getElementById('benefitFeaturesTableBody');
+  tbody.innerHTML = '';
+  const features = data.benefitFeatures || DEFAULTS.benefitFeatures || [];
+  features.forEach((f, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td style="color:var(--text2);font-size:12px">${i + 1}</td>
+      <td><input value="${escapeHtml(f.strong || '')}" onchange="updateBenefitFeature(${i},'strong',this.value)" /></td>
+      <td><input value="${escapeHtml(f.suffix || '')}" onchange="updateBenefitFeature(${i},'suffix',this.value)" /></td>
+      <td style="white-space:nowrap">
+        <button class="array-item__action" onclick="moveBenefitFeature(${i},-1)" title="Move up"${i === 0 ? ' disabled' : ''}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="18 15 12 9 6 15"/></svg>
+        </button>
+        <button class="array-item__action" onclick="moveBenefitFeature(${i},1)" title="Move down"${i === features.length - 1 ? ' disabled' : ''}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <button class="array-item__delete" onclick="deleteBenefitFeature(${i})" title="Delete">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function addBenefitFeature() {
+  if (!data.benefitFeatures) data.benefitFeatures = JSON.parse(JSON.stringify(DEFAULTS.benefitFeatures || []));
+  data.benefitFeatures.push({ strong: '', suffix: '' });
+  renderBenefitFeaturesTable();
+}
+
+function deleteBenefitFeature(index) {
+  if (!data.benefitFeatures) data.benefitFeatures = JSON.parse(JSON.stringify(DEFAULTS.benefitFeatures || []));
+  if (!confirm('Delete this feature card?')) return;
+  data.benefitFeatures.splice(index, 1);
+  renderBenefitFeaturesTable();
+}
+
+function updateBenefitFeature(index, field, value) {
+  if (!data.benefitFeatures) data.benefitFeatures = JSON.parse(JSON.stringify(DEFAULTS.benefitFeatures || []));
+  data.benefitFeatures[index][field] = value;
+}
+
+function moveBenefitFeature(index, direction) {
+  if (!data.benefitFeatures) data.benefitFeatures = JSON.parse(JSON.stringify(DEFAULTS.benefitFeatures || []));
+  const newIndex = index + direction;
+  if (newIndex < 0 || newIndex >= data.benefitFeatures.length) return;
+  const temp = data.benefitFeatures[index];
+  data.benefitFeatures[index] = data.benefitFeatures[newIndex];
+  data.benefitFeatures[newIndex] = temp;
+  renderBenefitFeaturesTable();
+}
+
+function collectBenefitFeatures() {
+  const rows = document.querySelectorAll('#benefitFeaturesTableBody tr');
+  const features = [];
+  rows.forEach(row => {
+    const inputs = row.querySelectorAll('input');
+    if (inputs.length >= 2) {
+      features.push({ strong: inputs[0].value, suffix: inputs[1].value });
+    }
+  });
+  return features.length > 0 ? features : (data.benefitFeatures || DEFAULTS.benefitFeatures || []);
+}
+
+// ===== CONVERSION SIDEBAR IMAGE UPLOAD =====
+function updateConvSidebarPreview() {
+  const preview = document.getElementById('convSidebarPreview');
+  const url = data.convSidebarImg || '';
+  if (preview && url) {
+    const img = document.createElement('img');
+    img.src = url;
+    img.style.cssText = 'width:100%;height:100%;object-fit:contain';
+    img.onerror = function() { this.style.display='none'; };
+    preview.innerHTML = '';
+    preview.appendChild(img);
+  }
+}
+
+async function uploadConvSidebar(fileInput) {
+  const file = fileInput.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { showStatus('Please select an image file.', 'error'); fileInput.value = ''; return; }
+  if (file.size > 5 * 1024 * 1024) { showStatus('Image must be under 5MB.', 'error'); fileInput.value = ''; return; }
+  let token = getAccessToken();
+  if (!token) { showStatus('You must be signed in to upload images.', 'error'); return; }
+  const refreshToken = localStorage.getItem('supabaseRefreshToken');
+  if (refreshToken) {
+    try {
+      const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY }, body: JSON.stringify({ refresh_token: refreshToken }) });
+      if (r.ok) { const d = await r.json(); localStorage.setItem('supabaseAccessToken', d.access_token); localStorage.setItem('supabaseRefreshToken', d.refresh_token); token = d.access_token; }
+    } catch(_) {}
+  }
+  const ext = file.name.split('.').pop() || 'jpg';
+  const filename = `conversion_${Date.now()}.${ext}`;
+  showStatus('Uploading image...', 'success');
+  const buffer = await file.arrayBuffer();
+  try {
+    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/gallery-images/conversion/${filename}`, { method: 'POST', headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${token}`, 'Content-Type': file.type, 'x-upsert': 'true' }, body: buffer });
+    const text = await res.text();
+    if (!res.ok) { let msg = 'Upload failed (HTTP ' + res.status + ')'; try { const j = JSON.parse(text); msg = j.message || j.error || msg; } catch(_) {} throw new Error(msg); }
+    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/gallery-images/conversion/${filename}`;
+    data.convSidebarImg = publicUrl;
+    updateConvSidebarPreview();
+    showStatus('Image uploaded successfully!', 'success');
+  } catch (err) { showStatus('Upload failed: ' + err.message, 'error'); }
+  fileInput.value = '';
+}
+
+// ===== PAYMENT METHODS MANAGEMENT =====
+function renderPaymentsTable() {
+  const tbody = document.getElementById('paymentsTableBody');
+  tbody.innerHTML = '';
+  const dp = DEFAULTS.payments || [];
+  const payments = (data.payments && data.payments.length > 0 && data.payments.some(p => p.name)) ? data.payments : dp;
+  payments.forEach((p, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><input value="${escapeHtml(p.name || '')}" onchange="updatePayment(${i},'name',this.value)" /></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="width:40px;height:40px;border-radius:6px;overflow:hidden;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0" onclick="document.getElementById('payLogoInput${i}').click()" title="Click to upload logo">
+            ${p.logo ? `<img src="${escapeHtml(p.logo)}" style="width:100%;height:100%;object-fit:contain" onerror="this.parentElement.innerHTML='<svg viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; style=&quot;width:16px;height:16px;color:var(--text2)&quot;><rect x=&quot;3&quot; y=&quot;3&quot; width=&quot;18&quot; height=&quot;18&quot; rx=&quot;2&quot; ry=&quot;2&quot;/><circle cx=&quot;8.5&quot; cy=&quot;8.5&quot; r=&quot;1.5&quot;/><polyline points=&quot;21 15 16 10 5 21&quot;/></svg>'" />` : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:var(--text2)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`}
+            <input type="file" id="payLogoInput${i}" accept="image/*" onchange="uploadPaymentLogo(${i}, this)" style="display:none" />
+          </div>
+          <span style="font-size:11px;color:var(--text2)">${p.logo ? 'Uploaded' : 'Click to upload'}</span>
+        </div>
+      </td>
+      <td><input value="${escapeHtml(p.min || '')}" onchange="updatePayment(${i},'min',this.value)" /></td>
+      <td><input value="${escapeHtml(p.max || '')}" onchange="updatePayment(${i},'max',this.value)" /></td>
+      <td><input value="${escapeHtml(p.fee || '')}" onchange="updatePayment(${i},'fee',this.value)" /></td>
+      <td><input value="${escapeHtml(p.speed || '')}" onchange="updatePayment(${i},'speed',this.value)" /></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function updatePayment(index, field, value) {
+  if (!data.payments || !data.payments[index]) return;
+  data.payments[index][field] = value;
+  renderPaymentsTable();
+}
+
+function removePayment(index) {
+  if (!data.payments) return;
+  if (!confirm('Remove this payment method?')) return;
+  data.payments.splice(index, 1);
+  renderPaymentsTable();
+}
+
+function movePayment(index, direction) {
+  if (!data.payments) return;
+  const newIndex = index + direction;
+  if (newIndex < 0 || newIndex >= data.payments.length) return;
+  const temp = data.payments[index];
+  data.payments[index] = data.payments[newIndex];
+  data.payments[newIndex] = temp;
+  renderPaymentsTable();
+}
+
+function addPayment() {
+  if (!data.payments) data.payments = [];
+  data.payments.push({ name: '', logo: '', min: '', max: '', fee: '', speed: '' });
+  renderPaymentsTable();
+}
+
+async function uploadPaymentLogo(index, fileInput) {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    showStatus('Please select an image file.', 'error');
+    fileInput.value = '';
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    showStatus('Image must be under 5MB.', 'error');
+    fileInput.value = '';
+    return;
+  }
+
+  let token = getAccessToken();
+  if (!token) { showStatus('You must be signed in to upload images.', 'error'); return; }
+
+  // Refresh token
+  const refreshToken = localStorage.getItem('supabaseRefreshToken');
+  try {
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+      body: JSON.stringify({ refresh_token: refreshToken })
+    });
+    if (r.ok) {
+      const d = await r.json();
+      localStorage.setItem('supabaseAccessToken', d.access_token);
+      localStorage.setItem('supabaseRefreshToken', d.refresh_token);
+      token = d.access_token;
+    }
+  } catch(_) {}
+
+  const ext = file.name.split('.').pop() || 'jpg';
+  const filename = `payment_${Date.now()}.${ext}`;
+
+  showStatus('Uploading logo...', 'success');
+
+  const buffer = await file.arrayBuffer();
+  try {
+    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/gallery-images/payment-logos/${filename}`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': file.type,
+        'x-upsert': 'true'
+      },
+      body: buffer
+    });
+    const text = await res.text();
+    if (!res.ok) {
+      let msg = 'Upload failed (HTTP ' + res.status + ')';
+      try { const j = JSON.parse(text); msg = j.message || j.error || msg; } catch(_) {}
+      throw new Error(msg);
+    }
+    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/gallery-images/payment-logos/${filename}`;
+    if (data.payments && data.payments[index]) {
+      data.payments[index].logo = publicUrl;
+    }
+    renderPaymentsTable();
+    showStatus('Logo uploaded successfully!', 'success');
+  } catch (err) {
+    showStatus('Upload failed: ' + err.message, 'error');
+  }
+  fileInput.value = '';
+}
+
+function collectPayments() {
+  const tbody = document.getElementById('paymentsTableBody');
+  const rows = tbody.querySelectorAll('tr');
+  const payments = [];
+  rows.forEach((row, i) => {
+    const inputs = row.querySelectorAll('input:not([type="file"])');
+    // inputs: name(0), min(1), max(2), fee(3), speed(4)
+    if (inputs.length >= 5) {
+      // Keep logo from data (set by upload), or from default
+      const existing = (data.payments && data.payments[i]) || {};
+      payments.push({
+        name: inputs[0].value,
+        logo: existing.logo || '',
+        min: inputs[1].value,
+        max: inputs[2].value,
+        fee: inputs[3].value,
+        speed: inputs[4].value
+      });
+    }
+  });
+  return payments.length > 0 && payments.some(p => p.name) ? payments : (DEFAULTS.payments || []);
+}
+
 async function uploadGalleryImage(type, fileInput) {
   const file = fileInput.files[0];
   if (!file) return;
@@ -1639,7 +2565,7 @@ async function uploadGalleryImage(type, fileInput) {
     return;
   }
 
-  let token = localStorage.getItem('supabaseAccessToken');
+  let token = getAccessToken();
   if (!token) { showStatus('You must be signed in to upload images.', 'error'); return; }
 
   // Refresh token
@@ -1695,6 +2621,426 @@ async function uploadGalleryImage(type, fileInput) {
   fileInput.value = '';
 }
 
+async function uploadHeroImage(fileInput) {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    showStatus('Please select an image file.', 'error');
+    fileInput.value = '';
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    showStatus('Image must be under 5MB.', 'error');
+    fileInput.value = '';
+    return;
+  }
+
+  let token = getAccessToken();
+  if (!token) { showStatus('You must be signed in to upload images.', 'error'); fileInput.value = ''; return; }
+
+  const refreshToken = localStorage.getItem('supabaseRefreshToken');
+  try {
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+      body: JSON.stringify({ refresh_token: refreshToken })
+    });
+    if (r.ok) {
+      const d = await r.json();
+      localStorage.setItem('supabaseAccessToken', d.access_token);
+      localStorage.setItem('supabaseRefreshToken', d.refresh_token);
+      token = d.access_token;
+    }
+  } catch(_) {}
+
+  const ext = file.name.split('.').pop() || 'jpg';
+  const filename = `hero_${Date.now()}.${ext}`;
+
+  showStatus('Uploading hero image...', 'success');
+
+  const buffer = await file.arrayBuffer();
+  try {
+    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/hero-images/${filename}`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': file.type,
+        'x-upsert': 'true'
+      },
+      body: buffer
+    });
+    const text = await res.text();
+    if (!res.ok) {
+      let msg = 'Upload failed (HTTP ' + res.status + ')';
+      try { const j = JSON.parse(text); msg = j.message || j.error || msg; } catch(_) {}
+      throw new Error(msg);
+    }
+    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/hero-images/${filename}`;
+    const heroInput = document.getElementById('heroImage');
+    if (heroInput) heroInput.value = publicUrl;
+    const preview = document.querySelector('.hero-image-preview img');
+    if (preview) preview.src = publicUrl;
+    showStatus('Hero image uploaded successfully!', 'success');
+  } catch (err) {
+    showStatus('Upload failed: ' + err.message, 'error');
+  }
+  fileInput.value = '';
+}
+
+// ===== PROMO SLIDES =====
+function renderPromoSlides() {
+  const grid = document.getElementById('promoSlidesGrid');
+  grid.innerHTML = '';
+  (data.promoSlides || DEFAULTS.promoSlides || []).forEach((url, i) => {
+    const item = document.createElement('div');
+    item.className = 'gallery-item';
+    item.innerHTML = `
+      <img src="${escapeHtml(url)}" alt="Slide ${i + 1}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+      <div class="gallery-item__placeholder" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px;opacity:.3"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      </div>
+      <div class="gallery-item__actions">
+        <button class="array-item__action" onclick="movePromoSlide(${i},-1)" title="Move up"${i === 0 ? ' disabled' : ''}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><polyline points="18 15 12 9 6 15"/></svg>
+        </button>
+        <button class="array-item__action" onclick="movePromoSlide(${i},1)" title="Move down"${i === data.promoSlides.length - 1 ? ' disabled' : ''}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <button class="array-item__delete" onclick="removePromoSlide(${i})" title="Remove">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <input class="gallery-item__url" value="${escapeHtml(url)}" onchange="updatePromoSlide(${i},this.value)" placeholder="Image URL or path" />`;
+    grid.appendChild(item);
+  });
+}
+
+function removePromoSlide(index) {
+  if (!data.promoSlides) data.promoSlides = [...(DEFAULTS.promoSlides || [])];
+  if (!confirm('Remove this promo slide?')) return;
+  data.promoSlides.splice(index, 1);
+  renderPromoSlides();
+}
+
+function updatePromoSlide(index, value) {
+  if (!data.promoSlides) data.promoSlides = [...(DEFAULTS.promoSlides || [])];
+  data.promoSlides[index] = value.trim();
+}
+
+function movePromoSlide(index, direction) {
+  if (!data.promoSlides) data.promoSlides = [...(DEFAULTS.promoSlides || [])];
+  const newIndex = index + direction;
+  if (newIndex < 0 || newIndex >= data.promoSlides.length) return;
+  const temp = data.promoSlides[index];
+  data.promoSlides[index] = data.promoSlides[newIndex];
+  data.promoSlides[newIndex] = temp;
+  renderPromoSlides();
+}
+
+function collectPromoSlides() {
+  const inputs = document.querySelectorAll('#promoSlidesGrid .gallery-item__url');
+  const slides = [];
+  inputs.forEach(inp => { if (inp.value.trim()) slides.push(inp.value.trim()); });
+  data.promoSlides = slides.length > 0 ? slides : [...(DEFAULTS.promoSlides || [])];
+}
+
+async function uploadPromoSlide(fileInput) {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    showStatus('Please select an image file.', 'error');
+    fileInput.value = '';
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    showStatus('Image must be under 5MB.', 'error');
+    fileInput.value = '';
+    return;
+  }
+
+  let token = getAccessToken();
+  if (!token) { showStatus('You must be signed in to upload images.', 'error'); fileInput.value = ''; return; }
+
+  const ext = file.name.split('.').pop() || 'jpg';
+  const filename = `promo_${Date.now()}.${ext}`;
+
+  showStatus('Uploading promo slide...', 'success');
+
+  const buffer = await file.arrayBuffer();
+  try {
+    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/hero-images/promos/${filename}`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': file.type,
+        'x-upsert': 'true'
+      },
+      body: buffer
+    });
+    const text = await res.text();
+    if (!res.ok) {
+      let msg = 'Upload failed (HTTP ' + res.status + ')';
+      try { const j = JSON.parse(text); msg = j.message || j.error || msg; } catch(_) {}
+      throw new Error(msg);
+    }
+    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/hero-images/promos/${filename}`;
+    if (!data.promoSlides) data.promoSlides = [...(DEFAULTS.promoSlides || [])];
+    data.promoSlides.push(publicUrl);
+    renderPromoSlides();
+    showStatus('Promo slide uploaded successfully!', 'success');
+  } catch (err) {
+    showStatus('Upload failed: ' + err.message, 'error');
+  }
+  fileInput.value = '';
+}
+
+async function uploadPromoVideo(fileInput) {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  const isVideo = file.type.startsWith('video/');
+  const isImage = file.type.startsWith('image/');
+  if (!isVideo && !isImage) {
+    showStatus('Please select an image or video file.', 'error');
+    fileInput.value = '';
+    return;
+  }
+
+  const maxSize = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
+  if (file.size > maxSize) {
+    showStatus(isVideo ? 'Video must be under 50MB.' : 'Image must be under 10MB.', 'error');
+    fileInput.value = '';
+    return;
+  }
+
+  let token = getAccessToken();
+  if (!token) { showStatus('You must be signed in to upload.', 'error'); fileInput.value = ''; return; }
+
+  const ext = file.name.split('.').pop() || (isVideo ? 'mp4' : 'jpg');
+  const filename = `promo_media_${Date.now()}.${ext}`;
+
+  showStatus('Uploading...', 'success');
+
+  const buffer = await file.arrayBuffer();
+  try {
+    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/hero-images/videos/${filename}`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': file.type,
+        'x-upsert': 'true'
+      },
+      body: buffer
+    });
+    const text = await res.text();
+    if (!res.ok) {
+      let msg = 'Upload failed (HTTP ' + res.status + ')';
+      try { const j = JSON.parse(text); msg = j.message || j.error || msg; } catch(_) {}
+      throw new Error(msg);
+    }
+    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/hero-images/videos/${filename}`;
+    data.promoVideo = publicUrl;
+    // Update preview
+    const preview = document.getElementById('promoVideoPreview');
+    if (preview) {
+      if (isVideo) {
+        preview.innerHTML = `<video src="${escapeHtml(publicUrl)}" style="width:100%;height:100%;object-fit:contain" autoplay muted loop playsInline></video>`;
+      } else {
+        preview.innerHTML = `<img src="${escapeHtml(publicUrl)}" style="width:100%;height:100%;object-fit:contain" />`;
+      }
+    }
+    showStatus('Uploaded successfully!', 'success');
+  } catch (err) {
+    showStatus('Upload failed: ' + err.message, 'error');
+  }
+  fileInput.value = '';
+}
+
+async function uploadAgentIcon(cardIndex, fileInput) {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    showStatus('Please select an image file.', 'error');
+    fileInput.value = '';
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    showStatus('Image must be under 5MB.', 'error');
+    fileInput.value = '';
+    return;
+  }
+
+  let token = getAccessToken();
+  if (!token) { showStatus('You must be signed in to upload images.', 'error'); fileInput.value = ''; return; }
+
+  const ext = file.name.split('.').pop() || 'jpg';
+  const filename = `agent_icon_${cardIndex}_${Date.now()}.${ext}`;
+
+  showStatus('Uploading agent icon...', 'success');
+
+  const buffer = await file.arrayBuffer();
+  try {
+    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/hero-images/agent/${filename}`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': file.type,
+        'x-upsert': 'true'
+      },
+      body: buffer
+    });
+    const text = await res.text();
+    if (!res.ok) {
+      let msg = 'Upload failed (HTTP ' + res.status + ')';
+      try { const j = JSON.parse(text); msg = j.message || j.error || msg; } catch(_) {}
+      throw new Error(msg);
+    }
+    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/hero-images/agent/${filename}`;
+    const iconInput = document.getElementById(`ac${cardIndex}icon`);
+    if (iconInput) iconInput.value = publicUrl;
+    showStatus('Agent icon uploaded successfully!', 'success');
+  } catch (err) {
+    showStatus('Upload failed: ' + err.message, 'error');
+  }
+  fileInput.value = '';
+}
+
+async function uploadProviderGif(rowIndex, fileInput) {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    showStatus('Please select an image file.', 'error');
+    fileInput.value = '';
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    showStatus('Image must be under 5MB.', 'error');
+    fileInput.value = '';
+    return;
+  }
+
+  let token = getAccessToken();
+  if (!token) { showStatus('You must be signed in to upload images.', 'error'); fileInput.value = ''; return; }
+
+  // Refresh token
+  const refreshToken = localStorage.getItem('supabaseRefreshToken');
+  try {
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+      body: JSON.stringify({ refresh_token: refreshToken })
+    });
+    if (r.ok) {
+      const d = await r.json();
+      localStorage.setItem('supabaseAccessToken', d.access_token);
+      localStorage.setItem('supabaseRefreshToken', d.refresh_token);
+      token = d.access_token;
+    }
+  } catch(_) {}
+
+  const ext = file.name.split('.').pop() || 'gif';
+  const filename = `provider_${Date.now()}.${ext}`;
+
+  showStatus('Uploading provider image...', 'success');
+
+  const buffer = await file.arrayBuffer();
+  try {
+    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/hero-images/providers/${filename}`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': file.type,
+        'x-upsert': 'true'
+      },
+      body: buffer
+    });
+    const text = await res.text();
+    if (!res.ok) {
+      let msg = 'Upload failed (HTTP ' + res.status + ')';
+      try { const j = JSON.parse(text); msg = j.message || j.error || msg; } catch(_) {}
+      throw new Error(msg);
+    }
+    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/hero-images/providers/${filename}`;
+    // Find the row's GIF input and set its value
+    const rows = document.querySelectorAll('#providersTableBody tr');
+    const row = rows[rowIndex];
+    if (row) {
+      const inputs = row.querySelectorAll('input');
+      if (inputs.length >= 5) {
+        inputs[2].value = publicUrl;
+      }
+    }
+    showStatus('Provider image uploaded successfully!', 'success');
+  } catch (err) {
+    showStatus('Upload failed: ' + err.message, 'error');
+  }
+  fileInput.value = '';
+}
+
+async function uploadProviderModalGif(fileInput) {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    showStatus('Please select an image file.', 'error');
+    fileInput.value = '';
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    showStatus('Image must be under 5MB.', 'error');
+    fileInput.value = '';
+    return;
+  }
+
+  let token = getAccessToken();
+  if (!token) { showStatus('You must be signed in to upload images.', 'error'); fileInput.value = ''; return; }
+
+  const ext = file.name.split('.').pop() || 'gif';
+  const filename = `provider_${Date.now()}.${ext}`;
+
+  showStatus('Uploading provider image...', 'success');
+
+  const buffer = await file.arrayBuffer();
+  try {
+    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/hero-images/providers/${filename}`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': file.type,
+        'x-upsert': 'true'
+      },
+      body: buffer
+    });
+    const text = await res.text();
+    if (!res.ok) {
+      let msg = 'Upload failed (HTTP ' + res.status + ')';
+      try { const j = JSON.parse(text); msg = j.message || j.error || msg; } catch(_) {}
+      throw new Error(msg);
+    }
+    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/hero-images/providers/${filename}`;
+    document.getElementById('providerModalAsset').value = publicUrl;
+    showStatus('Provider image uploaded successfully!', 'success');
+  } catch (err) {
+    showStatus('Upload failed: ' + err.message, 'error');
+  }
+  fileInput.value = '';
+}
+
 // ===== LOGOUT =====
 async function handleLogout() {
   const overlay = document.getElementById('confirmOverlay');
@@ -1722,8 +3068,9 @@ async function showForgotPassword() {
   document.getElementById('forgotAnswer').value = '';
 
   try {
+    const token = getAccessToken();
     const res = await fetch(`${SUPABASE_URL}/rest/v1/admin_credentials?id=eq.1&select=recovery_question`, {
-      headers: { 'apikey': SUPABASE_ANON_KEY }
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${token || ''}` }
     });
     if (!res.ok) throw new Error('No data');
     const data = await res.json();
@@ -1745,8 +3092,9 @@ async function verifyRecoveryAnswer() {
     return;
   }
   try {
+    const token = getAccessToken();
     const res = await fetch(`${SUPABASE_URL}/rest/v1/admin_credentials?id=eq.1&select=recovery_answer`, {
-      headers: { 'apikey': SUPABASE_ANON_KEY }
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${token || ''}` }
     });
     const data = await res.json();
     if (!data || !data[0]) throw new Error('No data');
@@ -1777,12 +3125,21 @@ async function resetAdminCredentials() {
   }
 
   try {
+    // Update Supabase Auth
+    const authResult = await supabaseAuth.updateUser({ email: newEmail, password: newPassword });
+    if (authResult && authResult.alreadyInUse) {
+      errorEl.textContent = 'Email already in use by another account.';
+      errorEl.style.display = 'block';
+      return;
+    }
     // Update admin_credentials table
+    const token = getAccessToken();
     await fetch(`${SUPABASE_URL}/rest/v1/admin_credentials?id=eq.1`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': SUPABASE_ANON_KEY
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({
         email: newEmail,
@@ -1791,10 +3148,17 @@ async function resetAdminCredentials() {
       })
     });
 
+    // Update tracked originals so subsequent saves don't re-sync
+    _originalAdminEmail = newEmail;
+    _originalAdminPassword = newPassword;
     // Update localStorage data
     data.adminEmail = newEmail;
     data.adminPassword = newPassword;
-    saveData();
+    // Sync to the form fields
+    const emailEl = document.getElementById('adminEmail');
+    const passEl = document.getElementById('adminPassword');
+    if (emailEl) emailEl.value = newEmail;
+    if (passEl) passEl.value = newPassword;
 
     closeForgotPassword();
     showStatus('Credentials reset! Sign in with your new email/password.', 'success');
@@ -1850,31 +3214,27 @@ async function resetToDefaults() {
 
 // ===== SECTION SAVE BUTTONS =====
 const SECTION_FIELDS = {
-  general: ['adminEmail', 'adminPassword'],
-  branding: ['siteTitle', 'faviconPath', 'logoPath', 'heroImage'],
-  links: ['partnerInviteUrl', 'facebookUrl', 'agentFacebookUrl', 'altFacebookUrl', 'messengerLoadingGc', 'messengerSportsTips'],
-  hero: ['heroHeadline', 'heroSubcopy', 'heroLogoTag', 'heroCtaPrimary', 'heroCtaSecondary', 'statPlayingNum', 'statPlayingSuffix', 'statPaidNum', 'statPaidSuffix', 'trustBadgeText', 'formTriggerText', 'formTriggerNote', 'formSubmitText', 'formFooterText'],
-  ticker: ['tickerLabel', 'tickerMessages'],
+  general: [],
+  hero: ['heroHeadline', 'heroSubcopy', 'heroLogoTag', 'heroCtaPrimary', 'heroCtaPrimaryUrl', 'heroCtaSecondary', 'heroCtaSecondaryUrl', 'statPlayingNum', 'statPlayingSuffix', 'statPaidNum', 'statPaidSuffix', 'trustBadgeText', 'formTriggerText', 'formTriggerNote', 'formSubmitText', 'formFooterText', 'heroImage', 'tickerLabel', 'tickerMessages'],
   howitworks: ['hiwKicker', 'hiwHeading'],
-  benefits: ['benefitsKicker', 'benefitsHeading', 'benefitsCopy', 'benefitSlides', 'paySectionTitle', 'benefitsTagline'],
+  benefits: ['benefitsKicker', 'benefitsHeading', 'benefitsCopy', 'paySectionTitle', 'benefitsTagline'],
   providers: ['provSearchPlaceholder', 'provNoResults', 'provKicker', 'provHeading'],
-  promoslides: ['sportsKicker'],
-  conversion: ['convBadge', 'convHeadline', 'convDesc', 'convPerks', 'convCta', 'convSidebarImg', 'convDisclaimer'],
-  promo: ['promoHeading', 'promoCopy1', 'promoCopy2', 'promoCtaLead', 'promoCtaText', 'promoVerified', 'promoAffiliate', 'promoVideo'],
+  promoslides: ['sportsKicker', 'sportsCtaUrl'],
+  conversion: ['convBadge', 'convHeadline', 'convDesc', 'convPerks', 'convCta', 'convCtaUrl', 'convSidebarImg', 'convDisclaimer'],
+  promo: ['promoHeading', 'promoCopy1', 'promoCopy2', 'promoCtaLead', 'promoCtaText', 'promoCtaUrl', 'promoVerified', 'promoAffiliate'],
   agent: ['agentBadge', 'agentName', 'agentTagline'],
   faq: ['faqKicker', 'faqHeading', 'faqCopy'],
   galleries: ['winsHeading', 'winsCta', 'winsCtaUrl', 'winsCopy', 'cashHeading', 'cashCta', 'cashCtaUrl', 'cashCopy'],
-  chatbot: ['botName', 'botStatus', 'botWelcome', 'botFallback', 'botPlaceholder', 'botQuickReplies'],
   notifications: ['notifInterval', 'notifDuration']
 };
 
 const SAVE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
 
-// Inject save buttons into all section cards (except dashboard)
+// Inject save buttons into all section cards (except dashboard and FAQ)
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.section-card').forEach(card => {
     const id = card.id.replace('sec-', '');
-    if (id === 'dashboard') return;
+    if (id === 'dashboard' || id === 'faq') return;
     const divider = document.createElement('div');
     divider.className = 'section-save';
     divider.innerHTML = `<button class="btn btn-primary" onclick="saveSection('${id}')">${SAVE_ICON} Save Changes</button>`;
@@ -1885,30 +3245,50 @@ document.addEventListener('DOMContentLoaded', () => {
 async function saveSection(section) {
   collectFromForm();
   try {
-    await saveData();
-    // Special handling for general tab (auth + recovery)
     if (section === 'general') {
-      // Sync to Supabase Auth (best-effort, don't block save)
-      try {
-        const authUpdates = {};
-        if (data.adminEmail) authUpdates.email = data.adminEmail;
-        if (data.adminPassword) authUpdates.password = data.adminPassword;
-        if (Object.keys(authUpdates).length) await supabaseAuth.updateUser(authUpdates);
-      } catch (authErr) {
-        console.warn('Auth sync skipped:', authErr.message);
+      const newEmail = data.adminEmail || '';
+      const newPassword = data.adminPassword || '';
+      const emailChanged = newEmail !== _originalAdminEmail;
+      const passwordChanged = newPassword !== _originalAdminPassword;
+      if (emailChanged || passwordChanged) {
+        const fields = {};
+        if (emailChanged) fields.email = newEmail;
+        if (passwordChanged) fields.password = newPassword;
+        const result = await supabaseAuth.updateUser(fields);
+        if (result && result.alreadyInUse) {
+          showStatus('Email already in use by another account.', 'error');
+          return;
+        }
+        _originalAdminEmail = newEmail || _originalAdminEmail;
+        _originalAdminPassword = newPassword || _originalAdminPassword;
       }
       // Save recovery Q&A to admin_credentials table
-      const recoveryQuestion = document.getElementById('recoveryQuestion').value === 'Custom'
-        ? document.getElementById('recoveryQuestionCustom').value
-        : document.getElementById('recoveryQuestion').value;
-      const recoveryAnswer = document.getElementById('recoveryAnswer').value;
-      await supabaseRest.updateCredentials({
-        email: data.adminEmail,
-        password: data.adminPassword,
-        recovery_question: recoveryQuestion,
-        recovery_answer: recoveryAnswer
-      });
+      const token = getAccessToken();
+      if (token) {
+        const rqEl = document.getElementById('recoveryQuestion');
+        const raEl = document.getElementById('recoveryAnswer');
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/admin_credentials?id=eq.1`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            email: data.adminEmail || '',
+            password: data.adminPassword || '',
+            recovery_question: rqEl ? rqEl.value : '',
+            recovery_answer: raEl ? raEl.value : '',
+            updated_at: new Date().toISOString()
+          })
+        });
+        if (!res.ok) {
+          const errText = await res.text().catch(() => '');
+          throw new Error(`Failed to save recovery data (${res.status}): ${errText}`);
+        }
+      }
     }
+    await saveData();
     showStatus('Changes saved!', 'success');
   } catch (err) {
     showStatus('Save failed: ' + err.message, 'error');
@@ -1918,6 +3298,7 @@ async function saveSection(section) {
 // ===== INIT =====
 (async () => {
   await loadData();
+  console.log('[Admin] Data loaded. payments:', JSON.stringify(data.payments));
   populateForm();
   const savedSection = localStorage.getItem('adminActiveSection');
   if (savedSection) {
@@ -1928,12 +3309,19 @@ async function saveSection(section) {
 })();
 
 // ===== FORM INQUIRIES DASHBOARD =====
-let inquiriesData = [];
-let inquiriesPage = 1;
-const INQUIRIES_PER_PAGE = 15;
+let inquiriesSortedBy = 'date';
+
+function setInquiriesSort(sort) {
+  inquiriesSortedBy = sort;
+  document.querySelectorAll('#sortDate,#sortAlpha,#sortCountry').forEach(b => b.style.outline = '');
+  const id = sort === 'date' ? 'sortDate' : sort === 'alpha' ? 'sortAlpha' : 'sortCountry';
+  const btn = document.getElementById(id);
+  if (btn) btn.style.outline = '2px solid var(--accent)';
+  renderInquiries();
+}
 
 async function loadInquiries() {
-  const token = localStorage.getItem('supabaseAccessToken');
+  const token = getAccessToken();
   if (!token) return;
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/form_inquiries?select=*&order=created_at.desc`, {
@@ -1943,9 +3331,8 @@ async function loadInquiries() {
       }
     });
     if (!res.ok) throw new Error('Failed to load');
-    inquiriesData = await res.json();
-    inquiriesPage = 1;
-    renderInquiries();
+     inquiriesData = await res.json();
+     renderInquiries();
   } catch (err) {
     document.getElementById('dashTableBody').innerHTML =
       `<tr><td colspan="7" class="dash-empty">
@@ -1975,56 +3362,77 @@ function renderInquiries() {
   document.getElementById('dashToday').textContent = filtered.filter(r => (r.created_at || '').slice(0, 10) === todayStr).length;
   document.getElementById('dashThisWeek').textContent = filtered.filter(r => new Date(r.created_at) >= weekAgo).length;
 
-  // Pagination
-  const totalPages = Math.max(1, Math.ceil(filtered.length / INQUIRIES_PER_PAGE));
-  if (inquiriesPage > totalPages) inquiriesPage = totalPages;
-  const start = (inquiriesPage - 1) * INQUIRIES_PER_PAGE;
-  const page = filtered.slice(start, start + INQUIRIES_PER_PAGE);
+  // Sort
+  if (inquiriesSortedBy === 'alpha') {
+    filtered.sort((a, b) => (a.full_name || '').localeCompare(b.full_name || ''));
+  } else if (inquiriesSortedBy === 'country') {
+    filtered.sort((a, b) => (a.country || '').localeCompare(b.country || ''));
+  } else {
+    filtered.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+  }
+
+  // Split into today vs previous
+  const todayInquiries = [];
+  const prevInquiries = [];
+  filtered.forEach(r => {
+    const d = (r.created_at || '').slice(0, 10);
+    if (d === todayStr) todayInquiries.push(r);
+    else prevInquiries.push(r);
+  });
 
   const tbody = document.getElementById('dashTableBody');
-  if (page.length === 0) {
+  if (filtered.length === 0) {
     tbody.innerHTML = `<tr><td colspan="7" class="dash-empty">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
       <div>No inquiries found.</div>
     </td></tr>`;
   } else {
-    tbody.innerHTML = page.map(r => {
-      const d = r.created_at ? new Date(r.created_at) : null;
-      const dateStr = d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
-      const timeStr = d ? d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '';
-      return `<tr>
-        <td class="dash-date">${dateStr}<br><span style="opacity:.6">${timeStr}</span></td>
-        <td>${esc(r.full_name)}</td>
-        <td class="dash-email">${esc(r.email)}</td>
-        <td>${esc(r.username)}</td>
-        <td>${esc(r.phone)}</td>
-        <td>${esc(r.country)}</td>
-        <td><button class="dash-delete" onclick="deleteInquiry('${r.id}')" title="Delete">
+    let html = '';
+    if (todayInquiries.length > 0) {
+      html += `<tr><td colspan="7" class="dash-section-header"><span style="background:#66f89c;color:#000;font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;text-transform:uppercase;letter-spacing:1px;">Today</span></td></tr>`;
+      html += todayInquiries.map(r => {
+        const d = r.created_at ? new Date(r.created_at) : null;
+        const dateStr = d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+        const timeStr = d ? d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '';
+        return `<tr>
+          <td class="dash-date">${dateStr}<br><span style="opacity:.6">${timeStr}</span></td>
+          <td>${esc(r.full_name)}</td>
+          <td class="dash-email"><a href="https://mail.google.com/mail/?view=cm&fs=1&to=${esc(r.email)}" target="_blank" style="color:var(--accent);text-decoration:none">${esc(r.email)}</a></td>
+          <td>${esc(r.username)}</td>
+          <td><a href="tel:${esc(r.phone)}" style="color:var(--text);text-decoration:none">${esc(r.phone)}</a></td>
+          <td>${esc(r.country)}</td>
+          <td><button class="dash-delete" onclick="deleteInquiry('${r.id}')" title="Delete">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
         </button></td>
-      </tr>`;
-    }).join('');
-  }
-
-  // Pagination buttons
-  const pag = document.getElementById('dashPagination');
-  if (totalPages <= 1) { pag.innerHTML = ''; return; }
-  let btns = '';
-  btns += `<button ${inquiriesPage === 1 ? 'disabled' : ''} onclick="inquiriesPage--;renderInquiries()">Prev</button>`;
-  for (let i = 1; i <= totalPages; i++) {
-    if (totalPages > 7 && i > 2 && i < totalPages - 1 && Math.abs(i - inquiriesPage) > 1) {
-      if (i === 3 || i === totalPages - 2) btns += `<button disabled>...</button>`;
-      continue;
+        </tr>`;
+      }).join('');
     }
-    btns += `<button class="${i === inquiriesPage ? 'active' : ''}" onclick="inquiriesPage=${i};renderInquiries()">${i}</button>`;
+    if (prevInquiries.length > 0) {
+      html += `<tr><td colspan="7" class="dash-section-header"><span style="background:#333;color:#888;font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;text-transform:uppercase;letter-spacing:1px;">Previous</span></td></tr>`;
+      html += prevInquiries.map(r => {
+        const d = r.created_at ? new Date(r.created_at) : null;
+        const dateStr = d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+        const timeStr = d ? d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '';
+        return `<tr>
+          <td class="dash-date">${dateStr}<br><span style="opacity:.6">${timeStr}</span></td>
+          <td>${esc(r.full_name)}</td>
+          <td class="dash-email"><a href="https://mail.google.com/mail/?view=cm&fs=1&to=${esc(r.email)}" target="_blank" style="color:var(--accent);text-decoration:none">${esc(r.email)}</a></td>
+          <td>${esc(r.username)}</td>
+          <td><a href="tel:${esc(r.phone)}" style="color:var(--text);text-decoration:none">${esc(r.phone)}</a></td>
+          <td>${esc(r.country)}</td>
+          <td><button class="dash-delete" onclick="deleteInquiry('${r.id}')" title="Delete">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button></td>
+        </tr>`;
+      }).join('');
+    }
+    tbody.innerHTML = html;
   }
-  btns += `<button ${inquiriesPage === totalPages ? 'disabled' : ''} onclick="inquiriesPage++;renderInquiries()">Next</button>`;
-  pag.innerHTML = btns;
 }
 
 async function deleteInquiry(id) {
   if (!confirm('Delete this inquiry? This cannot be undone.')) return;
-  const token = localStorage.getItem('supabaseAccessToken');
+  const token = getAccessToken();
   if (!token) { showStatus('You must be signed in to delete.', 'error'); return; }
   try {
     await fetch(`${SUPABASE_URL}/rest/v1/form_inquiries?id=eq.${id}`, {
@@ -2044,7 +3452,7 @@ async function deleteInquiry(id) {
 
 function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
 
-document.getElementById('dashSearch').addEventListener('input', () => { inquiriesPage = 1; renderInquiries(); });
+document.getElementById('dashSearch').addEventListener('input', () => { renderInquiries(); });
 </script>
 </body>
 </html>

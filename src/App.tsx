@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ImageGallery } from "@/components/ui/image-gallery";
 import { NeoMinimalFooter } from "@/components/ui/neo-minimal-footer";
 import { AdminLoginModal } from "@/components/ui/admin-login-modal";
 import { Header } from "@/components/ui/header-3";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import {
   ArrowUpRight,
   ArrowUpToLine,
@@ -30,24 +30,24 @@ const facebookUrl = "https://m.me/100022590198280";
 const heroImage =
   "/images/hero.jpg";
 
-const providers = [
-  { name: "Live Sports", kind: "Sports", asset: "/images/provider-live-sports.gif", hue: "#67f79d" },
-  { name: "Pre-match", kind: "Sports", asset: "/images/provider-pre-match.gif", hue: "#ec6800" },
-  { name: "Live Casino", kind: "Tables", asset: "/images/provider-live-casino.gif", hue: "#5c17a2" },
-  { name: "Evolution", kind: "Live tables", asset: "/images/provider-evolution.gif", hue: "#e4b551" },
-  { name: "JILI", kind: "Slots", asset: "/images/provider-jili.gif", hue: "#f83700" },
-  { name: "Casino", kind: "Tables", asset: "/images/provider-casino.gif", hue: "#66f89c" },
-  { name: "Pragmatic Play", kind: "Slots", asset: "/images/provider-pragmatic-play.gif", hue: "#ef5d2d" },
-  { name: "Fachai", kind: "Arcade", asset: "/images/provider-fachai.gif", hue: "#e9bb43" },
-  { name: "CreedRoomz", kind: "Live tables", asset: "/images/provider-creedroomz.gif", hue: "#5d6dff" },
-  { name: "Dragon Gaming", kind: "Slots", asset: "/images/provider-dragon-gaming.gif", hue: "#d93723" },
-  { name: "747 News", kind: "Updates", asset: "/images/provider-747-news.gif", hue: "#66f89c" },
-  { name: "747 Hearts", kind: "Tables", asset: "/images/provider-747-hearts.gif", hue: "#f56b9a" },
-  { name: "PopOK", kind: "Arcade", asset: "/images/provider-popok.gif", hue: "#75a9ff" },
-  { name: "Amigo", kind: "Games", asset: "/images/provider-amigo.gif", hue: "#f1a343" },
+const DEFAULT_PROVIDERS: { name: string; kind: string; asset: string; hue: string; link: string }[] = [
+  { name: "Live Sports", kind: "Sports", asset: "/images/provider-live-sports.gif", hue: "#67f79d", link: "https://www.messenger.com/j/AbakhHJ975SWCzqw/" },
+  { name: "Pre-match", kind: "Sports", asset: "/images/provider-pre-match.gif", hue: "#ec6800", link: "https://www.messenger.com/j/AbakhHJ975SWCzqw/" },
+  { name: "Live Casino", kind: "Tables", asset: "/images/provider-live-casino.gif", hue: "#5c17a2", link: "https://www.messenger.com/j/AbakhHJ975SWCzqw/" },
+  { name: "Evolution", kind: "Live tables", asset: "/images/provider-evolution.gif", hue: "#e4b551", link: "https://www.messenger.com/j/AbakhHJ975SWCzqw/" },
+  { name: "JILI", kind: "Slots", asset: "/images/provider-jili.gif", hue: "#f83700", link: "https://www.messenger.com/j/AbakhHJ975SWCzqw/" },
+  { name: "Casino", kind: "Tables", asset: "/images/provider-casino.gif", hue: "#66f89c", link: "https://www.messenger.com/j/AbakhHJ975SWCzqw/" },
+  { name: "Pragmatic Play", kind: "Slots", asset: "/images/provider-pragmatic-play.gif", hue: "#ef5d2d", link: "https://www.messenger.com/j/AbakhHJ975SWCzqw/" },
+  { name: "Fachai", kind: "Arcade", asset: "/images/provider-fachai.gif", hue: "#e9bb43", link: "https://www.messenger.com/j/AbakhHJ975SWCzqw/" },
+  { name: "CreedRoomz", kind: "Live tables", asset: "/images/provider-creedroomz.gif", hue: "#5d6dff", link: "https://www.messenger.com/j/AbakhHJ975SWCzqw/" },
+  { name: "Dragon Gaming", kind: "Slots", asset: "/images/provider-dragon-gaming.gif", hue: "#d93723", link: "https://www.messenger.com/j/AbakhHJ975SWCzqw/" },
+  { name: "747 News", kind: "Updates", asset: "/images/provider-747-news.gif", hue: "#66f89c", link: "https://www.messenger.com/j/AbakhHJ975SWCzqw/" },
+  { name: "747 Hearts", kind: "Tables", asset: "/images/provider-747-hearts.gif", hue: "#f56b9a", link: "https://www.messenger.com/j/AbakhHJ975SWCzqw/" },
+  { name: "PopOK", kind: "Arcade", asset: "/images/provider-popok.gif", hue: "#75a9ff", link: "https://www.messenger.com/j/AbakhHJ975SWCzqw/" },
+  { name: "Amigo", kind: "Games", asset: "/images/provider-amigo.gif", hue: "#f1a343", link: "https://www.messenger.com/j/AbakhHJ975SWCzqw/" },
 ];
 
-const promoSlides = [
+const DEFAULT_PROMO_SLIDES = [
   "/images/promo-1.webp",
   "/images/promo-2.webp",
   "/images/promo-3.webp",
@@ -55,9 +55,23 @@ const promoSlides = [
   "/images/promo-5.webp",
 ];
 
-const benefitSlides = ["/images/ga.jpg", "/images/ge.jpg"];
+const DEFAULT_BENEFIT_SLIDES = ["/images/ga.jpg", "/images/ge.jpg"];
+const DEFAULT_BENEFIT_FEATURES = [
+  { strong: "24/7", suffix: "SUPPORT", icon: "clock" },
+  { strong: "FAST", suffix: "CASH IN / CASH OUT", icon: "money" },
+  { strong: "NO", suffix: "CASH OUT FEE", icon: "check" },
+  { strong: "PLAY SMART", suffix: "WIN BIG", icon: "bolt" },
+];
+const DEFAULT_PAYMENTS = [
+  { name: "GCash", logo: "/images/gcash.jpg", min: "P100", max: "P100,000", fee: "Free", speed: "Instant" },
+  { name: "GOtyme", logo: "/images/gotyme.jpg", min: "P100", max: "P50,000", fee: "Free", speed: "Instant" },
+  { name: "STC Pay", logo: "/images/stc.jpg", min: "SAR 10", max: "SAR 50,000", fee: "Free", speed: "Instant" },
+  { name: "Barq", logo: "/images/barq.png", min: "SAR 10", max: "SAR 50,000", fee: "Free", speed: "Instant" },
+];
+const DEFAULT_PAY_SECTION_TITLE = "AVAILABLE CASH IN METHOD";
+const DEFAULT_BENEFITS_TAGLINE = ["FAST.", "SAFE.", "SECURE."];
 
-const faqData = [
+const DEFAULT_FAQ_DATA = [
   { keywords: ["what is", "747 live", "about", "platform"], q: "What is 747 Live?", a: "Ang 747 Live ay isang premium gaming platform na may live casino, sports betting, at arcade games. Ito ay independent invitation portal para ma-access mo ang platform." },
   { keywords: ["register", "sign up", "join", "create account", "how to"], q: "How do I register?", a: "Click lang ang \"Register now\" button sa page na ito. Ire-redirect ka sa official partner platform para matapos ang registration mo." },
   { keywords: ["bonus", "welcome", "promo", "cashback", "rebate"], q: "Is there a welcome bonus?", a: "Oo naman! Kapag nag-register ka through our partner link, may exclusive welcome bonuses, cashback, at promotions na àwait sa'yo." },
@@ -77,7 +91,7 @@ const fadeUp = {
   visible: { opacity: 1, y: 0 },
 };
 
-function ProviderCard({ provider, index, inviteUrl }: { provider: (typeof providers)[number]; index: number; inviteUrl: string }) {
+function ProviderCard({ provider, index, inviteUrl }: { provider: { name: string; kind: string; asset: string; hue: string; link: string }; index: number; inviteUrl: string }) {
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
   function handlePointerMove(event: React.PointerEvent<HTMLElement>) {
@@ -87,9 +101,11 @@ function ProviderCard({ provider, index, inviteUrl }: { provider: (typeof provid
     setTilt({ x, y });
   }
 
+  const href = provider.link || inviteUrl;
+
   return (
     <motion.a
-      href={inviteUrl}
+      href={href}
       target="_blank"
       rel="noreferrer"
       className="provider-card"
@@ -169,11 +185,6 @@ export default function App() {
   const [cursorGlow, setCursorGlow] = useState({ x: 50, y: 20 });
   const [promoIndex, setPromoIndex] = useState(0);
   const [bannerIndex, setBannerIndex] = useState(0);
-  const filteredProviders = providers.filter((p) =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.kind.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [activeSection, setActiveSection] = useState("");
 
@@ -183,23 +194,21 @@ export default function App() {
   const logoTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
   // Supabase Auth
-  const supabase = useRef(createClient(
-    import.meta.env.VITE_SUPABASE_URL || '',
-    import.meta.env.VITE_SUPABASE_ANON_KEY || ''
-  )).current;
+  const supabaseRef = useRef<SupabaseClient | null>(null);
+  if (!supabaseRef.current) {
+    supabaseRef.current = createClient(
+      import.meta.env.VITE_SUPABASE_URL || '',
+      import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+    );
+  }
+  const supabase = supabaseRef.current;
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [loginError, setLoginError] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Forgot password flow
-  const [forgotStep, setForgotStep] = useState<0 | 1 | 2 | 3>(0); // 0=login, 1=enter email, 2=recovery question, 3=new password
-  const [forgotEmail, setForgotEmail] = useState("");
-  const [forgotQuestion, setForgotQuestion] = useState("");
-  const [forgotAnswer, setForgotAnswer] = useState("");
-  const [forgotNewPassword, setForgotNewPassword] = useState("");
-  const [forgotConfirmPassword, setForgotConfirmPassword] = useState("");
+
 
   // Hero form fields
   const [formName, setFormName] = useState("");
@@ -207,6 +216,7 @@ export default function App() {
   const [formUsername, setFormUsername] = useState("");
   const [formPhone, setFormPhone] = useState("");
   const [formCountry, setFormCountry] = useState("");
+  const [formSuccess, setFormSuccess] = useState(false);
 
   // Fetch live config from Supabase (overrides hardcoded defaults)
   const [liveUrl, setLiveUrl] = useState(DEFAULT_PARTNER_URL);
@@ -214,6 +224,89 @@ export default function App() {
   const [cashImages, setCashImages] = useState<string[]>(() => Array.from({ length: 7 }, (_, i) => `/images/win (${i + 1}).jpg`));
   const [winsCtaUrl, setWinsCtaUrl] = useState("");
   const [cashCtaUrl, setCashCtaUrl] = useState("");
+  const [winsHeading, setWinsHeading] = useState("Winning Slips");
+  const [winsCopy, setWinsCopy] = useState("See the latest winning slips from our community members.");
+  const [winsCta, setWinsCta] = useState("Start winning today");
+  const [cashHeading, setCashHeading] = useState("Cash Out Proof");
+  const [cashCopy, setCashCopy] = useState("Real cash outs from our community members.");
+  const [cashCta, setCashCta] = useState("Get your cash out now");
+  const [faqKicker, setFaqKicker] = useState("FAQ");
+  const [faqHeading, setFaqHeading] = useState("Frequently asked questions");
+  const [faqCopy, setFaqCopy] = useState("Quick answers to the most common questions about 747 Live.");
+  const [faqData, setFaqData] = useState(DEFAULT_FAQ_DATA);
+  const [heroCtaPrimary, setHeroCtaPrimary] = useState("Register through my link");
+  const [heroCtaPrimaryUrl, setHeroCtaPrimaryUrl] = useState(DEFAULT_PARTNER_URL);
+  const [heroCtaSecondary, setHeroCtaSecondary] = useState("Why join");
+  const [heroCtaSecondaryUrl, setHeroCtaSecondaryUrl] = useState("");
+  const [heroHeadline, setHeroHeadline] = useState('Play <em>747 LIVE</em> &amp; win real cash.');
+  const [heroSubcopy, setHeroSubcopy] = useState('Sign up through my link for a <span class="hero__bonus">Welcome Bonus + Cashback</span>. Casino, live sports, eSports &amp; VIP rewards — Saudi Riyals accepted.');
+  const [heroLogoTag, setHeroLogoTag] = useState('Official Agent');
+  const [statPlayingNum, setStatPlayingNum] = useState(3163);
+  const [statPlayingSuffix, setStatPlayingSuffix] = useState('+');
+  const [statPaidNum, setStatPaidNum] = useState(2.4);
+  const [statPaidSuffix, setStatPaidSuffix] = useState('B+');
+  const [trustBadgeText, setTrustBadgeText] = useState('<strong>Verified Partner</strong> \u2014 100% secure registration');
+  const [formTriggerText, setFormTriggerText] = useState('Register Account');
+  const [formTriggerNote, setFormTriggerNote] = useState('10% cash back + exclusive GCs');
+  const [formSubmitText, setFormSubmitText] = useState('Register now');
+  const [formFooterText, setFormFooterText] = useState('<strong>10% CASH BACK</strong> sa total na LOSS BETS twice a month \u2014 plus exclusive access to all GCs!');
+  const [benefitSlides, setBenefitSlides] = useState<string[]>(DEFAULT_BENEFIT_SLIDES);
+  const [promoSlides, setPromoSlides] = useState<string[]>(DEFAULT_PROMO_SLIDES);
+  const [sportsKicker, setSportsKicker] = useState("Sports & Promotions");
+  const [sportsCtaUrl, setSportsCtaUrl] = useState("https://www.messenger.com/j/AbakhHJ975SWCzqw/");
+  const [benefitFeatures, setBenefitFeatures] = useState(DEFAULT_BENEFIT_FEATURES);
+  const [payments, setPayments] = useState(DEFAULT_PAYMENTS);
+  const [paySectionTitle, setPaySectionTitle] = useState(DEFAULT_PAY_SECTION_TITLE);
+  const [benefitsTagline, setBenefitsTagline] = useState(DEFAULT_BENEFITS_TAGLINE);
+  const [benefitsFbText, setBenefitsFbText] = useState("Follow us on Facebook");
+  const [benefitsFbUrl, setBenefitsFbUrl] = useState("https://www.facebook.com/profile.php?id=100022590198280");
+  const [convBadge, setConvBadge] = useState("747LIVE invitation");
+  const [convHeadline, setConvHeadline] = useState("Looking for Players and Sports Lovers!");
+  const [convDesc, setConvDesc] = useState("Sali na sa aming exclusive sports community at e-enjoy ang mga member perks:");
+  const [convPerks, setConvPerks] = useState(["2% Bonus 1st Cash In", "10% Loss Rebates Twice Monthly", "Birthday Bonus Gift", "VIP Sports Group Access", "Monthly Raffle"]);
+  const [convCta, setConvCta] = useState("Get started");
+  const [convCtaUrl, setConvCtaUrl] = useState("");
+  const [convSidebarImg, setConvSidebarImg] = useState("/images/z.jpg");
+  const [convDisclaimer, setConvDisclaimer] = useState("You'll be redirected to continue your registration through our partner platform.");
+  const [benefitsKicker, setBenefitsKicker] = useState("Invitation privileges");
+  const [benefitsHeading, setBenefitsHeading] = useState('A more rewarding way to <em>step inside.</em>');
+  const [benefitsCopy, setBenefitsCopy] = useState("Selected benefits to look for when you continue through the partner platform.");
+  const [providers, setProviders] = useState(DEFAULT_PROVIDERS);
+  const [provSearchPlaceholder, setProvSearchPlaceholder] = useState("Search games, providers, categories...");
+  const [provNoResults, setProvNoResults] = useState("No results found for");
+  const [provKicker, setProvKicker] = useState("Curated entertainment");
+  const [provHeading, setProvHeading] = useState("Find your <em>table,</em> your tempo.");
+  const [promoHeading, setPromoHeading] = useState("10% Cashback / Rebates<br />Free Registration");
+  const [promoCopy1, setPromoCopy1] = useState("kaya ano pang hinihintay mo MESSAGE na");
+  const [promoCopy2, setPromoCopy2] = useState("Kung nandito ka sa Mid.Est sakto para sayo to<br />Meron din <strong>SPORTS TIPS GC</strong> para sayo.<br />24/7 Lõäding GC at customer service");
+  const [promoCtaLead, setPromoCtaLead] = useState("Message na dito 👉🏼");
+  const [promoCtaText, setPromoCtaText] = useState("Message on Facebook");
+  const [promoVerified, setPromoVerified] = useState("Legit na legit blue check verified by META kaya safe na safe ka");
+  const [promoAffiliate, setPromoAffiliate] = useState("Pwede ka din mag apply as Affiliate");
+  const [promoVideo, setPromoVideo] = useState("/images/vid.mp4");
+  const [promoCtaUrl, setPromoCtaUrl] = useState("https://www.facebook.com/share/1BriKGwHZ2/?mibextid=wwXIfr");
+  const [tickerLabel, setTickerLabel] = useState("Now in the lounge");
+  const [tickerMessages, setTickerMessages] = useState("TWICE MONTHLY CASHBACK\nSAUDI RIYALS ACCEPTED\n24/7 LIVE SPORTS TIPS\nMONTHLY VIP RAFFLE");
+  const [hiwKicker, setHiwKicker] = useState("How it works");
+  const [hiwHeading, setHiwHeading] = useState("Get started in <em>3 easy steps</em>");
+  const [hiw, setHiw] = useState([
+    { enTitle: "Register", tlTitle: "Magrehistro", enDesc: "Click the register button and fill in your details through our partner platform.", tlDesc: "I-click ang register button at punan ang iyong detalye." },
+    { enTitle: "Deposit", tlTitle: "Mag-deposito", enDesc: "Choose from GCash, GOtyme, STC Pay, or Barq. No hidden fees, instant processing.", tlDesc: "Pumili ng GCash, GOtyme, STC Pay, o Barq. Walang dagdag na bayad." },
+    { enTitle: "Play & Win", tlTitle: "Maglaro at Manalo", enDesc: "Access live casino, sports betting, slots, and arcade games. Start winning today!", tlDesc: "Mag-access sa live casino, sports betting, slots, at arcade games. Manalo na!" }
+  ]);
+  const [agentBadge, setAgentBadge] = useState("747 AREA MANAGER");
+  const [agentName, setAgentName] = useState("Kenj Chua");
+  const [agentTagline, setAgentTagline] = useState("747 Free Online Betting Site — Free Sports Picks sa baba plus 10% REBATES");
+  const [agentFacebookUrl, setAgentFacebookUrl] = useState("https://www.facebook.com/Yjnek#");
+  const [agentCards, setAgentCards] = useState([
+    { title: 'Registration', icon: '/images/a.jpg', desc: 'Click and Message for details', cta: 'Register now', link: '' },
+    { title: '24/7 Loading Gc', icon: '/images/b.jpg', desc: 'Click and Message for details', cta: 'Join now', link: '' },
+    { title: 'Free Sports GC Tips', icon: '/images/c.jpg', desc: 'Click and Message for details', cta: 'Join now', link: '' }
+  ]);
+  const filteredProviders = providers.filter((p) =>
+    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.kind.toLowerCase().includes(searchQuery.toLowerCase())
+  );
   useEffect(() => {
     (async () => {
       try {
@@ -234,6 +327,91 @@ export default function App() {
             if (c.cashImages && Array.isArray(c.cashImages)) setCashImages(c.cashImages);
             if (c.winsCtaUrl) setWinsCtaUrl(c.winsCtaUrl);
             if (c.cashCtaUrl) setCashCtaUrl(c.cashCtaUrl);
+            if (c.winsHeading) setWinsHeading(c.winsHeading);
+            if (c.winsCopy) setWinsCopy(c.winsCopy);
+            if (c.winsCta) setWinsCta(c.winsCta);
+            if (c.cashHeading) setCashHeading(c.cashHeading);
+            if (c.cashCopy) setCashCopy(c.cashCopy);
+            if (c.cashCta) setCashCta(c.cashCta);
+            if (c.heroCtaPrimary) setHeroCtaPrimary(c.heroCtaPrimary);
+            if (c.heroCtaPrimaryUrl) setHeroCtaPrimaryUrl(c.heroCtaPrimaryUrl);
+            if (c.heroCtaSecondary) setHeroCtaSecondary(c.heroCtaSecondary);
+            if (c.heroCtaSecondaryUrl) setHeroCtaSecondaryUrl(c.heroCtaSecondaryUrl);
+            if (c.heroHeadline) setHeroHeadline(c.heroHeadline);
+            if (c.heroSubcopy) setHeroSubcopy(c.heroSubcopy);
+            if (c.heroLogoTag) setHeroLogoTag(c.heroLogoTag);
+            if (c.statPlayingNum) setStatPlayingNum(c.statPlayingNum);
+            if (c.statPlayingSuffix) setStatPlayingSuffix(c.statPlayingSuffix);
+            if (c.statPaidNum) setStatPaidNum(c.statPaidNum);
+            if (c.statPaidSuffix) setStatPaidSuffix(c.statPaidSuffix);
+            if (c.trustBadgeText) setTrustBadgeText(c.trustBadgeText);
+            if (c.formTriggerText) setFormTriggerText(c.formTriggerText);
+            if (c.formTriggerNote) setFormTriggerNote(c.formTriggerNote);
+            if (c.formSubmitText) setFormSubmitText(c.formSubmitText);
+            if (c.formFooterText) setFormFooterText(c.formFooterText);
+            if (c.benefitSlides) {
+              const slides = typeof c.benefitSlides === 'string'
+                ? c.benefitSlides.split('\n').filter((s: string) => s.trim())
+                : Array.isArray(c.benefitSlides) ? c.benefitSlides.filter((s: string) => s && s.trim()) : null;
+              if (slides && slides.length > 0) setBenefitSlides(slides);
+            }
+            if (c.promoSlides && Array.isArray(c.promoSlides) && c.promoSlides.length > 0) setPromoSlides(c.promoSlides);
+            if (c.sportsKicker) setSportsKicker(c.sportsKicker);
+            if (c.sportsCtaUrl) setSportsCtaUrl(c.sportsCtaUrl);
+            if (c.agentBadge) setAgentBadge(c.agentBadge);
+            if (c.agentName) setAgentName(c.agentName);
+            if (c.agentTagline) setAgentTagline(c.agentTagline);
+            if (c.agentFacebookUrl) setAgentFacebookUrl(c.agentFacebookUrl);
+            if (c.agentCards && Array.isArray(c.agentCards) && c.agentCards.length > 0) setAgentCards(c.agentCards);
+            if (c.benefitFeatures && Array.isArray(c.benefitFeatures) && c.benefitFeatures.length > 0) setBenefitFeatures(c.benefitFeatures);
+            if (c.payments && Array.isArray(c.payments) && c.payments.length > 0) setPayments(c.payments);
+            if (c.paySectionTitle) setPaySectionTitle(c.paySectionTitle);
+            if (c.benefitsTagline) {
+              const tagline = typeof c.benefitsTagline === 'string' ? c.benefitsTagline.split(',').map((s: string) => s.trim()) : c.benefitsTagline;
+              if (tagline.length > 0) setBenefitsTagline(tagline);
+            }
+            if (c.benefitsKicker) setBenefitsKicker(c.benefitsKicker);
+            if (c.benefitsHeading) setBenefitsHeading(c.benefitsHeading);
+            if (c.benefitsCopy) setBenefitsCopy(c.benefitsCopy);
+            if (c.benefitsFbText) setBenefitsFbText(c.benefitsFbText);
+            if (c.benefitsFbUrl) setBenefitsFbUrl(c.benefitsFbUrl);
+            if (c.convBadge) setConvBadge(c.convBadge);
+            if (c.convHeadline) setConvHeadline(c.convHeadline);
+            if (c.convDesc) setConvDesc(c.convDesc);
+            if (c.convPerks) {
+              const perks = typeof c.convPerks === 'string' ? c.convPerks.split('\n').filter((s: string) => s.trim()) : Array.isArray(c.convPerks) ? c.convPerks : null;
+              if (perks && perks.length > 0) setConvPerks(perks);
+            }
+            if (c.convCta) setConvCta(c.convCta);
+            if (c.convCtaUrl) setConvCtaUrl(c.convCtaUrl);
+            if (c.convSidebarImg) setConvSidebarImg(c.convSidebarImg);
+            if (c.convDisclaimer) setConvDisclaimer(c.convDisclaimer);
+            if (c.faqKicker) setFaqKicker(c.faqKicker);
+            if (c.faqHeading) setFaqHeading(c.faqHeading);
+            if (c.faqCopy) setFaqCopy(c.faqCopy);
+            if (c.faq && Array.isArray(c.faq) && c.faq.length > 0) setFaqData(c.faq);
+            if (c.providers && Array.isArray(c.providers) && c.providers.length > 0) setProviders(c.providers);
+            if (c.provSearchPlaceholder) setProvSearchPlaceholder(c.provSearchPlaceholder);
+            if (c.provNoResults) setProvNoResults(c.provNoResults);
+            if (c.provKicker) setProvKicker(c.provKicker);
+            if (c.provHeading) setProvHeading(c.provHeading);
+            if (c.promoHeading) setPromoHeading(c.promoHeading);
+            if (c.promoCopy1) setPromoCopy1(c.promoCopy1);
+            if (c.promoCopy2) setPromoCopy2(c.promoCopy2);
+            if (c.promoCtaLead) setPromoCtaLead(c.promoCtaLead);
+            if (c.promoCtaText) setPromoCtaText(c.promoCtaText);
+            if (c.promoVerified) setPromoVerified(c.promoVerified);
+            if (c.promoAffiliate) setPromoAffiliate(c.promoAffiliate);
+            if (c.promoVideo) setPromoVideo(c.promoVideo);
+            if (c.promoCtaUrl) setPromoCtaUrl(c.promoCtaUrl);
+            if (c.tickerLabel) setTickerLabel(c.tickerLabel);
+            if (c.tickerMessages) setTickerMessages(c.tickerMessages);
+            if (c.hiwKicker) setHiwKicker(c.hiwKicker);
+            if (c.hiwHeading) setHiwHeading(c.hiwHeading);
+            if (c.hiw && Array.isArray(c.hiw) && c.hiw.length > 0) setHiw(c.hiw);
+            if (c.winNotifications && Array.isArray(c.winNotifications) && c.winNotifications.length > 0) setWinNotifications(c.winNotifications);
+            if (c.notifInterval) setNotifInterval(c.notifInterval);
+            if (c.notifDuration) setNotifDuration(c.notifDuration);
           }
         }
       } catch {}
@@ -249,146 +427,56 @@ export default function App() {
       setLoginEmail("");
       setLoginPassword("");
       setLoginError("");
-      resetForgotFlow();
     } else {
       logoTimerRef.current = setTimeout(() => { logoClickRef.current = 0; }, 1000);
     }
   }
 
-  async function handleAdminLogin() {
+  const handleAdminLogin = useCallback(async () => {
     if (!loginEmail.trim() || !loginPassword.trim()) {
       setLoginError("Please enter email and password");
       return;
     }
     setLoginLoading(true);
     setLoginError("");
-    // Try Supabase Auth first
     const { error } = await supabase.auth.signInWithPassword({
       email: loginEmail.trim(),
       password: loginPassword,
     });
-    if (!error) {
+    if (error) {
       setLoginLoading(false);
-      setAdminModalOpen(false);
-      window.open("/admin.html", "_blank");
+      setLoginError("Invalid email or password");
       return;
     }
-    // Fallback: check admin_credentials table
-    try {
-      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/admin_credentials?id=eq.1&select=email,password`, {
-        headers: { 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY }
-      });
-      const rows = await res.json();
-      const cred = rows?.[0];
-      if (cred && cred.email === loginEmail.trim() && cred.password === loginPassword) {
-        setLoginLoading(false);
-        setAdminModalOpen(false);
-        window.open("/admin.html", "_blank");
-        return;
-      }
-    } catch {}
     setLoginLoading(false);
-    setLoginError("Invalid email or password");
-  }
+    setAdminModalOpen(false);
+    window.open("/admin.html", "_blank");
+  }, [loginEmail, loginPassword, supabase]);
 
-  function resetForgotFlow() {
-    setForgotStep(0);
-    setForgotEmail("");
-    setForgotQuestion("");
-    setForgotAnswer("");
-    setForgotNewPassword("");
-    setForgotConfirmPassword("");
+  const handleCloseModal = useCallback(() => {
+    setLoginEmail("");
+    setLoginPassword("");
     setLoginError("");
-  }
+    setAdminModalOpen(false);
+  }, []);
 
-  async function handleForgotEmail() {
-    if (!forgotEmail.trim()) { setLoginError("Please enter your email"); return; }
+  const handleForgotPassword = useCallback(async () => {
+    if (!loginEmail.trim()) {
+      setLoginError("Please enter your email first");
+      return;
+    }
     setLoginError("");
     setLoginLoading(true);
-    try {
-      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/admin_credentials?id=eq.1&select=email,recovery_question`, {
-        headers: { 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY }
-      });
-      const rows = await res.json();
-      const cred = rows?.[0];
-      if (!cred || cred.email.toLowerCase() !== forgotEmail.trim().toLowerCase()) {
-        setLoginError("This email is not registered");
-        setLoginLoading(false);
-        return;
-      }
-      setForgotQuestion(cred.recovery_question || "");
-      setForgotStep(2);
-    } catch {
-      setLoginError("Failed to verify email");
-    }
+    const { error } = await supabase.auth.resetPasswordForEmail(loginEmail.trim());
     setLoginLoading(false);
-  }
-
-  async function handleForgotAnswer() {
-    if (!forgotAnswer.trim()) { setLoginError("Please answer the question"); return; }
-    setLoginError("");
-    setLoginLoading(true);
-    try {
-      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/admin_credentials?id=eq.1&select=recovery_answer`, {
-        headers: { 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY }
-      });
-      const rows = await res.json();
-      const cred = rows?.[0];
-      if (!cred || cred.recovery_answer.toLowerCase() !== forgotAnswer.trim().toLowerCase()) {
-        setLoginError("Incorrect answer");
-        setLoginLoading(false);
-        return;
-      }
-      setForgotStep(3);
-    } catch {
-      setLoginError("Failed to verify answer");
+    if (error) {
+      setLoginError("Failed to send reset email: " + error.message);
+    } else {
+      setLoginError("A password reset link has been sent to your email.");
     }
-    setLoginLoading(false);
-  }
+  }, [loginEmail, supabase]);
 
-  async function handleForgotReset() {
-    if (!forgotNewPassword.trim()) { setLoginError("Please enter a new password"); return; }
-    if (forgotNewPassword.length < 6) { setLoginError("Password must be at least 6 characters"); return; }
-    if (forgotNewPassword !== forgotConfirmPassword) { setLoginError("Passwords do not match"); return; }
-    setLoginError("");
-    setLoginLoading(true);
-    try {
-      // Update admin_credentials table
-      await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/admin_credentials?id=eq.1`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
-        },
-        body: JSON.stringify({ password: forgotNewPassword })
-      });
-      // Try to update Supabase Auth password
-      const credRes = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/admin_credentials?id=eq.1&select=email`, {
-        headers: { 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY }
-      });
-      const credRows = await credRes.json();
-      const adminEmail = credRows?.[0]?.email;
-      if (adminEmail) {
-        // Sign in temporarily to update auth password
-        const signInRes = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY },
-          body: JSON.stringify({ email: adminEmail, password: forgotNewPassword })
-        });
-        // If old password still works, we can update via auth API
-        // If it fails (old password was different), auth password is now out of sync
-        // but admin_credentials password is updated
-      }
-      setLoginError("");
-      resetForgotFlow();
-      setLoginError("Password updated! You can now sign in.");
-    } catch {
-      setLoginError("Failed to update password");
-    }
-    setLoginLoading(false);
-  }
-
-  const winNotifications = [
+  const [winNotifications, setWinNotifications] = useState([
     { name: "John D.", amount: "₱25,000", game: "Live Casino" },
     { name: "Maria S.", amount: "₱12,400", game: "JILI Slots" },
     { name: "Ahmed R.", amount: "SAR 3,200", game: "Sports Betting" },
@@ -399,18 +487,24 @@ export default function App() {
     { name: "Fatima Z.", amount: "SAR 8,000", game: "CreedRoomz" },
     { name: "Mike T.", amount: "₱15,600", game: "Sports Betting" },
     { name: "Rosa P.", amount: "₱22,300", game: "Dragon Gaming" },
-  ];
+  ]);
+  const [notifInterval, setNotifInterval] = useState(14000);
+  const [notifDuration, setNotifDuration] = useState(5000);
+
+  const notifIndexRef = useRef(0);
 
   useEffect(() => {
+    notifIndexRef.current = 0;
+    if (winNotifications.length === 0) return;
     const show = () => {
-      const pick = winNotifications[Math.floor(Math.random() * winNotifications.length)];
-      setWinNotif(pick);
-      setTimeout(() => setWinNotif(null), 5000);
+      setWinNotif(winNotifications[notifIndexRef.current]);
+      notifIndexRef.current = (notifIndexRef.current + 1) % winNotifications.length;
+      setTimeout(() => setWinNotif(null), notifDuration);
     };
     show();
-    const interval = setInterval(show, 14000);
+    const interval = setInterval(show, notifInterval);
     return () => clearInterval(interval);
-  }, []);
+  }, [winNotifications, notifInterval, notifDuration]);
 
   useEffect(() => {
     const onScroll = () => setShowScrollTop(window.scrollY > 500);
@@ -435,7 +529,7 @@ export default function App() {
   }, []);
 
   const [cookieConsent, setCookieConsent] = useState(() => localStorage.getItem("cookieConsent") === "true");
-  const [lang] = useState<"en" | "tl">("en");
+  const [lang, setLang] = useState<"en" | "tl">("en");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [showSkeleton, setShowSkeleton] = useState(true);
 
@@ -501,14 +595,16 @@ export default function App() {
       setPromoIndex((prev) => (prev + 1) % promoSlides.length);
     }, 4000);
     return () => window.clearInterval(interval);
-  }, []);
+  }, [promoSlides.length]);
 
   useEffect(() => {
+    if (benefitSlides.length <= 1) return;
+    setBannerIndex(0);
     const interval = window.setInterval(() => {
       setBannerIndex((prev) => (prev + 1) % benefitSlides.length);
     }, 4000);
     return () => window.clearInterval(interval);
-  }, []);
+  }, [benefitSlides.length]);
 
   function scrollToSection(id: string) {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -570,7 +666,7 @@ export default function App() {
       <div className="ambient ambient--orange" aria-hidden="true" />
       <div className="ambient ambient--purple" aria-hidden="true" />
 
-      <Header liveUrl={liveUrl} activeSection={activeSection} scrollToSection={scrollToSection} onLogoClick={handleLogoClick} />
+      <Header liveUrl={liveUrl} activeSection={activeSection} scrollToSection={scrollToSection} onLogoClick={handleLogoClick} lang={lang} onLangChange={setLang} />
 
       <section className="hero" id="top">
         <div className="hero__image" style={{ backgroundImage: `url(${heroImage})` }} />
@@ -585,36 +681,40 @@ export default function App() {
             <div className="hero__logo">
               <img src="/images/logo.jpg" alt="747 Live" />
               <span className="hero__logo-tag">
-                <ShieldCheck size={11} /> Official Agent
+                <ShieldCheck size={11} /> {heroLogoTag}
               </span>
             </div>
             <motion.h1
               initial={{ opacity: 0, y: 28 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            >
-              Play <em>747 LIVE</em> &amp; win real cash.
-            </motion.h1>
+              dangerouslySetInnerHTML={{ __html: heroHeadline }}
+            />
             <motion.p
               className="hero__copy"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.42, duration: 0.75 }}
-            >
-              Sign up through my link for a <span className="hero__bonus">Welcome Bonus + Cashback</span>. Casino, live sports, eSports &amp; VIP rewards — Saudi Riyals accepted.
-            </motion.p>
+              dangerouslySetInnerHTML={{ __html: heroSubcopy }}
+            />
             <motion.div
               className="hero__actions"
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.54, duration: 0.7 }}
             >
-              <a className="button button--primary button--large button--pulse" href={liveUrl} target="_blank" rel="noreferrer">
-                Register through my link <ArrowUpRight size={19} />
+              <a className="button button--primary button--large button--pulse" href={heroCtaPrimaryUrl || liveUrl} target="_blank" rel="noreferrer">
+                {heroCtaPrimary} <ArrowUpRight size={19} />
               </a>
-              <button className="button button--quiet button--large" type="button" onClick={() => scrollToSection("benefits")}>
-                Why join <ChevronRight size={19} />
-              </button>
+              {heroCtaSecondaryUrl ? (
+                <a className="button button--quiet button--large" href={heroCtaSecondaryUrl} target="_blank" rel="noreferrer">
+                  {heroCtaSecondary} <ArrowUpRight size={19} />
+                </a>
+              ) : (
+                <button className="button button--quiet button--large" type="button" onClick={() => scrollToSection("benefits")}>
+                  {heroCtaSecondary} <ChevronRight size={19} />
+                </button>
+              )}
             </motion.div>
             <motion.div
               className="hero__stats"
@@ -623,12 +723,12 @@ export default function App() {
               transition={{ delay: 0.68, duration: 0.7 }}
             >
               <div className="hero__stat">
-                <strong><CountUp to={3163} suffix="+" /></strong>
+                <strong><CountUp to={statPlayingNum} suffix={statPlayingSuffix} /></strong>
                 <small>Playing now</small>
               </div>
               <div className="hero__stat-divider" aria-hidden="true" />
               <div className="hero__stat">
-                <strong>₱<CountUp to={2.4} suffix="B+" decimals={1} /></strong>
+                <strong>₱<CountUp to={statPaidNum} suffix={statPaidSuffix} decimals={1} /></strong>
                 <small>Paid monthly</small>
               </div>
               <div className="hero__stat-divider" aria-hidden="true" />
@@ -644,7 +744,7 @@ export default function App() {
               transition={{ delay: 0.82, duration: 0.7 }}
             >
               <ShieldCheck size={15} />
-              <span><strong>Verified Partner</strong> — 100% secure registration</span>
+              <span dangerouslySetInnerHTML={{ __html: trustBadgeText }} />
             </motion.div>
           </motion.div>
         </div>
@@ -659,10 +759,10 @@ export default function App() {
             >
               <button className="hero__form-trigger" onClick={() => setFormOpen(true)} type="button">
                 <UserPlus size={20} />
-                <span>Register Account</span>
+                <span>{formTriggerText}</span>
                 <ChevronDown size={16} />
               </button>
-              <p className="hero__form-trigger-note">10% cash back + exclusive GCs</p>
+              <p className="hero__form-trigger-note">{formTriggerNote}</p>
             </motion.div>
           ) : (
             <div className="hero__form-overlay" onClick={() => setFormOpen(false)}>
@@ -683,6 +783,13 @@ export default function App() {
                   </div>
             <form className="hero__form-body" onSubmit={async (e) => {
               e.preventDefault();
+              const payload = {
+                full_name: formName,
+                email: formEmail,
+                username: formUsername,
+                phone: formPhone,
+                country: formCountry
+              };
               // Save inquiry to Supabase
               try {
                 await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/form_inquiries`, {
@@ -691,17 +798,23 @@ export default function App() {
                     'Content-Type': 'application/json',
                     'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
                   },
-                  body: JSON.stringify({
-                    full_name: formName,
-                    email: formEmail,
-                    username: formUsername,
-                    phone: formPhone,
-                    country: formCountry
-                  })
+                  body: JSON.stringify(payload)
                 });
-              } catch (_) { /* silent fail */ }
-              setFormName(""); setFormEmail(""); setFormUsername(""); setFormPhone(""); setFormCountry("");
-              window.open(liveUrl, "_blank");
+              } catch (_) {}
+              // Forward to Google Apps Script for email notification
+              try {
+                const gasUrl = import.meta.env.VITE_GAS_WEBAPP_URL || '';
+                if (gasUrl) {
+                  await fetch(gasUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    mode: 'no-cors',
+                    body: JSON.stringify(payload)
+                  });
+                }
+              } catch (_) {}
+setFormName(""); setFormEmail(""); setFormUsername(""); setFormPhone(""); setFormCountry("");
+               setFormSuccess(true);
             }}>
               <label className="hero__form-field">
                 <span>Full Name</span>
@@ -782,12 +895,24 @@ export default function App() {
                   <option value="Venezuela">Venezuela</option>
                 </select>
               </label>
-              <button className="button button--primary button--large button--pulse" type="submit" style={{ width: "100%", marginTop: 8 }}>
-                Register now <ArrowUpRight size={18} />
-              </button>
-            </form>
+               <button className="button button--primary button--large button--pulse" type="submit" style={{ width: "100%", marginTop: 8 }}>
+                 {formSubmitText} <ArrowUpRight size={18} />
+                </button>
+                {formSuccess && (
+                  <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center" }} onClick={() => setFormSuccess(false)}>
+                    <div style={{ background: "#12121a", border: "1px solid rgba(102,248,156,0.3)", borderRadius: 12, padding: 32, maxWidth: 400, width: "90%", textAlign: "center", boxShadow: "0 0 40px rgba(102,248,156,0.1)" }} onClick={e => e.stopPropagation()}>
+                      <div style={{ width: 48, height: 48, borderRadius: "50%", background: "rgba(102,248,156,0.15)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#66f89c" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      </div>
+                      <h3 style={{ color: "#f0f0f0", margin: "0 0 8px", fontSize: 18, fontWeight: 600 }}>Registration Submitted</h3>
+                      <p style={{ color: "#888", margin: "0 0 8px", fontSize: 13 }}>Your inquiry has been sent to admin@747live.com</p>
+                      <p style={{ color: "#66f89c", margin: "0", fontSize: 12 }}>Check your email to continue</p>
+                    </div>
+                  </div>
+                )}
+              </form>
             <div className="hero__form-footer">
-              <Gift size={13} /> <strong>10% CASH BACK</strong> sa total na LOSS BETS twice a month — plus exclusive access to all GCs!
+              <Gift size={13} /> <span dangerouslySetInnerHTML={{ __html: formFooterText }} />
             </div>
                 </motion.div>
               </AnimatePresence>
@@ -799,36 +924,35 @@ export default function App() {
       </section>
 
       <section className="ticker" aria-label="Latest updates">
-        <div className="ticker__label"><Sparkles size={14} /> Now in the lounge</div>
+        <div className="ticker__label"><Sparkles size={14} /> {tickerLabel}</div>
         <div className="ticker__track" aria-hidden="true">
           <div className="ticker__content">
-            <span>TWICE MONTHLY CASHBACK</span><i />
-            <span>SAUDI RIYALS ACCEPTED</span><i />
-            <span>24/7 LIVE SPORTS TIPS</span><i />
-            <span>MONTHLY VIP RAFFLE</span><i />
-            <span>TWICE MONTHLY CASHBACK</span><i />
-            <span>SAUDI RIYALS ACCEPTED</span><i />
-            <span>24/7 LIVE SPORTS TIPS</span><i />
-            <span>MONTHLY VIP RAFFLE</span><i />
+            {(() => {
+              const msgs = tickerMessages.split('\n').filter(Boolean);
+              const items = [];
+              for (let i = 0; i < 4; i++) {
+                for (const msg of msgs) {
+                  items.push(<span key={`${i}-${msg}`}>{msg}</span>);
+                  items.push(<i key={`${i}-${msg}-dot`} />);
+                }
+              }
+              return items;
+            })()}
           </div>
         </div>
       </section>
 
       <section className="benefits section-shell" id="how-it-works" style={{ paddingTop: 80, paddingBottom: 80 }}>
         <motion.div className="section-intro" initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }} transition={{ staggerChildren: 0.12 }}>
-          <motion.p variants={fadeUp} className="section-kicker"><Play size={16} /> How it works</motion.p>
-          <motion.h2 variants={fadeUp}>Get started in <em>3 easy steps</em></motion.h2>
+          <motion.p variants={fadeUp} className="section-kicker"><Play size={16} /> {hiwKicker}</motion.p>
+          <motion.h2 variants={fadeUp} dangerouslySetInnerHTML={{ __html: hiwHeading }} />
         </motion.div>
         <div className="steps-grid">
-          {[
-            { num: "1", title: lang === "en" ? "Register" : "Magrehistro", desc: lang === "en" ? "Click the register button and fill in your details through our partner platform." : "I-click ang register button at punan ang iyong detalye." },
-            { num: "2", title: lang === "en" ? "Deposit" : "Mag-deposito", desc: lang === "en" ? "Choose from GCash, GOtyme, STC Pay, or Barq. No hidden fees, instant processing." : "Pumili ng GCash, GOtyme, STC Pay, o Barq. Walang dagdag na bayad." },
-            { num: "3", title: lang === "en" ? "Play & Win" : "Maglaro at Manalo", desc: lang === "en" ? "Access live casino, sports betting, slots, and arcade games. Start winning today!" : "Mag-access sa live casino, sports betting, slots, at arcade games. Manalo na!" },
-          ].map((step) => (
-            <div key={step.num} className="step-card">
-              <div className="step-card__num">{step.num}</div>
-              <h3>{step.title}</h3>
-              <p>{step.desc}</p>
+          {hiw.map((step, i) => (
+            <div key={i} className="step-card">
+              <div className="step-card__num">{i + 1}</div>
+              <h3>{lang === "en" ? step.enTitle : step.tlTitle}</h3>
+              <p>{lang === "en" ? step.enDesc : step.tlDesc}</p>
             </div>
           ))}
         </div>
@@ -836,9 +960,9 @@ export default function App() {
 
       <section className="benefits section-shell" id="benefits">
         <motion.div className="section-intro" initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }} transition={{ staggerChildren: 0.12 }}>
-          <motion.p variants={fadeUp} className="section-kicker"><Crown size={16} /> Invitation privileges</motion.p>
-          <motion.h2 variants={fadeUp}>A more rewarding way to <em>step inside.</em></motion.h2>
-          <motion.p variants={fadeUp} className="section-copy">Selected benefits to look for when you continue through the partner platform.</motion.p>
+          <motion.p variants={fadeUp} className="section-kicker"><Crown size={16} /> {benefitsKicker}</motion.p>
+          <motion.h2 variants={fadeUp} dangerouslySetInnerHTML={{ __html: benefitsHeading }} />
+          <motion.p variants={fadeUp} className="section-copy">{benefitsCopy}</motion.p>
         </motion.div>
         <div className="benefits__banner-wrap">
           <AnimatePresence mode="wait">
@@ -865,37 +989,26 @@ export default function App() {
               />
             ))}
           </div>
-          <a href="https://www.facebook.com/profile.php?id=100022590198280" target="_blank" rel="noopener noreferrer" className="benefits__facebook">
+          <a href={benefitsFbUrl} target="_blank" rel="noopener noreferrer" className="benefits__facebook">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-            Follow us on Facebook
+            {benefitsFbText}
           </a>
         </div>
         <div className="benefits__features">
-          <div className="benefit-feature">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            <strong>24/7</strong> SUPPORT
-          </div>
-          <div className="benefit-feature">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            <strong>FAST</strong> CASH IN / CASH OUT
-          </div>
-          <div className="benefit-feature">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/></svg>
-            <strong>NO</strong> CASH OUT FEE
-          </div>
-          <div className="benefit-feature">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            <strong>PLAY SMART</strong> WIN BIG
-          </div>
+          {benefitFeatures.map((f, i) => (
+            <div key={i} className="benefit-feature">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <strong>{f.strong}</strong> {f.suffix}
+            </div>
+          ))}
         </div>
         <div className="benefits__payments">
           <div className="benefits__payments-inner">
-            <h3>AVAILABLE CASH IN METHOD</h3>
+            <h3>{paySectionTitle}</h3>
             <div className="benefits__payment-logos">
-              <span><img src="/images/gcash.jpg" alt="GCash" className="payment-logo" /> GCash</span>
-              <span><img src="/images/gotyme.jpg" alt="GOtyme" className="payment-logo" /> GOtyme</span>
-              <span><img src="/images/stc.jpg" alt="STC Pay" className="payment-logo" /> STC Pay</span>
-              <span><img src="/images/barq.png" alt="Barq" className="payment-logo" /> Barq</span>
+              {payments.map((p, i) => (
+                <span key={i}><img src={p.logo} alt={p.name} className="payment-logo" /> {p.name}</span>
+              ))}
             </div>
           </div>
           <table className="payment-table">
@@ -903,21 +1016,20 @@ export default function App() {
               <tr><th>Method</th><th>Min</th><th>Max</th><th>Fee</th><th>Speed</th></tr>
             </thead>
             <tbody>
-              <tr><td>GCash</td><td>₱100</td><td>₱100,000</td><td>Free</td><td>Instant</td></tr>
-              <tr><td>GOtyme</td><td>₱100</td><td>₱50,000</td><td>Free</td><td>Instant</td></tr>
-              <tr><td>STC Pay</td><td>SAR 10</td><td>SAR 50,000</td><td>Free</td><td>Instant</td></tr>
-              <tr><td>Barq</td><td>SAR 10</td><td>SAR 50,000</td><td>Free</td><td>Instant</td></tr>
+              {payments.map((p, i) => (
+                <tr key={i}><td>{p.name}</td><td>{p.min}</td><td>{p.max}</td><td>{p.fee}</td><td>{p.speed}</td></tr>
+              ))}
             </tbody>
           </table>
         </div>
-        <div className="benefits__tagline"><span>FAST.</span><span>SAFE.</span><span>SECURE.</span></div>
+        <div className="benefits__tagline">{benefitsTagline.map((t, i) => <span key={i}>{t}</span>)}</div>
       </section>
 
       <section className="providers section-shell" id="discover">
         <div className="providers__header">
           <motion.div className="section-intro section-intro--left" initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.35 }} transition={{ staggerChildren: 0.12 }}>
-            <motion.p variants={fadeUp} className="section-kicker"><Play size={15} /> Curated entertainment</motion.p>
-            <motion.h2 variants={fadeUp}>Find your <em>table,</em> your tempo.</motion.h2>
+            <motion.p variants={fadeUp} className="section-kicker"><Play size={15} /> {provKicker}</motion.p>
+            <motion.h2 variants={fadeUp} dangerouslySetInnerHTML={{ __html: provHeading }} />
           </motion.div>
         </div>
         <motion.div
@@ -929,7 +1041,7 @@ export default function App() {
           <Search size={16} />
           <input
             type="text"
-            placeholder="Search games, providers, categories..."
+            placeholder={provSearchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -950,7 +1062,7 @@ export default function App() {
             filteredProviders.map((provider, index) => <ProviderCard key={provider.name} provider={provider} index={index} inviteUrl={liveUrl} />)
           ) : searchQuery ? (
             <div className="providers__empty">
-              <p>No results found for &quot;{searchQuery}&quot;</p>
+              <p>{provNoResults} &quot;{searchQuery}&quot;</p>
               <p style={{ marginTop: 8, fontSize: 12, color: "rgba(255,255,255,.35)" }}>Try searching: Live Casino, Slots, Sports</p>
             </div>
           ) : (
@@ -960,9 +1072,12 @@ export default function App() {
       </section>
 
       <section className="sports section-shell" id="sports">
+        <motion.div className="section-intro section-intro--left" initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.35 }} transition={{ staggerChildren: 0.12 }}>
+          <motion.span className="section-kicker" variants={fadeUp}>{sportsKicker}</motion.span>
+        </motion.div>
         <div className="sports-promo">
           <AnimatePresence mode="wait">
-            <a href={liveUrl} target="_blank" rel="noreferrer">
+            <a href={sportsCtaUrl} target="_blank" rel="noreferrer">
               <motion.img
                 key={promoIndex}
                 className="sports-promo__slide"
@@ -994,24 +1109,22 @@ export default function App() {
         <div className="conversion__glow" aria-hidden="true" />
         <div className="conversion-grid">
           <motion.div className="conversion__inner" initial={{ opacity: 0, scale: 0.97 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true, amount: 0.4 }} transition={{ duration: 0.7 }}>
-            <div className="conversion__badge"><Crown size={15} /> 747LIVE invitation</div>
-            <h2>Looking for Players and Sports Lovers!</h2>
-            <p>Sali na sa aming exclusive sports community at e-enjoy ang mga member perks:</p>
+            <div className="conversion__badge"><Crown size={15} /> {convBadge}</div>
+            <h2>{convHeadline}</h2>
+            <p>{convDesc}</p>
             <ul className="conversion__perks">
-              <li><span className="perk-icon">&#10024;</span> 2% Bonus 1st Cash In</li>
-              <li><span className="perk-icon">&#10024;</span> 10% Loss Rebates Twice Monthly</li>
-              <li><span className="perk-icon">&#10024;</span> Birthday Bonus Gift</li>
-              <li><span className="perk-icon">&#10024;</span> VIP Sports Group Access</li>
-              <li><span className="perk-icon">&#10024;</span> Monthly Raffle</li>
+              {convPerks.map((perk, i) => (
+                <li key={i}><span className="perk-icon">&#10024;</span> {perk}</li>
+              ))}
             </ul>
-            <a className="button button--primary button--large button--final" href={liveUrl} target="_blank" rel="noreferrer">
-              Get started <ExternalLink size={18} />
+            <a className="button button--primary button--large button--final" href={convCtaUrl || liveUrl} target="_blank" rel="noreferrer">
+              {convCta} <ExternalLink size={18} />
             </a>
-            <small>You'll be redirected to continue your registration through our partner platform.</small>
+            <small>{convDisclaimer}</small>
           </motion.div>
           <div className="conversion-side">
             <a href={facebookUrl} target="_blank" rel="noreferrer">
-              <img src="/images/z.jpg" alt="" className="conversion-side__img" loading="lazy" />
+              <img src={convSidebarImg} alt="" className="conversion-side__img" loading="lazy" />
             </a>
           </div>
         </div>
@@ -1020,20 +1133,24 @@ export default function App() {
       <section className="promo-section" id="promo">
         <div className="promo-grid">
           <div className="promo-image">
-            <a href={facebookUrl} target="_blank" rel="noreferrer">
-              <video src="/images/vid.mp4" className="promo-image__img" autoPlay muted loop playsInline />
+            <a href={promoCtaUrl} target="_blank" rel="noreferrer" style={{ display: 'flex' }}>
+              {/\.(mp4|webm|ogg|mov|avi)$/i.test(promoVideo) ? (
+                <video src={promoVideo} className="promo-image__img" autoPlay muted loop playsInline />
+              ) : (
+                <img src={promoVideo} className="promo-image__img" alt="" />
+              )}
             </a>
           </div>
           <motion.div className="promo-content" initial={{ opacity: 0, x: 40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.4 }} transition={{ duration: 0.7 }}>
-            <h2>10% Cashback / Rebates<br />Free Registration</h2>
-            <p>kaya ano pang hinihintay mo MESSAGE na <span className="promo-heart">🫶🏼</span></p>
-            <p>Kung nandito ka sa Mid.Est sakto para sayo to<br />Meron din <strong>SPORTS TIPS GC</strong> para sayo.<br />24/7 Löäding GC at customer service</p>
-            <p><strong>Message na dito 👉🏼</strong></p>
-            <a className="button button--primary button--large" href="https://www.facebook.com/share/1BriKGwHZ2/?mibextid=wwXIfr" target="_blank" rel="noreferrer">
-              Message on Facebook <ExternalLink size={18} />
+            <h2 dangerouslySetInnerHTML={{ __html: promoHeading }} />
+            <p>{promoCopy1} <span className="promo-heart">🫶🏼</span></p>
+            <p dangerouslySetInnerHTML={{ __html: promoCopy2 }} />
+            <p><strong>{promoCtaLead}</strong></p>
+            <a className="button button--primary button--large" href={promoCtaUrl} target="_blank" rel="noreferrer">
+              {promoCtaText} <ExternalLink size={18} />
             </a>
-            <p className="promo-verified">Legit na legit blue check verified by META kaya safe na safe ka <span role="img" aria-label="wink">😉</span></p>
-            <p className="promo-affiliate">Pwede ka din mag apply as Affiliate <span role="img" aria-label="wink">😉</span></p>
+            <p className="promo-verified">{promoVerified} <span role="img" aria-label="wink">😉</span></p>
+            <p className="promo-affiliate">{promoAffiliate} <span role="img" aria-label="wink">😉</span></p>
           </motion.div>
         </div>
       </section>
@@ -1049,88 +1166,49 @@ export default function App() {
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="agent-section__badge">
-              <Crown size={14} /> 747 AREA MANAGER
+              <Crown size={14} /> {agentBadge}
             </div>
             <h2 className="agent-section__name">
-              <a href="https://www.facebook.com/Yjnek#" target="_blank" rel="noreferrer">
-                Kenj Chua <ExternalLink size={16} />
+              <a href={agentFacebookUrl} target="_blank" rel="noreferrer">
+                {agentName} <ExternalLink size={16} />
               </a>
             </h2>
-            <p className="agent-section__tagline">
-              747 Free Online Betting Site — Free Sports Picks sa baba plus <strong>10% REBATES</strong>
-            </p>
+            <p className="agent-section__tagline" dangerouslySetInnerHTML={{ __html: agentTagline }} />
           </motion.div>
 
           <div className="agent-section__cards">
-            <motion.a
-              className="agent-card"
-      href={liveUrl}
-              target="_blank"
-              rel="noreferrer"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ delay: 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <div className="agent-card__content">
-                <div className="agent-card__icon"><img src="/images/a.jpg" alt="Registration" /></div>
-                <h3 className="agent-card__title">Registration</h3>
-                <p className="agent-card__desc">Click and Message for details</p>
-                <span className="agent-card__cta">
-                  Register now <ArrowUpRight size={14} />
-                </span>
-              </div>
-            </motion.a>
-
-            <motion.a
-              className="agent-card"
-              href="https://m.me/j/AbYgP-t5JeYDO3R7/?send_source=gc:copy_invite_link_c"
-              target="_blank"
-              rel="noreferrer"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ delay: 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <div className="agent-card__content">
-                <div className="agent-card__icon"><img src="/images/b.jpg" alt="24/7 Loading Gc" /></div>
-                <h3 className="agent-card__title">24/7 Loading Gc</h3>
-                <p className="agent-card__desc">Click and Message for details</p>
-                <span className="agent-card__cta">
-                  Join now <ArrowUpRight size={14} />
-                </span>
-              </div>
-            </motion.a>
-
-            <motion.a
-              className="agent-card"
-              href="https://m.me/j/AbYoJLM_qK2rnSQh/"
-              target="_blank"
-              rel="noreferrer"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ delay: 0.3, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <div className="agent-card__content">
-                <div className="agent-card__icon"><img src="/images/c.jpg" alt="Free Sports GC Tips" /></div>
-                <h3 className="agent-card__title">Free Sports GC Tips</h3>
-                <p className="agent-card__desc">Click and Message for details</p>
-                <span className="agent-card__cta">
-                  Join now <ArrowUpRight size={14} />
-                </span>
-              </div>
-            </motion.a>
+            {agentCards.map((card, i) => (
+              <motion.a
+                key={i}
+                className="agent-card"
+                href={card.link || liveUrl}
+                target="_blank"
+                rel="noreferrer"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ delay: 0.1 * (i + 1), duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <div className="agent-card__content">
+                  <div className="agent-card__icon"><img src={card.icon} alt={card.title} /></div>
+                  <h3 className="agent-card__title">{card.title}</h3>
+                  <p className="agent-card__desc">{card.desc}</p>
+                  <span className="agent-card__cta">
+                    {card.cta} <ArrowUpRight size={14} />
+                  </span>
+                </div>
+              </motion.a>
+            ))}
           </div>
-          </div>
-        </section>
+        </div>
+      </section>
 
         <section className="winning-slips" id="faq">
           <div className="winning-slips__inner section-shell">
             <motion.div className="section-intro" initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }} transition={{ staggerChildren: 0.12 }}>
-              <motion.p variants={fadeUp} className="section-kicker"><MessageSquare size={15} /> FAQ</motion.p>
-              <motion.h2 variants={fadeUp}>Frequently asked <em>questions</em></motion.h2>
-              <motion.p variants={fadeUp} className="section-copy">Quick answers to the most common questions about 747 Live.</motion.p>
+              <motion.p variants={fadeUp} className="section-kicker"><MessageSquare size={15} /> {faqKicker}</motion.p>
+              <motion.h2 variants={fadeUp} dangerouslySetInnerHTML={{ __html: faqHeading }} />
+              <motion.p variants={fadeUp} className="section-copy">{faqCopy}</motion.p>
             </motion.div>
             <motion.div
               className="faq-list"
@@ -1173,10 +1251,10 @@ export default function App() {
               transition={{ staggerChildren: 0.12 }}
             >
               <motion.h2 variants={fadeUp}>
-                <em>Winning</em> Slips
+                {winsHeading}
               </motion.h2>
               <motion.p className="section-copy" variants={fadeUp}>
-                See the latest winning slips from our community members.
+                {winsCopy}
               </motion.p>
             </motion.div>
 
@@ -1198,7 +1276,7 @@ export default function App() {
               transition={{ delay: 0.4, duration: 0.5 }}
             >
               <a className="button button--primary button--large button--pulse" href={winsCtaUrl || liveUrl} target="_blank" rel="noreferrer">
-                Start winning today <ArrowUpRight size={18} />
+                {winsCta} <ArrowUpRight size={18} />
               </a>
             </motion.div>
           </div>
@@ -1214,10 +1292,10 @@ export default function App() {
               transition={{ staggerChildren: 0.12 }}
             >
               <motion.h2 variants={fadeUp}>
-                <em>Cash Out</em> Proof
+                {cashHeading}
               </motion.h2>
               <motion.p className="section-copy" variants={fadeUp}>
-                Real cash outs from our community members.
+                {cashCopy}
               </motion.p>
             </motion.div>
 
@@ -1239,7 +1317,7 @@ export default function App() {
               transition={{ delay: 0.4, duration: 0.5 }}
             >
               <a className="button button--primary button--large button--pulse" href={cashCtaUrl || liveUrl} target="_blank" rel="noreferrer">
-                Get your cash out now <ArrowUpRight size={18} />
+                {cashCta} <ArrowUpRight size={18} />
               </a>
             </motion.div>
           </div>
@@ -1349,31 +1427,17 @@ export default function App() {
 
       <AdminLoginModal
         isOpen={adminModalOpen}
-        onClose={() => { resetForgotFlow(); setAdminModalOpen(false); }}
+        onClose={handleCloseModal}
         loginEmail={loginEmail}
         loginPassword={loginPassword}
         loginError={loginError}
         loginLoading={loginLoading}
         showPassword={showPassword}
-        forgotStep={forgotStep}
-        forgotEmail={forgotEmail}
-        forgotQuestion={forgotQuestion}
-        forgotAnswer={forgotAnswer}
-        forgotNewPassword={forgotNewPassword}
-        forgotConfirmPassword={forgotConfirmPassword}
         onLoginEmailChange={setLoginEmail}
         onLoginPasswordChange={setLoginPassword}
         onShowPasswordChange={setShowPassword}
         onLogin={handleAdminLogin}
-        onForgotStepChange={setForgotStep}
-        onForgotEmailChange={setForgotEmail}
-        onForgotAnswerChange={setForgotAnswer}
-        onForgotNewPasswordChange={setForgotNewPassword}
-        onForgotConfirmPasswordChange={setForgotConfirmPassword}
-        onForgotEmailSubmit={handleForgotEmail}
-        onForgotAnswerSubmit={handleForgotAnswer}
-        onForgotResetSubmit={handleForgotReset}
-        onResetForgot={resetForgotFlow}
+        onForgotPassword={handleForgotPassword}
       />
     </main>
     </>

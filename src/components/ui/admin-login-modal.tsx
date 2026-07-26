@@ -1,7 +1,6 @@
-import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
-import { Eye, EyeOff, ShieldCheck, Lock, Mail, KeyRound } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { Eye, EyeOff } from "lucide-react";
+import { memo, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 
 interface AdminLoginModalProps {
   isOpen: boolean;
@@ -11,35 +10,18 @@ interface AdminLoginModalProps {
   loginError: string;
   loginLoading: boolean;
   showPassword: boolean;
-  forgotStep: 0 | 1 | 2 | 3;
-  forgotEmail: string;
-  forgotQuestion: string;
-  forgotAnswer: string;
-  forgotNewPassword: string;
-  forgotConfirmPassword: string;
   onLoginEmailChange: (v: string) => void;
   onLoginPasswordChange: (v: string) => void;
   onShowPasswordChange: (v: boolean) => void;
   onLogin: () => void;
-  onForgotStepChange: (s: 0 | 1 | 2 | 3) => void;
-  onForgotEmailChange: (v: string) => void;
-  onForgotAnswerChange: (v: string) => void;
-  onForgotNewPasswordChange: (v: string) => void;
-  onForgotConfirmPasswordChange: (v: string) => void;
-  onForgotEmailSubmit: () => void;
-  onForgotAnswerSubmit: () => void;
-  onForgotResetSubmit: () => void;
-  onResetForgot: () => void;
+  onForgotPassword: () => void;
 }
 
-export function AdminLoginModal({
+export const AdminLoginModal = memo(function AdminLoginModal({
   isOpen, onClose,
   loginEmail, loginPassword, loginError, loginLoading, showPassword,
-  forgotStep, forgotEmail, forgotQuestion, forgotAnswer, forgotNewPassword, forgotConfirmPassword,
   onLoginEmailChange, onLoginPasswordChange, onShowPasswordChange, onLogin,
-  onForgotStepChange, onForgotEmailChange, onForgotAnswerChange,
-  onForgotNewPasswordChange, onForgotConfirmPasswordChange,
-  onForgotEmailSubmit, onForgotAnswerSubmit, onForgotResetSubmit, onResetForgot,
+  onForgotPassword,
 }: AdminLoginModalProps) {
   const blobsData = useMemo(() =>
     Array.from({ length: 6 }).map(() => ({
@@ -57,27 +39,32 @@ export function AdminLoginModal({
   useEffect(() => {
     if (!isOpen) return;
     setBlobMounted(true);
+    let rafId: number;
     const handleMouseMove = (e: MouseEvent) => {
-      const x = (e.clientX - window.innerWidth / 2) / window.innerWidth;
-      const y = (e.clientY - window.innerHeight / 2) / window.innerHeight;
-      blobRefs.current.forEach((blob, i) => {
-        if (blob) {
-          const speed = (i + 1) * 15;
-          blob.style.marginLeft = `${x * speed}px`;
-          blob.style.marginTop = `${y * speed}px`;
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        const x = (e.clientX - window.innerWidth / 2) / window.innerWidth;
+        const y = (e.clientY - window.innerHeight / 2) / window.innerHeight;
+        for (let i = 0; i < blobRefs.current.length; i++) {
+          const blob = blobRefs.current[i];
+          if (blob) {
+            const speed = (i + 1) * 15;
+            blob.style.marginLeft = `${x * speed}px`;
+            blob.style.marginTop = `${y * speed}px`;
+          }
         }
       });
     };
-    document.addEventListener('mousemove', handleMouseMove);
-    return () => document.removeEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mousemove', handleMouseMove, { passive: true });
+    return () => {
+      cancelAnimationFrame(rafId);
+      document.removeEventListener('mousemove', handleMouseMove);
+    };
   }, [isOpen]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (forgotStep === 0) onLogin();
-    else if (forgotStep === 1) onForgotEmailSubmit();
-    else if (forgotStep === 2) onForgotAnswerSubmit();
-    else if (forgotStep === 3) onForgotResetSubmit();
+    onLogin();
   };
 
   return (
@@ -99,10 +86,6 @@ export function AdminLoginModal({
               66% { transform: translate(-3vw, 5vh) scale(0.85); }
               100% { transform: translate(3vw, -5vh) scale(1.05); }
             }
-            @keyframes neuralPulse {
-              0%, 100% { opacity: 0.4; }
-              50% { opacity: 0.8; }
-            }
           `}</style>
 
           <svg className="absolute w-0 h-0">
@@ -123,7 +106,7 @@ export function AdminLoginModal({
               {blobsData.map((data, i) => (
                 <div
                   key={i}
-                  ref={(el) => (blobRefs.current[i] = el)}
+                  ref={(el) => { blobRefs.current[i] = el; }}
                   className="absolute rounded-full"
                   style={{
                     width: data.size,
@@ -133,7 +116,7 @@ export function AdminLoginModal({
                     animation: `neuralFloat ${data.animationDuration}s infinite alternate ease-in-out`,
                     animationDelay: `${data.animationDelay}s`,
                     background: 'linear-gradient(135deg, rgba(180,180,200,0.3), rgba(100,100,140,0.15))',
-                    transition: 'margin 0.1s ease-out',
+                    willChange: 'transform',
                   }}
                 />
               ))}
@@ -173,226 +156,81 @@ export function AdminLoginModal({
               )}
 
               <form onSubmit={handleSubmit} autoComplete="off">
-                {forgotStep === 0 && (
-                  <>
-                    <div className="group mb-7 relative">
-                      <label className="block font-mono text-[11px] tracking-[2px] text-white/30 mb-3 uppercase">
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        placeholder="ID-492-BASE"
-                        value={loginEmail}
-                        onChange={(e) => onLoginEmailChange(e.target.value)}
-                        className="w-full bg-transparent border-none text-white text-lg px-0 py-3 outline-none"
-                        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
-                      />
-                      <div
-                        className="absolute bottom-0 left-0 h-[2px] bg-white/40 transition-all duration-[600ms] ease-[cubic-bezier(0.2,1,0.3,1)] group-focus-within:w-full"
-                        style={{ width: '0%', boxShadow: '0 0 15px rgba(180,180,200,0.5)' }}
-                      />
-                    </div>
+                <div className="group mb-7 relative">
+                  <label className="block font-mono text-[11px] tracking-[2px] text-white/30 mb-3 uppercase">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="ID-492-BASE"
+                    value={loginEmail}
+                    onChange={(e) => onLoginEmailChange(e.target.value)}
+                    className="w-full bg-transparent border-none text-white text-lg px-0 py-3 outline-none"
+                    style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+                  />
+                  <div
+                    className="absolute bottom-0 left-0 h-[2px] bg-white/40 transition-all duration-[600ms] ease-[cubic-bezier(0.2,1,0.3,1)] group-focus-within:w-full"
+                    style={{ width: '0%', boxShadow: '0 0 15px rgba(180,180,200,0.5)' }}
+                  />
+                </div>
 
-                    <div className="group mb-10 relative">
-                      <label className="block font-mono text-[11px] tracking-[2px] text-white/30 mb-3 uppercase">
-                        Password
-                      </label>
-                      <div className="relative">
-                        <input
-                          type={showPassword ? "text" : "password"}
-                          placeholder="••••••••"
-                          value={loginPassword}
-                          onChange={(e) => onLoginPasswordChange(e.target.value)}
-                          className="w-full bg-transparent border-none text-white text-lg px-0 py-3 outline-none pr-10"
-                          style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => onShowPasswordChange(!showPassword)}
-                          className="absolute right-0 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/60 transition-colors p-1"
-                          tabIndex={-1}
-                        >
-                          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                        </button>
-                      </div>
-                      <div
-                        className="absolute bottom-0 left-0 h-[2px] bg-white/40 transition-all duration-[600ms] ease-[cubic-bezier(0.2,1,0.3,1)] group-focus-within:w-full"
-                        style={{ width: '0%', boxShadow: '0 0 15px rgba(180,180,200,0.5)' }}
-                      />
-                    </div>
+                <div className="group mb-10 relative">
+                  <label className="block font-mono text-[11px] tracking-[2px] text-white/30 mb-3 uppercase">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={loginPassword}
+                      onChange={(e) => onLoginPasswordChange(e.target.value)}
+                      className="w-full bg-transparent border-none text-white text-lg px-0 py-3 outline-none pr-10"
+                      style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => onShowPasswordChange(!showPassword)}
+                      className="absolute right-0 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/60 transition-colors p-1"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                  <div
+                    className="absolute bottom-0 left-0 h-[2px] bg-white/40 transition-all duration-[600ms] ease-[cubic-bezier(0.2,1,0.3,1)] group-focus-within:w-full"
+                    style={{ width: '0%', boxShadow: '0 0 15px rgba(180,180,200,0.5)' }}
+                  />
+                </div>
 
-                    <div className="relative mb-14" style={{ filter: 'url(#neuralGoo)' }}>
-                      <div
-                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-white/10 rounded-[50px] transition-all duration-500 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] group-hover:scale-[1.05_1.2] group-hover:brightness-125"
-                      />
-                      <button
-                        type="submit"
-                        disabled={loginLoading}
-                        className="relative z-10 w-full bg-white text-black border-none py-5 px-10 text-sm font-extrabold tracking-[2px] uppercase cursor-pointer transition-[letter-spacing] duration-300 hover:tracking-[4px] disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {loginLoading ? 'Authenticating...' : 'Initialize Stream'}
-                      </button>
-                    </div>
+                <div className="relative mb-14" style={{ filter: 'url(#neuralGoo)' }}>
+                  <div
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-white/10 rounded-[50px] transition-all duration-500 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] group-hover:scale-[1.05_1.2] group-hover:brightness-125"
+                  />
+                  <button
+                    type="submit"
+                    disabled={loginLoading}
+                    className="relative z-10 w-full bg-white text-black border-none py-5 px-10 text-sm font-extrabold tracking-[2px] uppercase cursor-pointer transition-[letter-spacing] duration-300 hover:tracking-[4px] disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loginLoading ? 'Authenticating...' : 'Initialize Stream'}
+                  </button>
+                </div>
 
-                    <div className="flex justify-between font-mono text-[10px] mt-8">
-                      <button
-                        type="button"
-                        onClick={() => { onResetForgot(); onForgotStepChange(1); }}
-                        className="text-white/30 hover:text-white/70 transition-colors no-underline bg-transparent border-none cursor-pointer tracking-[0.5px]"
-                      >
-                        FORGOT PASSWORD
-                      </button>
-                      <button
-                        type="button"
-                        onClick={onClose}
-                        className="text-white/30 hover:text-white/70 transition-colors no-underline bg-transparent border-none cursor-pointer tracking-[0.5px]"
-                      >
-                        NEW ARCHIVE
-                      </button>
-                    </div>
-                  </>
-                )}
-
-                {(forgotStep === 1 || forgotStep === 2 || forgotStep === 3) && (
-                  <>
-                    {forgotStep === 1 && (
-                      <>
-                        <div className="group mb-10 relative">
-                          <label className="block font-mono text-[11px] tracking-[2px] text-white/30 mb-3 uppercase">
-                            Registered Identity
-                          </label>
-                          <input
-                            type="email"
-                            placeholder="admin@node.io"
-                            value={forgotEmail}
-                            onChange={(e) => onForgotEmailChange(e.target.value)}
-                            className="w-full bg-transparent border-none text-white text-lg px-0 py-3 outline-none"
-                            style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
-                          />
-                          <div className="absolute bottom-0 left-0 h-[2px] bg-white/40 transition-all duration-[600ms] ease-[cubic-bezier(0.2,1,0.3,1)] group-focus-within:w-full" style={{ width: '0%', boxShadow: '0 0 15px rgba(180,180,200,0.5)' }} />
-                        </div>
-
-                        <div className="relative mb-10" style={{ filter: 'url(#neuralGoo)' }}>
-                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-white/10 rounded-[50px] transition-all duration-500 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]" />
-                          <button
-                            type="submit"
-                            disabled={loginLoading}
-                            className="relative z-10 w-full bg-white text-black border-none py-4 px-10 text-sm font-extrabold tracking-[2px] uppercase cursor-pointer transition-[letter-spacing] duration-300 hover:tracking-[4px] disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {loginLoading ? 'Scanning...' : 'Locate Identity'}
-                          </button>
-                        </div>
-                      </>
-                    )}
-
-                    {forgotStep === 2 && (
-                      <>
-                        <div className="mb-6">
-                          <label className="block font-mono text-[11px] tracking-[2px] text-white/30 mb-3 uppercase">
-                            Recovery Cipher
-                          </label>
-                          <div
-                            className="w-full px-4 py-3 rounded-xl text-white/60 text-sm cursor-default"
-                            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
-                          >
-                            {forgotQuestion || 'No question set'}
-                          </div>
-                        </div>
-
-                        <div className="group mb-10 relative">
-                          <label className="block font-mono text-[11px] tracking-[2px] text-white/30 mb-3 uppercase">
-                            Decryption Key
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="Enter answer..."
-                            value={forgotAnswer}
-                            onChange={(e) => onForgotAnswerChange(e.target.value)}
-                            className="w-full bg-transparent border-none text-white text-lg px-0 py-3 outline-none"
-                            style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
-                          />
-                          <div className="absolute bottom-0 left-0 h-[2px] bg-white/40 transition-all duration-[600ms] ease-[cubic-bezier(0.2,1,0.3,1)] group-focus-within:w-full" style={{ width: '0%', boxShadow: '0 0 15px rgba(180,180,200,0.5)' }} />
-                        </div>
-
-                        <div className="relative mb-6" style={{ filter: 'url(#neuralGoo)' }}>
-                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-white/10 rounded-[50px] transition-all duration-500 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]" />
-                          <button
-                            type="submit"
-                            disabled={loginLoading}
-                            className="relative z-10 w-full bg-white text-black border-none py-4 px-10 text-sm font-extrabold tracking-[2px] uppercase cursor-pointer transition-[letter-spacing] duration-300 hover:tracking-[4px] disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {loginLoading ? 'Decrypting...' : 'Verify Key'}
-                          </button>
-                        </div>
-                      </>
-                    )}
-
-                    {forgotStep === 3 && (
-                      <>
-                        <div className="group mb-7 relative">
-                          <label className="block font-mono text-[11px] tracking-[2px] text-white/30 mb-3 uppercase">
-                            New Password
-                          </label>
-                          <div className="relative">
-                            <input
-                              type={showPassword ? "text" : "password"}
-                              placeholder="••••••••"
-                              value={forgotNewPassword}
-                              onChange={(e) => onForgotNewPasswordChange(e.target.value)}
-                              className="w-full bg-transparent border-none text-white text-lg px-0 py-3 outline-none pr-10"
-                              style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => onShowPasswordChange(!showPassword)}
-                              className="absolute right-0 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/60 transition-colors p-1"
-                              tabIndex={-1}
-                            >
-                              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                            </button>
-                          </div>
-                          <div className="absolute bottom-0 left-0 h-[2px] bg-white/40 transition-all duration-[600ms] ease-[cubic-bezier(0.2,1,0.3,1)] group-focus-within:w-full" style={{ width: '0%', boxShadow: '0 0 15px rgba(180,180,200,0.5)' }} />
-                        </div>
-
-                        <div className="group mb-10 relative">
-                          <label className="block font-mono text-[11px] tracking-[2px] text-white/30 mb-3 uppercase">
-                            Confirm Password
-                          </label>
-                          <input
-                            type={showPassword ? "text" : "password"}
-                            placeholder="••••••••"
-                            value={forgotConfirmPassword}
-                            onChange={(e) => onForgotConfirmPasswordChange(e.target.value)}
-                            className="w-full bg-transparent border-none text-white text-lg px-0 py-3 outline-none"
-                            style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
-                          />
-                          <div className="absolute bottom-0 left-0 h-[2px] bg-white/40 transition-all duration-[600ms] ease-[cubic-bezier(0.2,1,0.3,1)] group-focus-within:w-full" style={{ width: '0%', boxShadow: '0 0 15px rgba(180,180,200,0.5)' }} />
-                        </div>
-
-                        <div className="relative mb-6" style={{ filter: 'url(#neuralGoo)' }}>
-                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-white/10 rounded-[50px] transition-all duration-500 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]" />
-                          <button
-                            type="submit"
-                            disabled={loginLoading}
-                            className="relative z-10 w-full bg-white text-black border-none py-4 px-10 text-sm font-extrabold tracking-[2px] uppercase cursor-pointer transition-[letter-spacing] duration-300 hover:tracking-[4px] disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {loginLoading ? 'Reinitializing...' : 'Reset Sequence'}
-                          </button>
-                        </div>
-                      </>
-                    )}
-
-                    <div className="flex justify-center mt-6">
-                      <button
-                        type="button"
-                        onClick={() => { onResetForgot(); onForgotStepChange(0); }}
-                        className="font-mono text-[10px] tracking-[2px] text-white/30 hover:text-white/70 transition-colors bg-transparent border-none cursor-pointer"
-                      >
-                        ← RETURN TO ACCESS NODE
-                      </button>
-                    </div>
-                  </>
-                )}
+                <div className="flex justify-between font-mono text-[10px] mt-8">
+                  <button
+                    type="button"
+                    onClick={onForgotPassword}
+                    className="text-white/30 hover:text-white/70 transition-colors no-underline bg-transparent border-none cursor-pointer tracking-[0.5px]"
+                  >
+                    FORGOT PASSWORD
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="text-white/30 hover:text-white/70 transition-colors no-underline bg-transparent border-none cursor-pointer tracking-[0.5px]"
+                  >
+                    NEW ARCHIVE
+                  </button>
+                </div>
               </form>
             </div>
           </motion.div>
@@ -400,4 +238,4 @@ export function AdminLoginModal({
       )}
     </AnimatePresence>
   );
-}
+});

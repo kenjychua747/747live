@@ -27,16 +27,18 @@ type LinkItem = {
 	href: string;
 	icon: React.ComponentType<{ className?: string }>;
 	description?: string;
+	img?: string;
 };
 
-export function Header({ liveUrl, activeSection, scrollToSection, onLogoClick }: {
+export function Header({ liveUrl, activeSection, scrollToSection, onLogoClick, lang, onLangChange }: {
 	liveUrl: string;
 	activeSection: string;
 	scrollToSection: (id: string) => void;
 	onLogoClick?: () => void;
+	lang: "en" | "tl";
+	onLangChange: (lang: "en" | "tl") => void;
 }) {
 	const [open, setOpen] = React.useState(false);
-	const [lang, setLang] = React.useState<"en" | "tl">("en");
 	const scrolled = useScroll(10);
 
 	React.useEffect(() => {
@@ -153,7 +155,7 @@ export function Header({ liveUrl, activeSection, scrollToSection, onLogoClick }:
 
 				<div className="hidden items-center gap-3 md:flex">
 					<button
-						onClick={() => setLang(lang === "en" ? "tl" : "en")}
+						onClick={() => onLangChange(lang === "en" ? "tl" : "en")}
 						className="flex items-center gap-1.5 rounded-lg border border-white/[.14] bg-transparent px-3 py-2 text-[12px] font-semibold text-white/60 transition-all hover:border-[#66f89c]/40 hover:text-[#66f89c] hover:bg-[#66f89c]/[.06]"
 					>
 						<Globe size={12} /> {lang === "en" ? "EN" : "TL"}
@@ -220,8 +222,12 @@ export function Header({ liveUrl, activeSection, scrollToSection, onLogoClick }:
 								onClick={() => { scrollToSection('sports'); setOpen(false); }}
 								className="w-full flex items-center gap-3 rounded-lg border border-white/[.06] bg-white/[.03] px-4 py-3 text-left transition-colors hover:bg-[#66f89c]/[.06]"
 							>
-								<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/[.08] bg-white/[.04]">
-									<link.icon className="h-4 w-4 text-white/50" />
+								<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/[.08] bg-white/[.04] overflow-hidden">
+									{link.img ? (
+										<img src={link.img} alt={link.title} className="h-full w-full object-cover" />
+									) : (
+										<link.icon className="h-4 w-4 text-white/50" />
+									)}
 								</div>
 								<div className="flex flex-col">
 									<span className="text-[13px] font-semibold text-white/70">{link.title}</span>
@@ -291,6 +297,7 @@ function ListItem({
 	title,
 	description,
 	icon: Icon,
+	img,
 	className,
 	onClick,
 	...props
@@ -306,8 +313,12 @@ function ListItem({
 			onClick={onClick}
 			{...props}
 		>
-			<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/[.08] bg-white/[.04] shadow-sm transition-colors group-hover:border-[#66f89c]/20 group-hover:bg-[#66f89c]/[.06]">
-				<Icon className="h-4 w-4 text-white/50 group-hover:text-[#66f89c] transition-colors" />
+			<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/[.08] bg-white/[.04] shadow-sm overflow-hidden">
+				{img ? (
+					<img src={img} alt={title} className="h-full w-full object-cover" />
+				) : (
+					<Icon className="h-4 w-4 text-white/50 group-hover:text-[#66f89c] transition-colors" />
+				)}
 			</div>
 			<div className="flex flex-col items-start justify-center min-w-0">
 				<span className="text-[13px] font-semibold text-white/80 leading-tight">{title}</span>
@@ -325,30 +336,35 @@ const sportsLinks: LinkItem[] = [
 		href: '#sports',
 		icon: CircleDot,
 		description: 'Live basketball betting',
+		img: '/images/nba.jpg',
 	},
 	{
 		title: 'PBA',
 		href: '#sports',
 		icon: Trophy,
 		description: 'Philippine basketball',
+		img: '/images/pba.jpg',
 	},
 	{
 		title: 'Baseball',
 		href: '#sports',
 		icon: Medal,
 		description: 'MLB & international',
+		img: '/images/baseball.jpg',
 	},
 	{
 		title: 'Mobile Legends',
 		href: '#sports',
 		icon: Gamepad2,
 		description: 'eSports betting',
+		img: '/images/mobilelegend.jpg',
 	},
 	{
 		title: 'Dota 2',
 		href: '#sports',
 		icon: Swords,
 		description: 'eSports tournaments',
+		img: '/images/dota2.jpg',
 	},
 ];
 
