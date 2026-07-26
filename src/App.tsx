@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ImageGallery } from "@/components/ui/image-gallery";
 import { NeoMinimalFooter } from "@/components/ui/neo-minimal-footer";
+import { AdminLoginModal } from "@/components/ui/admin-login-modal";
+import { Header } from "@/components/ui/header-3";
 import { createClient } from "@supabase/supabase-js";
 import {
   ArrowUpRight,
@@ -9,20 +11,13 @@ import {
   ChevronDown,
   ChevronRight,
   Crown,
-  Eye,
-  EyeOff,
   ExternalLink,
   Gift,
-  Globe,
-  Lock,
-  Mail,
-  Menu,
   MessageSquare,
   Play,
   Search,
   ShieldCheck,
   Send,
-  KeyRound,
   Sparkles,
   Trophy,
   UserPlus,
@@ -169,7 +164,6 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [splashVisible, setSplashVisible] = useState(true);
   const [contentReady, setContentReady] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
 
   const [cursorGlow, setCursorGlow] = useState({ x: 50, y: 20 });
@@ -441,7 +435,7 @@ export default function App() {
   }, []);
 
   const [cookieConsent, setCookieConsent] = useState(() => localStorage.getItem("cookieConsent") === "true");
-  const [lang, setLang] = useState<"en" | "tl">("en");
+  const [lang] = useState<"en" | "tl">("en");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [showSkeleton, setShowSkeleton] = useState(true);
 
@@ -517,7 +511,6 @@ export default function App() {
   }, []);
 
   function scrollToSection(id: string) {
-    setMenuOpen(false);
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
@@ -563,42 +556,6 @@ export default function App() {
       )}
     </AnimatePresence>
 
-      <AnimatePresence>
-      {menuOpen && (
-        <>
-        <motion.div
-          className="mobile-overlay"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={() => setMenuOpen(false)}
-        />
-        <motion.aside
-          className="mobile-menu"
-          initial={{ x: "100%" }}
-          animate={{ x: 0 }}
-          exit={{ x: "100%" }}
-          transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <div className="mobile-menu__top">
-            <span className="brand brand--menu"><img src="/images/logo.jpg" alt="747 Live" className="brand__logo" onClick={handleLogoClick} /></span>
-            <button type="button" onClick={() => setMenuOpen(false)} aria-label="Close menu"><X /></button>
-          </div>
-          <div className="mobile-menu__links">
-            <button type="button" onClick={() => scrollToSection("benefits")}>Benefits</button>
-            <button type="button" onClick={() => scrollToSection("discover")}>Discover</button>
-            <button type="button" onClick={() => scrollToSection("sports")}>Sports</button>
-            <button type="button" onClick={() => scrollToSection("promo")}>Why 747LIVE</button>
-            <a href="https://www.facebook.com/profile.php?id=100022590198280" target="_blank" rel="noreferrer">Facebook</a>
-          </div>
-          <a className="button button--primary" href={liveUrl} target="_blank" rel="noreferrer">
-            Join the invitation <ArrowUpRight size={18} />
-          </a>
-        </motion.aside>
-        </>
-      )}
-      </AnimatePresence>
-
     <main
       className="site-shell"
       onPointerMove={(event) => {
@@ -613,31 +570,7 @@ export default function App() {
       <div className="ambient ambient--orange" aria-hidden="true" />
       <div className="ambient ambient--purple" aria-hidden="true" />
 
-      <header className="site-header">
-        <div className="site-header__inner">
-          <button className="mobile-menu-button" type="button" onClick={() => setMenuOpen(true)} aria-label="Open menu">
-            <Menu size={22} />
-          </button>
-          <button className="brand" type="button" onClick={() => scrollToSection("top")} aria-label="Back to top">
-            <img src="/images/logo.jpg" alt="747 Live" className="brand__logo" onClick={handleLogoClick} />
-          </button>
-          <nav className="desktop-nav" aria-label="Main navigation">
-            <button type="button" className={activeSection === "benefits" ? "desktop-nav--active" : ""} onClick={() => scrollToSection("benefits")}>Benefits</button>
-            <button type="button" className={activeSection === "discover" ? "desktop-nav--active" : ""} onClick={() => scrollToSection("discover")}>Discover</button>
-            <button type="button" className={activeSection === "sports" ? "desktop-nav--active" : ""} onClick={() => scrollToSection("sports")}>Sports</button>
-            <button type="button" className={activeSection === "promo" ? "desktop-nav--active" : ""} onClick={() => scrollToSection("promo")}>Promo</button>
-          </nav>
-          <div className="header-actions">
-            <button className="lang-switcher" type="button" onClick={() => setLang(lang === "en" ? "tl" : "en")}>
-              <Globe size={12} /> {lang === "en" ? "EN" : "TL"}
-            </button>
-
-            <a className="header-social" href="https://www.facebook.com/profile.php?id=100022590198280" target="_blank" rel="noreferrer" aria-label="Facebook">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-            </a>
-          </div>
-        </div>
-      </header>
+      <Header liveUrl={liveUrl} activeSection={activeSection} scrollToSection={scrollToSection} onLogoClick={handleLogoClick} />
 
       <section className="hero" id="top">
         <div className="hero__image" style={{ backgroundImage: `url(${heroImage})` }} />
@@ -1414,143 +1347,34 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {adminModalOpen && (
-          <motion.div
-            className="admin-modal-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setAdminModalOpen(false)}
-          >
-            <motion.div
-              className="admin-modal"
-              initial={{ opacity: 0, scale: 0.92, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.92, y: 20 }}
-              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="admin-modal__icon"><ShieldCheck size={24} /></div>
-              <h3 className="admin-modal__title">Admin Access</h3>
-              <p className="admin-modal__desc">
-                {forgotStep === 0 && 'Sign in with your admin credentials.'}
-                {forgotStep === 1 && 'Enter your registered admin email.'}
-                {forgotStep === 2 && 'Answer your recovery question.'}
-                {forgotStep === 3 && 'Set a new password.'}
-              </p>
-
-              {loginError && <div className="admin-modal__error">{loginError}</div>}
-
-              {/* Step 0: Login */}
-              {forgotStep === 0 && (<>
-                <div className="admin-modal__field">
-                  <label><Mail size={14} /> Email</label>
-                  <input type="email" placeholder="admin@example.com" value={loginEmail}
-                    onChange={(e) => setLoginEmail(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleAdminLogin()} />
-                </div>
-                <div className="admin-modal__field">
-                  <label><Lock size={14} /> Password</label>
-                  <div className="admin-modal__password-wrap">
-                    <input type={showPassword ? "text" : "password"} placeholder="Enter password" value={loginPassword}
-                      onChange={(e) => setLoginPassword(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleAdminLogin()} />
-                    <button type="button" className="admin-modal__eye" onClick={() => setShowPassword(!showPassword)}
-                      tabIndex={-1}>
-                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
-                </div>
-                <button type="button" className="admin-modal__forgot" onClick={() => { resetForgotFlow(); setForgotStep(1); }}>
-                  <KeyRound size={12} /> Forgot password?
-                </button>
-                <button className="button button--primary button--large" onClick={handleAdminLogin}
-                  disabled={loginLoading}
-                  style={{ width: '100%', justifyContent: 'center', opacity: loginLoading ? 0.6 : 1 }}>
-                  {loginLoading ? 'Signing in...' : 'Sign in'}
-                </button>
-              </>)}
-
-              {/* Step 1: Enter email */}
-              {forgotStep === 1 && (<>
-                <div className="admin-modal__field">
-                  <label><Mail size={14} /> Registered Email</label>
-                  <input type="email" placeholder="admin@example.com" value={forgotEmail}
-                    onChange={(e) => setForgotEmail(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleForgotEmail()} />
-                </div>
-                <button className="button button--primary button--large" onClick={handleForgotEmail}
-                  disabled={loginLoading}
-                  style={{ width: '100%', justifyContent: 'center', opacity: loginLoading ? 0.6 : 1 }}>
-                  {loginLoading ? 'Verifying...' : 'Continue'}
-                </button>
-                <button type="button" className="admin-modal__forgot" onClick={resetForgotFlow} style={{ marginTop: 12 }}>
-                  Back to sign in
-                </button>
-              </>)}
-
-              {/* Step 2: Recovery question */}
-              {forgotStep === 2 && (<>
-                <div className="admin-modal__field">
-                  <label><KeyRound size={14} /> Recovery Question</label>
-                  <input type="text" value={forgotQuestion} readOnly
-                    style={{ background: 'rgba(0,0,0,.25)', color: 'rgba(255,255,255,.6)', cursor: 'default' }} />
-                </div>
-                <div className="admin-modal__field">
-                  <label><Mail size={14} /> Your Answer</label>
-                  <input type="text" placeholder="Type your answer..." value={forgotAnswer}
-                    onChange={(e) => setForgotAnswer(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleForgotAnswer()} />
-                </div>
-                <button className="button button--primary button--large" onClick={handleForgotAnswer}
-                  disabled={loginLoading}
-                  style={{ width: '100%', justifyContent: 'center', opacity: loginLoading ? 0.6 : 1 }}>
-                  {loginLoading ? 'Verifying...' : 'Verify Answer'}
-                </button>
-                <button type="button" className="admin-modal__forgot" onClick={resetForgotFlow} style={{ marginTop: 12 }}>
-                  Back to sign in
-                </button>
-              </>)}
-
-              {/* Step 3: New password */}
-              {forgotStep === 3 && (<>
-                <div className="admin-modal__field">
-                  <label><Lock size={14} /> New Password</label>
-                  <div className="admin-modal__password-wrap">
-                    <input type={showPassword ? "text" : "password"} placeholder="Enter new password" value={forgotNewPassword}
-                      onChange={(e) => setForgotNewPassword(e.target.value)} />
-                    <button type="button" className="admin-modal__eye" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}>
-                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
-                </div>
-                <div className="admin-modal__field">
-                  <label><Lock size={14} /> Confirm Password</label>
-                  <input type={showPassword ? "text" : "password"} placeholder="Confirm new password" value={forgotConfirmPassword}
-                    onChange={(e) => setForgotConfirmPassword(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleForgotReset()} />
-                </div>
-                <button className="button button--primary button--large" onClick={handleForgotReset}
-                  disabled={loginLoading}
-                  style={{ width: '100%', justifyContent: 'center', opacity: loginLoading ? 0.6 : 1 }}>
-                  {loginLoading ? 'Updating...' : 'Update Password'}
-                </button>
-                <button type="button" className="admin-modal__forgot" onClick={resetForgotFlow} style={{ marginTop: 12 }}>
-                  Back to sign in
-                </button>
-              </>)}
-
-              {forgotStep === 0 && (
-                <button className="admin-modal__close" type="button" onClick={() => { resetForgotFlow(); setAdminModalOpen(false); }}
-                  style={{ width: '100%', marginTop: 10, justifyContent: 'center' }}>
-                  Cancel
-                </button>
-              )}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <AdminLoginModal
+        isOpen={adminModalOpen}
+        onClose={() => { resetForgotFlow(); setAdminModalOpen(false); }}
+        loginEmail={loginEmail}
+        loginPassword={loginPassword}
+        loginError={loginError}
+        loginLoading={loginLoading}
+        showPassword={showPassword}
+        forgotStep={forgotStep}
+        forgotEmail={forgotEmail}
+        forgotQuestion={forgotQuestion}
+        forgotAnswer={forgotAnswer}
+        forgotNewPassword={forgotNewPassword}
+        forgotConfirmPassword={forgotConfirmPassword}
+        onLoginEmailChange={setLoginEmail}
+        onLoginPasswordChange={setLoginPassword}
+        onShowPasswordChange={setShowPassword}
+        onLogin={handleAdminLogin}
+        onForgotStepChange={setForgotStep}
+        onForgotEmailChange={setForgotEmail}
+        onForgotAnswerChange={setForgotAnswer}
+        onForgotNewPasswordChange={setForgotNewPassword}
+        onForgotConfirmPasswordChange={setForgotConfirmPassword}
+        onForgotEmailSubmit={handleForgotEmail}
+        onForgotAnswerSubmit={handleForgotAnswer}
+        onForgotResetSubmit={handleForgotReset}
+        onResetForgot={resetForgotFlow}
+      />
     </main>
     </>
   );
