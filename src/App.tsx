@@ -439,19 +439,27 @@ export default function App() {
     }
     setLoginLoading(true);
     setLoginError("");
-    const { error } = await supabase.auth.signInWithPassword({
-      email: loginEmail.trim(),
-      password: loginPassword,
-    });
-    if (error) {
+    try {
+      // Check credentials against admin_credentials table directly
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/admin_credentials?id=eq.1&select=email,password`, {
+        headers: { 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY }
+      });
+      if (!res.ok) throw new Error('Failed to verify');
+      const rows = await res.json();
+      const creds = rows?.[0];
+      if (!creds || creds.email !== loginEmail.trim() || creds.password !== loginPassword) {
+        setLoginLoading(false);
+        setLoginError("Invalid email or password");
+        return;
+      }
       setLoginLoading(false);
-      setLoginError("Invalid email or password");
-      return;
+      setAdminModalOpen(false);
+      window.open("/admin.html", "_blank");
+    } catch (err) {
+      setLoginLoading(false);
+      setLoginError("Failed to connect. Check if admin_credentials table exists.");
     }
-    setLoginLoading(false);
-    setAdminModalOpen(false);
-    window.open("/admin.html", "_blank");
-  }, [loginEmail, loginPassword, supabase]);
+  }, [loginEmail, loginPassword]);
 
   const handleCloseModal = useCallback(() => {
     setLoginEmail("");
@@ -788,7 +796,8 @@ export default function App() {
                 email: formEmail,
                 username: formUsername,
                 phone: formPhone,
-                country: formCountry
+                country: formCountry,
+                status: 'New'
               };
               // Save inquiry to Supabase
               try {

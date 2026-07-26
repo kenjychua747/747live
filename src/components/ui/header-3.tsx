@@ -43,11 +43,23 @@ export function Header({ liveUrl, activeSection, scrollToSection, onLogoClick, l
 
 	React.useEffect(() => {
 		if (open) {
+			const scrollY = window.scrollY;
+			document.body.style.position = 'fixed';
+			document.body.style.top = `-${scrollY}px`;
+			document.body.style.width = '100%';
 			document.body.style.overflow = 'hidden';
 		} else {
+			const top = parseInt(document.body.style.top || '0') * -1;
+			document.body.style.position = '';
+			document.body.style.top = '';
+			document.body.style.width = '';
 			document.body.style.overflow = '';
+			window.scrollTo(0, top);
 		}
 		return () => {
+			document.body.style.position = '';
+			document.body.style.top = '';
+			document.body.style.width = '';
 			document.body.style.overflow = '';
 		};
 	}, [open]);
@@ -276,6 +288,7 @@ function MobileMenu({ open, children, className, ...props }: MobileMenuProps) {
 				'bg-[#021d16]/95 supports-[backdrop-filter]:bg-[#021d16]/80 backdrop-blur-xl',
 				'fixed top-[72px] right-0 bottom-0 left-0 z-40 flex flex-col overflow-hidden border-y border-white/[.06] md:hidden',
 			)}
+			style={{ overscrollBehavior: 'contain' } as React.CSSProperties}
 		>
 			<div
 				data-slot={open ? 'open' : 'closed'}

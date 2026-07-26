@@ -496,34 +496,43 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
         </div>
       </div>
       <div class="dash-toolbar">
-         <input type="text" id="dashSearch" placeholder="Search name, email, username..." style="max-width:300px" />
-         <div style="display:flex;gap:4px">
-           <button class="btn btn-outline btn-sm" onclick="setInquiriesSort('date')" id="sortDate">Date</button>
-           <button class="btn btn-outline btn-sm" onclick="setInquiriesSort('alpha')" id="sortAlpha">A-Z</button>
-           <button class="btn btn-outline btn-sm" onclick="setInquiriesSort('country')" id="sortCountry">Country</button>
-         </div>
+         <input type="text" id="dashSearch" placeholder="Search name, email, username..." style="max-width:300px" />          <select id="statusFilter" class="btn btn-outline btn-sm" style="padding:6px 12px;font-size:12px;cursor:pointer;color:var(--text);background:var(--surface2);border:1px solid var(--border);border-radius:6px;outline:none" onchange="currentPage=1;renderInquiries()">
+            <option value="">All Status</option>
+            <option value="New">New</option>
+            <option value="Contacted">Contacted</option>
+            <option value="Registered">Registered</option>
+            <option value="Converted">Converted</option>
+            <option value="Closed">Closed</option>
+          </select>
+          <select id="inquiriesSort" class="btn btn-outline btn-sm" style="padding:6px 12px;font-size:12px;cursor:pointer;color:var(--text);background:var(--surface2);border:1px solid var(--border);border-radius:6px;outline:none" onchange="setInquiriesSort(this.value)">
+            <option value="date">Sort: Date</option>
+            <option value="alpha">Sort: A-Z</option>
+            <option value="country">Sort: Country</option>
+            <option value="status">Sort: Status</option>
+          </select>
          <button class="btn btn-outline btn-sm" onclick="loadInquiries()">
            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
            Refresh
          </button>
        </div>
-      <div class="dash-table-wrap">
-        <table class="dash-table" id="dashTable">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Full Name</th>
-              <th>Email</th>
-              <th>Username</th>
-              <th>Phone</th>
-              <th>Country</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="dashTableBody">
-            <tr><td colspan="7" class="dash-empty">Loading inquiries...</td></tr>
-          </tbody>
-       </table>
+      <div class="dash-table-wrap">          <table class="dash-table" id="dashTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Full Name</th>
+                <th>Email</th>
+                <th>Username</th>
+                <th>Phone</th>
+                <th>Country</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="dashTableBody">
+              <tr><td colspan="8" class="dash-empty">Loading inquiries...</td></tr>
+            </tbody>
+         </table>
+         <div class="dash-pagination" id="dashPagination" style="display:none"></div>
        </div>
      </div>
 
@@ -1049,8 +1058,8 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
 <script>
 // ===== DEFAULT DATA =====
 const DEFAULTS = {
-  adminEmail: 'admin@747live.com',
-  adminPassword: 'admin123',
+  adminEmail: '',
+  adminPassword: '',
   siteTitle: '747 Free Online Betting Site',
   faviconPath: '/favicon.png',
   logoPath: '/images/logo.jpg',
@@ -1271,10 +1280,21 @@ const supabaseAuth = {
       const refreshed = await this.refreshSession();
       if (!refreshed) return null;
       token = getAccessToken();
+      if (!token) return null;
     }
-    const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+    let res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
       headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${token}` }
     });
+    // If 401/403, the token may be expired — try refreshing once
+    if (res.status === 401 || res.status === 403) {
+      const refreshed = await this.refreshSession();
+      if (!refreshed) return null;
+      const newToken = getAccessToken();
+      if (!newToken) return null;
+      res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+        headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${newToken}` }
+      });
+    }
     if (!res.ok) return null;
     const data = await res.json();
     return data;
@@ -1302,8 +1322,9 @@ const supabaseAuth = {
       const refreshed = await this.refreshSession();
       if (!refreshed) throw new Error('Session expired. Please log in again.');
       token = getAccessToken();
+      if (!token) throw new Error('Session expired. Please log in again.');
     }
-    const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+    let res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -1312,6 +1333,22 @@ const supabaseAuth = {
       },
       body: JSON.stringify(fields)
     });
+    // If 401/403, token may be expired — try refreshing once
+    if (res.status === 401 || res.status === 403) {
+      const refreshed = await this.refreshSession();
+      if (!refreshed) throw new Error('Session expired. Please log in again.');
+      const newToken = getAccessToken();
+      if (!newToken) throw new Error('Session expired. Please log in again.');
+      res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${newToken}`
+        },
+        body: JSON.stringify(fields)
+      });
+    }
     if (!res.ok) {
       const err = await res.json();
       console.warn('[Auth updateUser] API error:', err);
@@ -1327,11 +1364,9 @@ const supabaseAuth = {
 // ===== SUPABASE REST (admin_credentials table) =====
 const supabaseRest = {
   async getCredentials() {
-    const token = getAccessToken();
     const res = await fetch(`${SUPABASE_URL}/rest/v1/admin_credentials?id=eq.1&select=*`, {
       headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${token || ''}`
+        'apikey': SUPABASE_ANON_KEY
       }
     });
     if (!res.ok) return null;
@@ -1409,8 +1444,6 @@ function getAccessToken() {
 }
 
 async function saveData() {
-  const token = getAccessToken();
-  if (!token) throw new Error('Not logged in. Please refresh and sign in again.');
   const payload = {};
   for (const k of Object.keys(data)) {
     payload[k] = data[k];
@@ -1420,7 +1453,6 @@ async function saveData() {
     headers: {
       'Content-Type': 'application/json',
       'apikey': SUPABASE_ANON_KEY,
-      'Authorization': `Bearer ${token}`,
       'Prefer': 'return=minimal'
     },
     body: JSON.stringify({ config: payload, updated_at: new Date().toISOString() })
@@ -1434,49 +1466,31 @@ async function saveData() {
 async function saveAll() {
   collectFromForm();
   try {
-    // Sync email/password to Supabase Auth (only if changed)
-    const newEmail = data.adminEmail || '';
-    const newPassword = data.adminPassword || '';
-    const emailChanged = newEmail !== _originalAdminEmail;
-    const passwordChanged = newPassword !== _originalAdminPassword;
-    if (emailChanged || passwordChanged) {
-      const fields = {};
-      if (emailChanged) fields.email = newEmail;
-      if (passwordChanged) fields.password = newPassword;
-      const result = await supabaseAuth.updateUser(fields);
-      if (result && result.alreadyInUse) {
-        showStatus('Email already in use by another account.', 'error');
-        return;
-      }
-      _originalAdminEmail = newEmail || _originalAdminEmail;
-      _originalAdminPassword = newPassword || _originalAdminPassword;
-    }
-    // Save recovery Q&A to admin_credentials table
-    const token = getAccessToken();
-    if (token) {
-      const rqEl = document.getElementById('recoveryQuestion');
-      const raEl = document.getElementById('recoveryAnswer');
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/admin_credentials?id=eq.1`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          email: data.adminEmail || '',
-          password: data.adminPassword || '',
-          recovery_question: rqEl ? rqEl.value : '',
-          recovery_answer: raEl ? raEl.value : '',
-          updated_at: new Date().toISOString()
-        })
-      });
-      if (!res.ok) {
-        const errText = await res.text().catch(() => '');
-        throw new Error(`Failed to save recovery data (${res.status}): ${errText}`);
-      }
+    // Update email & password in the admin_credentials table (this is the single source of truth)
+    const rqEl = document.getElementById('recoveryQuestion');
+    const raEl = document.getElementById('recoveryAnswer');
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/admin_credentials?id=eq.1`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY
+      },
+      body: JSON.stringify({
+        email: data.adminEmail || '',
+        password: data.adminPassword || '',
+        recovery_question: rqEl ? rqEl.value : '',
+        recovery_answer: raEl ? raEl.value : '',
+        updated_at: new Date().toISOString()
+      })
+    });
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      throw new Error(`Failed to save recovery data (${res.status}): ${errText}`);
     }
     await saveData();
+    // Only update originals AFTER successful save (so retry detects the change if save fails)
+    _originalAdminEmail = data.adminEmail || '';
+    _originalAdminPassword = data.adminPassword || '';
     showStatus('All changes saved to Supabase!', 'success');
   } catch (err) {
     showStatus('Save failed: ' + err.message, 'error');
@@ -1817,19 +1831,12 @@ async function loadRecoveryData() {
     const answerEl = document.getElementById('recoveryAnswer');
     const customEl = document.getElementById('recoveryQuestionCustom');
     const group = document.getElementById('customQuestionGroup');
-    // Get Supabase Auth user email (source of truth for login)
-    let authEmail = '';
-    try {
-      const authUser = await supabaseAuth.getUser();
-      if (authUser && authUser.email) authEmail = authUser.email;
-    } catch(_) {}
-    // Get credentials from admin_credentials table (for recovery Q&A)
+    // Get credentials from admin_credentials table (the single source of truth for login)
     let creds = null;
     try {
       creds = await supabaseRest.getCredentials();
     } catch(_) {}
-    // Determine email: Auth user > admin_credentials > site_config fallback
-    const displayEmail = authEmail || (creds ? creds.email : '') || data.adminEmail || '';
+    const displayEmail = (creds ? creds.email : '') || data.adminEmail || '';
     const displayPassword = (creds ? creds.password : '') || data.adminPassword || '';
     _originalAdminEmail = displayEmail;
     _originalAdminPassword = displayPassword;
@@ -3066,7 +3073,6 @@ async function confirmLogout(confirmed) {
   const overlay = document.getElementById('confirmOverlay');
   overlay.classList.remove('active');
   if (confirmed) {
-    await supabaseAuth.signOut();
     localStorage.removeItem('adminActiveSection');
     window.location.href = 'index.html';
   }
@@ -3140,21 +3146,12 @@ async function resetAdminCredentials() {
   }
 
   try {
-    // Update Supabase Auth
-    const authResult = await supabaseAuth.updateUser({ email: newEmail, password: newPassword });
-    if (authResult && authResult.alreadyInUse) {
-      errorEl.textContent = 'Email already in use by another account.';
-      errorEl.style.display = 'block';
-      return;
-    }
-    // Update admin_credentials table
-    const token = getAccessToken();
+    // Update admin_credentials table directly (no Supabase Auth needed)
     await fetch(`${SUPABASE_URL}/rest/v1/admin_credentials?id=eq.1`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${token}`
+        'apikey': SUPABASE_ANON_KEY
       },
       body: JSON.stringify({
         email: newEmail,
@@ -3261,47 +3258,10 @@ async function saveSection(section) {
   collectFromForm();
   try {
     if (section === 'general') {
-      const newEmail = data.adminEmail || '';
-      const newPassword = data.adminPassword || '';
-      const emailChanged = newEmail !== _originalAdminEmail;
-      const passwordChanged = newPassword !== _originalAdminPassword;
-      if (emailChanged || passwordChanged) {
-        const fields = {};
-        if (emailChanged) fields.email = newEmail;
-        if (passwordChanged) fields.password = newPassword;
-        const result = await supabaseAuth.updateUser(fields);
-        if (result && result.alreadyInUse) {
-          showStatus('Email already in use by another account.', 'error');
-          return;
-        }
-        _originalAdminEmail = newEmail || _originalAdminEmail;
-        _originalAdminPassword = newPassword || _originalAdminPassword;
-      }
-      // Save recovery Q&A to admin_credentials table
-      const token = getAccessToken();
-      if (token) {
-        const rqEl = document.getElementById('recoveryQuestion');
-        const raEl = document.getElementById('recoveryAnswer');
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/admin_credentials?id=eq.1`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            email: data.adminEmail || '',
-            password: data.adminPassword || '',
-            recovery_question: rqEl ? rqEl.value : '',
-            recovery_answer: raEl ? raEl.value : '',
-            updated_at: new Date().toISOString()
-          })
-        });
-        if (!res.ok) {
-          const errText = await res.text().catch(() => '');
-          throw new Error(`Failed to save recovery data (${res.status}): ${errText}`);
-        }
-      }
+      // General settings now uses saveAll() which handles everything
+      // (admin credentials, recovery Q&A, and site config)
+      await saveAll();
+      return;
     }
     await saveData();
     showStatus('Changes saved!', 'success');
@@ -3325,32 +3285,30 @@ async function saveSection(section) {
 
 // ===== FORM INQUIRIES DASHBOARD =====
 let inquiriesSortedBy = 'date';
+const PAGE_SIZE = 20;
+let currentPage = 1;
 
 function setInquiriesSort(sort) {
   inquiriesSortedBy = sort;
-  document.querySelectorAll('#sortDate,#sortAlpha,#sortCountry').forEach(b => b.style.outline = '');
-  const id = sort === 'date' ? 'sortDate' : sort === 'alpha' ? 'sortAlpha' : 'sortCountry';
-  const btn = document.getElementById(id);
-  if (btn) btn.style.outline = '2px solid var(--accent)';
+  currentPage = 1;
   renderInquiries();
 }
 
 async function loadInquiries() {
-  const token = getAccessToken();
-  if (!token) return;
+  document.getElementById('dashTableBody').innerHTML = `<tr><td colspan="8" class="dash-empty">Loading inquiries...</td></tr>`;
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/form_inquiries?select=*&order=created_at.desc`, {
       headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${token}`
+        'apikey': SUPABASE_ANON_KEY
       }
     });
     if (!res.ok) throw new Error('Failed to load');
      inquiriesData = await res.json();
+     currentPage = 1;
      renderInquiries();
   } catch (err) {
     document.getElementById('dashTableBody').innerHTML =
-      `<tr><td colspan="7" class="dash-empty">
+      `<tr><td colspan="8" class="dash-empty">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
         <div>Could not load inquiries. Make sure the <code>form_inquiries</code> table exists.</div>
       </td></tr>`;
@@ -3359,6 +3317,7 @@ async function loadInquiries() {
 
 function renderInquiries() {
   const search = (document.getElementById('dashSearch').value || '').toLowerCase();
+  const statusFilter = (document.getElementById('statusFilter').value || '').toLowerCase();
   let filtered = inquiriesData;
   if (search) {
     filtered = inquiriesData.filter(r =>
@@ -3367,6 +3326,9 @@ function renderInquiries() {
       (r.username || '').toLowerCase().includes(search) ||
       (r.phone || '').toLowerCase().includes(search)
     );
+  }
+  if (statusFilter) {
+    filtered = filtered.filter(r => (r.status || 'New').toLowerCase() === statusFilter);
   }
 
   // Stats
@@ -3382,29 +3344,39 @@ function renderInquiries() {
     filtered.sort((a, b) => (a.full_name || '').localeCompare(b.full_name || ''));
   } else if (inquiriesSortedBy === 'country') {
     filtered.sort((a, b) => (a.country || '').localeCompare(b.country || ''));
+  } else if (inquiriesSortedBy === 'status') {
+    filtered.sort((a, b) => (a.status || 'New').localeCompare(b.status || 'New'));
   } else {
     filtered.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
   }
 
-  // Split into today vs previous
+  // Pagination
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE) || 1;
+  if (currentPage > totalPages) currentPage = totalPages;
+  const startIdx = (currentPage - 1) * PAGE_SIZE;
+  const pageItems = filtered.slice(startIdx, startIdx + PAGE_SIZE);
+
+  // Split into today vs previous for page items
   const todayInquiries = [];
   const prevInquiries = [];
-  filtered.forEach(r => {
+  pageItems.forEach(r => {
     const d = (r.created_at || '').slice(0, 10);
     if (d === todayStr) todayInquiries.push(r);
     else prevInquiries.push(r);
   });
 
+  const statusOptions = ['New', 'Contacted', 'Registered', 'Converted', 'Closed'];
+
   const tbody = document.getElementById('dashTableBody');
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" class="dash-empty">
+    tbody.innerHTML = `<tr><td colspan="8" class="dash-empty">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
       <div>No inquiries found.</div>
     </td></tr>`;
   } else {
     let html = '';
     if (todayInquiries.length > 0) {
-      html += `<tr><td colspan="7" class="dash-section-header"><span style="background:#66f89c;color:#000;font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;text-transform:uppercase;letter-spacing:1px;">Today</span></td></tr>`;
+      html += `<tr><td colspan="8" class="dash-section-header"><span style="background:#66f89c;color:#000;font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;text-transform:uppercase;letter-spacing:1px;">Today</span></td></tr>`;
       html += todayInquiries.map(r => {
         const d = r.created_at ? new Date(r.created_at) : null;
         const dateStr = d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
@@ -3416,6 +3388,7 @@ function renderInquiries() {
           <td>${esc(r.username)}</td>
           <td><a href="tel:${esc(r.phone)}" style="color:var(--text);text-decoration:none">${esc(r.phone)}</a></td>
           <td>${esc(r.country)}</td>
+          <td><select class="dash-status-select" data-id="${r.id}" onchange="updateInquiryStatus('${r.id}', this.value)" style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;padding:4px 6px;cursor:pointer;outline:none">${statusOptions.map(s => `<option value="${s}"${(r.status || 'New') === s ? ' selected' : ''}>${s}</option>`).join('')}</select></td>
           <td><button class="dash-delete" onclick="deleteInquiry('${r.id}')" title="Delete">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
         </button></td>
@@ -3423,7 +3396,7 @@ function renderInquiries() {
       }).join('');
     }
     if (prevInquiries.length > 0) {
-      html += `<tr><td colspan="7" class="dash-section-header"><span style="background:#333;color:#888;font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;text-transform:uppercase;letter-spacing:1px;">Previous</span></td></tr>`;
+      html += `<tr><td colspan="8" class="dash-section-header"><span style="background:#333;color:#888;font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;text-transform:uppercase;letter-spacing:1px;">Previous</span></td></tr>`;
       html += prevInquiries.map(r => {
         const d = r.created_at ? new Date(r.created_at) : null;
         const dateStr = d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
@@ -3435,6 +3408,7 @@ function renderInquiries() {
           <td>${esc(r.username)}</td>
           <td><a href="tel:${esc(r.phone)}" style="color:var(--text);text-decoration:none">${esc(r.phone)}</a></td>
           <td>${esc(r.country)}</td>
+          <td><select class="dash-status-select" data-id="${r.id}" onchange="updateInquiryStatus('${r.id}', this.value)" style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;padding:4px 6px;cursor:pointer;outline:none">${statusOptions.map(s => `<option value="${s}"${(r.status || 'New') === s ? ' selected' : ''}>${s}</option>`).join('')}</select></td>
           <td><button class="dash-delete" onclick="deleteInquiry('${r.id}')" title="Delete">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
         </button></td>
@@ -3443,18 +3417,65 @@ function renderInquiries() {
     }
     tbody.innerHTML = html;
   }
+
+  // Render pagination
+  renderPagination(totalPages);
+}
+
+function renderPagination(totalPages) {
+  const container = document.getElementById('dashPagination');
+  if (totalPages <= 1) { container.style.display = 'none'; return; }
+  container.style.display = 'flex';
+  let html = `<button onclick="goToPage(${currentPage - 1})" ${currentPage <= 1 ? 'disabled' : ''}>\u276E Prev</button>`;
+  for (let i = 1; i <= totalPages; i++) {
+    if (i === 1 || i === totalPages || Math.abs(i - currentPage) <= 2) {
+      html += `<button onclick="goToPage(${i})" class="${i === currentPage ? 'active' : ''}">${i}</button>`;
+    } else if (i === currentPage - 3 || i === currentPage + 3) {
+      html += `<button disabled>...</button>`;
+    }
+  }
+  html += `<button onclick="goToPage(${currentPage + 1})" ${currentPage >= totalPages ? 'disabled' : ''}>Next \u276F</button>`;
+  container.innerHTML = html;
+}
+
+function goToPage(page) {
+  currentPage = page;
+  renderInquiries();
+}
+
+async function updateInquiryStatus(id, newStatus) {
+  const selectEl = document.querySelector(`.dash-status-select[data-id="${id}"]`);
+  if (selectEl) selectEl.style.opacity = '0.5';
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/form_inquiries?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY
+      },
+      body: JSON.stringify({ status: newStatus })
+    });
+    if (!res.ok) throw new Error('Failed to update');
+    const inquiry = inquiriesData.find(r => r.id === id);
+    if (inquiry) inquiry.status = newStatus;
+    if (selectEl) selectEl.style.opacity = '1';
+    showStatus('Status updated to ' + newStatus, 'success');
+  } catch (_) {
+    if (selectEl) {
+      selectEl.value = inquiriesData.find(r => r.id === id)?.status || 'New';
+      selectEl.style.opacity = '1';
+    }
+    showStatus('Failed to update status.', 'error');
+  }
 }
 
 async function deleteInquiry(id) {
   if (!confirm('Delete this inquiry? This cannot be undone.')) return;
-  const token = getAccessToken();
-  if (!token) { showStatus('You must be signed in to delete.', 'error'); return; }
   try {
     await fetch(`${SUPABASE_URL}/rest/v1/form_inquiries?id=eq.${id}`, {
       method: 'DELETE',
       headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${token}`
+        'apikey': SUPABASE_ANON_KEY
       }
     });
     inquiriesData = inquiriesData.filter(r => r.id !== id);
@@ -3467,7 +3488,7 @@ async function deleteInquiry(id) {
 
 function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
 
-document.getElementById('dashSearch').addEventListener('input', () => { renderInquiries(); });
+document.getElementById('dashSearch').addEventListener('input', () => { currentPage = 1; renderInquiries(); });
 </script>
 </body>
 </html>
