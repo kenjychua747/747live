@@ -1264,9 +1264,21 @@ const supabaseAuth = {
 
     localStorage.removeItem('supabaseAccessToken');
     localStorage.removeItem('supabaseRefreshToken');
-    return { session: null };
+    return { session: null };  },
+  async getUser() {
+    let token = getAccessToken();
+    if (!token) {
+      const refreshed = await this.refreshSession();
+      if (!refreshed) return null;
+      token = getAccessToken();
+    }
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data;
   },
-
   async refreshSession() {
     const refreshToken = localStorage.getItem('supabaseRefreshToken');
     if (!refreshToken) return false;
@@ -1799,35 +1811,38 @@ let _originalAdminPassword = '';
 
 async function loadRecoveryData() {
   try {
-    const creds = await supabaseRest.getCredentials();
     const emailEl = document.getElementById('adminEmail');
     const passEl = document.getElementById('adminPassword');
     const questionEl = document.getElementById('recoveryQuestion');
     const answerEl = document.getElementById('recoveryAnswer');
     const customEl = document.getElementById('recoveryQuestionCustom');
     const group = document.getElementById('customQuestionGroup');
-    if (creds) {
-      _originalAdminEmail = creds.email || '';
-      _originalAdminPassword = creds.password || '';
-      if (emailEl && creds.email) emailEl.value = creds.email;
-      if (passEl && creds.password) passEl.value = creds.password;
-      if (questionEl && creds.recovery_question) questionEl.value = creds.recovery_question;
-      if (answerEl && creds.recovery_answer) answerEl.value = creds.recovery_answer;
-      if (creds.recovery_question === 'Custom') {
-        if (group) group.style.display = 'block';
-        if (customEl) customEl.value = data.recoveryQuestionCustom || '';
-      }
-    } else {
-      _originalAdminEmail = data.adminEmail || '';
-      _originalAdminPassword = data.adminPassword || '';
-      if (emailEl && data.adminEmail) emailEl.value = data.adminEmail;
-      if (passEl && data.adminPassword) passEl.value = data.adminPassword;
-      if (questionEl && data.recoveryQuestion) questionEl.value = data.recoveryQuestion;
-      if (answerEl && data.recoveryAnswer) answerEl.value = data.recoveryAnswer;
-      if (data.recoveryQuestion === 'Custom') {
-        if (group) group.style.display = 'block';
-        if (customEl) customEl.value = data.recoveryQuestionCustom || '';
-      }
+    // Get Supabase Auth user email (source of truth for login)
+    let authEmail = '';
+    try {
+      const authUser = await supabaseAuth.getUser();
+      if (authUser && authUser.email) authEmail = authUser.email;
+    } catch(_) {}
+    // Get credentials from admin_credentials table (for recovery Q&A)
+    let creds = null;
+    try {
+      creds = await supabaseRest.getCredentials();
+    } catch(_) {}
+    // Determine email: Auth user > admin_credentials > site_config fallback
+    const displayEmail = authEmail || (creds ? creds.email : '') || data.adminEmail || '';
+    const displayPassword = (creds ? creds.password : '') || data.adminPassword || '';
+    _originalAdminEmail = displayEmail;
+    _originalAdminPassword = displayPassword;
+    if (emailEl) emailEl.value = displayEmail;
+    if (passEl && displayPassword) passEl.value = displayPassword;
+    // Recovery question/answer from admin_credentials or fallback
+    const displayQuestion = creds ? creds.recovery_question : (data.recoveryQuestion || '');
+    const displayAnswer = creds ? creds.recovery_answer : (data.recoveryAnswer || '');
+    if (questionEl && displayQuestion) questionEl.value = displayQuestion;
+    if (answerEl && displayAnswer) answerEl.value = displayAnswer;
+    if (displayQuestion === 'Custom') {
+      if (group) group.style.display = 'block';
+      if (customEl) customEl.value = data.recoveryQuestionCustom || '';
     }
   } catch(_) {}
 }

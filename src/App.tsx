@@ -905,8 +905,8 @@ setFormName(""); setFormEmail(""); setFormUsername(""); setFormPhone(""); setFor
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#66f89c" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                       </div>
                       <h3 style={{ color: "#f0f0f0", margin: "0 0 8px", fontSize: 18, fontWeight: 600 }}>Registration Submitted</h3>
-                      <p style={{ color: "#888", margin: "0 0 8px", fontSize: 13 }}>Your inquiry has been sent to admin@747live.com</p>
-                      <p style={{ color: "#66f89c", margin: "0", fontSize: 12 }}>Check your email to continue</p>
+                      <p style={{ color: "#888", margin: "0 0 8px", fontSize: 13 }}>Your inquiry has been received. Our team will follow up with you shortly via Facebook or email.</p>
+                      <p style={{ color: "#66f89c", margin: "0", fontSize: 12 }}>Thank you for registering!</p>
                     </div>
                   </div>
                 )}

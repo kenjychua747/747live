@@ -36,7 +36,7 @@ function doPost(e) {
       '</table>' +
       '<div style="margin-top:24px;padding:16px;background:#12121a;border:1px solid #1a1a2e;border-radius:6px;text-align:center;">' +
       '<div style="font-size:11px;color:#66f89c;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Reply</div>' +
-      '<a href="mailto:rozelramos17@gmail.com" style="color:#f0f0f0;font-size:14px;text-decoration:underline;">rozelramos17@gmail.com</a>' +
+      '<a href="mailto:747livecasino.teamkenj@atomicmail.io" style="color:#f0f0f0;font-size:14px;text-decoration:underline;">747livecasino.teamkenj@atomicmail.io</a>' +
       '</div>' +
       '</div>' +
       '<div style="padding:16px 30px;background:#07070d;text-align:center;color:#333;font-size:10px;letter-spacing:1px;border-top:1px solid #1a1a2e;">' +
@@ -45,7 +45,8 @@ function doPost(e) {
       '</div>';
 
     MailApp.sendEmail({
-      to: "rozelramos17@gmail.com",
+      to: "747livecasino.teamkenj@atomicmail.io",
+      replyTo: "747livecasino.teamkenj@atomicmail.io",
       subject: subject,
       htmlBody: htmlBody
     });
@@ -96,7 +97,7 @@ function testSendEmail() {
     '</div>';
 
   MailApp.sendEmail({
-    to: "rozelramos17@gmail.com",
+    to: "747livecasino.teamkenj@atomicmail.io",
     subject: "GAS Test — 747 Live Casino",
     htmlBody: htmlBody
   });
