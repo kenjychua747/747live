@@ -31,6 +31,7 @@ function doPost(e) {
       '<tr><td style="padding:14px 0;border-bottom:1px solid #1a1a2e;color:#666;font-size:13px;">Username</td><td style="padding:14px 0;border-bottom:1px solid #1a1a2e;color:#f0f0f0;font-size:14px;font-weight:500;">' + safe(data.username) + '</td></tr>' +
       '<tr><td style="padding:14px 0;border-bottom:1px solid #1a1a2e;color:#666;font-size:13px;">Phone</td><td style="padding:14px 0;border-bottom:1px solid #1a1a2e;color:#f0f0f0;font-size:14px;">' + safe(data.phone) + '</td></tr>' +
       '<tr><td style="padding:14px 0;border-bottom:1px solid #1a1a2e;color:#666;font-size:13px;">Country</td><td style="padding:14px 0;border-bottom:1px solid #1a1a2e;color:#f0f0f0;font-size:14px;">' + safe(data.country) + '</td></tr>' +
+      (data.facebook_url ? '<tr><td style="padding:14px 0;border-bottom:1px solid #1a1a2e;color:#666;font-size:13px;">Facebook</td><td style="padding:14px 0;border-bottom:1px solid #1a1a2e;"><a href="' + safe(data.facebook_url) + '" target="_blank" style="color:#66f89c;text-decoration:none;font-size:14px;">' + safe(data.facebook_url) + '</a></td></tr>' : '') +
       '<tr><td style="padding:14px 0;color:#666;font-size:13px;">Date</td><td style="padding:14px 0;color:#f0f0f0;font-size:14px;">' + dateStr + '</td></tr>' +
       '<tr><td style="padding:0;color:#666;font-size:13px;">Time</td><td style="padding:0;color:#f0f0f0;font-size:14px;">' + timeStr + '</td></tr>' +
       '</table>' +

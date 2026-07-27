@@ -524,12 +524,13 @@ table.form-table input:focus, table.form-table textarea:focus { border-color: va
                 <th>Username</th>
                 <th>Phone</th>
                 <th>Country</th>
+                <th>Facebook</th>
                 <th>Status</th>
                 <th></th>
               </tr>
             </thead>
             <tbody id="dashTableBody">
-              <tr><td colspan="8" class="dash-empty">Loading inquiries...</td></tr>
+              <tr><td colspan="9" class="dash-empty">Loading inquiries...</td></tr>
             </tbody>
          </table>
          <div class="dash-pagination" id="dashPagination" style="display:none"></div>
@@ -1438,9 +1439,40 @@ function getAccessToken() {
   if (t) return t;
   try {
     const session = JSON.parse(localStorage.getItem('sb-agkuojclxealcjymbeos-auth-token'));
-    if (session?.access_token) return session.access_token;
+    if (session?.access_token) {
+      localStorage.setItem('supabaseAccessToken', session.access_token);
+      return session.access_token;
+    }
   } catch {}
   return null;
+}
+
+function getRefreshToken() {
+  const t = localStorage.getItem('supabaseRefreshToken');
+  if (t) return t;
+  try {
+    const session = JSON.parse(localStorage.getItem('sb-agkuojclxealcjymbeos-auth-token'));
+    if (session?.refresh_token) {
+      localStorage.setItem('supabaseRefreshToken', session.refresh_token);
+      return session.refresh_token;
+    }
+  } catch {}
+  return null;
+}
+
+/**
+ * Sync the access & refresh tokens from the Supabase JS client session
+ * into our custom localStorage keys. Call this at page load so uploads
+ * use fresh tokens that haven't been rotated yet.
+ */
+function syncSupabaseSession() {
+  try {
+    const raw = localStorage.getItem('sb-agkuojclxealcjymbeos-auth-token');
+    if (!raw) return;
+    const session = JSON.parse(raw);
+    if (session?.access_token) localStorage.setItem('supabaseAccessToken', session.access_token);
+    if (session?.refresh_token) localStorage.setItem('supabaseRefreshToken', session.refresh_token);
+  } catch {}
 }
 
 async function saveData() {
@@ -2399,12 +2431,12 @@ async function uploadConvSidebar(fileInput) {
   if (!file.type.startsWith('image/')) { showStatus('Please select an image file.', 'error'); fileInput.value = ''; return; }
   if (file.size > 5 * 1024 * 1024) { showStatus('Image must be under 5MB.', 'error'); fileInput.value = ''; return; }
   let token = getAccessToken();
-  if (!token) { showStatus('You must be signed in to upload images.', 'error'); return; }
-  const refreshToken = localStorage.getItem('supabaseRefreshToken');
+  if (!token) { showStatus('You must be signed in to upload images.', 'error'); return; }    const refreshToken = getRefreshToken();
   if (refreshToken) {
     try {
       const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY }, body: JSON.stringify({ refresh_token: refreshToken }) });
       if (r.ok) { const d = await r.json(); localStorage.setItem('supabaseAccessToken', d.access_token); localStorage.setItem('supabaseRefreshToken', d.refresh_token); token = d.access_token; }
+      else { const fallback = getAccessToken(); if (fallback) token = fallback; }
     } catch(_) {}
   }
   const ext = file.name.split('.').pop() || 'jpg';
@@ -2662,20 +2694,26 @@ async function uploadHeroImage(fileInput) {
   let token = getAccessToken();
   if (!token) { showStatus('You must be signed in to upload images.', 'error'); fileInput.value = ''; return; }
 
-  const refreshToken = localStorage.getItem('supabaseRefreshToken');
-  try {
-    const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
-      body: JSON.stringify({ refresh_token: refreshToken })
-    });
-    if (r.ok) {
-      const d = await r.json();
-      localStorage.setItem('supabaseAccessToken', d.access_token);
-      localStorage.setItem('supabaseRefreshToken', d.refresh_token);
-      token = d.access_token;
-    }
-  } catch(_) {}
+  const refreshToken = getRefreshToken();
+  if (refreshToken) {
+    try {
+      const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+        body: JSON.stringify({ refresh_token: refreshToken })
+      });
+      if (r.ok) {
+        const d = await r.json();
+        localStorage.setItem('supabaseAccessToken', d.access_token);
+        localStorage.setItem('supabaseRefreshToken', d.refresh_token);
+        token = d.access_token;
+      } else {
+        // Refresh token expired — try falling back to the current access token
+        const fallback = getAccessToken();
+        if (fallback) token = fallback;
+      }
+    } catch(_) {}
+  }
 
   const ext = file.name.split('.').pop() || 'jpg';
   const filename = `hero_${Date.now()}.${ext}`;
@@ -2788,6 +2826,27 @@ async function uploadPromoSlide(fileInput) {
   let token = getAccessToken();
   if (!token) { showStatus('You must be signed in to upload images.', 'error'); fileInput.value = ''; return; }
 
+  // Refresh token
+  const refreshToken = getRefreshToken();
+  if (refreshToken) {
+    try {
+      const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+        body: JSON.stringify({ refresh_token: refreshToken })
+      });
+      if (r.ok) {
+        const d = await r.json();
+        localStorage.setItem('supabaseAccessToken', d.access_token);
+        localStorage.setItem('supabaseRefreshToken', d.refresh_token);
+        token = d.access_token;
+      } else {
+        const fallback = getAccessToken();
+        if (fallback) token = fallback;
+      }
+    } catch(_) {}
+  }
+
   const ext = file.name.split('.').pop() || 'jpg';
   const filename = `promo_${Date.now()}.${ext}`;
 
@@ -2843,6 +2902,27 @@ async function uploadPromoVideo(fileInput) {
 
   let token = getAccessToken();
   if (!token) { showStatus('You must be signed in to upload.', 'error'); fileInput.value = ''; return; }
+
+  // Refresh token
+  const refreshToken = getRefreshToken();
+  if (refreshToken) {
+    try {
+      const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+        body: JSON.stringify({ refresh_token: refreshToken })
+      });
+      if (r.ok) {
+        const d = await r.json();
+        localStorage.setItem('supabaseAccessToken', d.access_token);
+        localStorage.setItem('supabaseRefreshToken', d.refresh_token);
+        token = d.access_token;
+      } else {
+        const fallback = getAccessToken();
+        if (fallback) token = fallback;
+      }
+    } catch(_) {}
+  }
 
   const ext = file.name.split('.').pop() || (isVideo ? 'mp4' : 'jpg');
   const filename = `promo_media_${Date.now()}.${ext}`;
@@ -2903,6 +2983,27 @@ async function uploadAgentIcon(cardIndex, fileInput) {
 
   let token = getAccessToken();
   if (!token) { showStatus('You must be signed in to upload images.', 'error'); fileInput.value = ''; return; }
+
+  // Refresh token
+  const refreshToken = getRefreshToken();
+  if (refreshToken) {
+    try {
+      const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+        body: JSON.stringify({ refresh_token: refreshToken })
+      });
+      if (r.ok) {
+        const d = await r.json();
+        localStorage.setItem('supabaseAccessToken', d.access_token);
+        localStorage.setItem('supabaseRefreshToken', d.refresh_token);
+        token = d.access_token;
+      } else {
+        const fallback = getAccessToken();
+        if (fallback) token = fallback;
+      }
+    } catch(_) {}
+  }
 
   const ext = file.name.split('.').pop() || 'jpg';
   const filename = `agent_icon_${cardIndex}_${Date.now()}.${ext}`;
@@ -3030,6 +3131,27 @@ async function uploadProviderModalGif(fileInput) {
 
   let token = getAccessToken();
   if (!token) { showStatus('You must be signed in to upload images.', 'error'); fileInput.value = ''; return; }
+
+  // Refresh token
+  const refreshToken = getRefreshToken();
+  if (refreshToken) {
+    try {
+      const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+        body: JSON.stringify({ refresh_token: refreshToken })
+      });
+      if (r.ok) {
+        const d = await r.json();
+        localStorage.setItem('supabaseAccessToken', d.access_token);
+        localStorage.setItem('supabaseRefreshToken', d.refresh_token);
+        token = d.access_token;
+      } else {
+        const fallback = getAccessToken();
+        if (fallback) token = fallback;
+      }
+    } catch(_) {}
+  }
 
   const ext = file.name.split('.').pop() || 'gif';
   const filename = `provider_${Date.now()}.${ext}`;
@@ -3243,6 +3365,9 @@ const SECTION_FIELDS = {
 const SAVE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
 
 // Inject save buttons into all section cards (except dashboard and FAQ)
+// Sync tokens from Supabase JS client session so uploads use fresh credentials
+syncSupabaseSession();
+
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.section-card').forEach(card => {
     const id = card.id.replace('sec-', '');
@@ -3295,7 +3420,7 @@ function setInquiriesSort(sort) {
 }
 
 async function loadInquiries() {
-  document.getElementById('dashTableBody').innerHTML = `<tr><td colspan="8" class="dash-empty">Loading inquiries...</td></tr>`;
+  document.getElementById('dashTableBody').innerHTML = `<tr><td colspan="9" class="dash-empty">Loading inquiries...</td></tr>`;
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/form_inquiries?select=*&order=created_at.desc`, {
       headers: {
@@ -3308,7 +3433,7 @@ async function loadInquiries() {
      renderInquiries();
   } catch (err) {
     document.getElementById('dashTableBody').innerHTML =
-      `<tr><td colspan="8" class="dash-empty">
+      `<tr><td colspan="9" class="dash-empty">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
         <div>Could not load inquiries. Make sure the <code>form_inquiries</code> table exists.</div>
       </td></tr>`;
@@ -3324,7 +3449,8 @@ function renderInquiries() {
       (r.full_name || '').toLowerCase().includes(search) ||
       (r.email || '').toLowerCase().includes(search) ||
       (r.username || '').toLowerCase().includes(search) ||
-      (r.phone || '').toLowerCase().includes(search)
+      (r.phone || '').toLowerCase().includes(search) ||
+      (r.facebook_url || '').toLowerCase().includes(search)
     );
   }
   if (statusFilter) {
@@ -3369,7 +3495,7 @@ function renderInquiries() {
 
   const tbody = document.getElementById('dashTableBody');
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" class="dash-empty">
+    tbody.innerHTML = `<tr><td colspan="9" class="dash-empty">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
       <div>No inquiries found.</div>
     </td></tr>`;
@@ -3381,6 +3507,7 @@ function renderInquiries() {
         const d = r.created_at ? new Date(r.created_at) : null;
         const dateStr = d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
         const timeStr = d ? d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '';
+        const fbCell = r.facebook_url ? `<a href="${esc(r.facebook_url)}" target="_blank" style="color:var(--accent);text-decoration:none;font-size:12px">View Profile</a>` : '<span style="opacity:.3">—</span>';
         return `<tr>
           <td class="dash-date">${dateStr}<br><span style="opacity:.6">${timeStr}</span></td>
           <td>${esc(r.full_name)}</td>
@@ -3388,6 +3515,7 @@ function renderInquiries() {
           <td>${esc(r.username)}</td>
           <td><a href="tel:${esc(r.phone)}" style="color:var(--text);text-decoration:none">${esc(r.phone)}</a></td>
           <td>${esc(r.country)}</td>
+          <td>${fbCell}</td>
           <td><select class="dash-status-select" data-id="${r.id}" onchange="updateInquiryStatus('${r.id}', this.value)" style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;padding:4px 6px;cursor:pointer;outline:none">${statusOptions.map(s => `<option value="${s}"${(r.status || 'New') === s ? ' selected' : ''}>${s}</option>`).join('')}</select></td>
           <td><button class="dash-delete" onclick="deleteInquiry('${r.id}')" title="Delete">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
@@ -3401,6 +3529,7 @@ function renderInquiries() {
         const d = r.created_at ? new Date(r.created_at) : null;
         const dateStr = d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
         const timeStr = d ? d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '';
+        const fbCell = r.facebook_url ? `<a href="${esc(r.facebook_url)}" target="_blank" style="color:var(--accent);text-decoration:none;font-size:12px">View Profile</a>` : '<span style="opacity:.3">—</span>';
         return `<tr>
           <td class="dash-date">${dateStr}<br><span style="opacity:.6">${timeStr}</span></td>
           <td>${esc(r.full_name)}</td>
@@ -3408,6 +3537,7 @@ function renderInquiries() {
           <td>${esc(r.username)}</td>
           <td><a href="tel:${esc(r.phone)}" style="color:var(--text);text-decoration:none">${esc(r.phone)}</a></td>
           <td>${esc(r.country)}</td>
+          <td>${fbCell}</td>
           <td><select class="dash-status-select" data-id="${r.id}" onchange="updateInquiryStatus('${r.id}', this.value)" style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;padding:4px 6px;cursor:pointer;outline:none">${statusOptions.map(s => `<option value="${s}"${(r.status || 'New') === s ? ' selected' : ''}>${s}</option>`).join('')}</select></td>
           <td><button class="dash-delete" onclick="deleteInquiry('${r.id}')" title="Delete">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>

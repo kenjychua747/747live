@@ -144,9 +144,10 @@ function ProviderCard({ provider, index, inviteUrl }: { provider: { name: string
   );
 }
 
-function CountUp({ to, suffix = "", decimals = 0 }: { to: number; suffix?: string; decimals?: number }) {
+function CountUp({ to, suffix = "", decimals = 0, fluctuate = false }: { to: number; suffix?: string; decimals?: number; fluctuate?: boolean }) {
   const ref = useRef<HTMLSpanElement>(null);
   const [hasAnimated, setHasAnimated] = useState(false);
+  const currentVal = useRef(to);
 
   useEffect(() => {
     const el = ref.current;
@@ -162,7 +163,9 @@ function CountUp({ to, suffix = "", decimals = 0 }: { to: number; suffix?: strin
           const elapsed = now - start;
           const progress = Math.min(elapsed / duration, 1);
           const eased = 1 - Math.pow(1 - progress, 3);
-          el.textContent = (to * eased).toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) + suffix;
+          const val = to * eased;
+          currentVal.current = val;
+          el.textContent = val.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) + suffix;
           if (progress < 1) requestAnimationFrame(tick);
         }
         requestAnimationFrame(tick);
@@ -172,6 +175,18 @@ function CountUp({ to, suffix = "", decimals = 0 }: { to: number; suffix?: strin
     observer.observe(el);
     return () => observer.disconnect();
   }, [to, suffix, decimals, hasAnimated]);
+
+  useEffect(() => {
+    if (!fluctuate || !hasAnimated) return;
+    const el = ref.current;
+    if (!el) return;
+    const interval = setInterval(() => {
+      const delta = Math.floor(Math.random() * 7) - 3;
+      currentVal.current = Math.max(to - 10, Math.min(to + 15, currentVal.current + delta));
+      el.textContent = currentVal.current.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) + suffix;
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [fluctuate, hasAnimated, to, suffix, decimals]);
 
   return <span ref={ref}>0{suffix}</span>;
 }
@@ -216,6 +231,7 @@ export default function App() {
   const [formUsername, setFormUsername] = useState("");
   const [formPhone, setFormPhone] = useState("");
   const [formCountry, setFormCountry] = useState("");
+  const [formFacebookUrl, setFormFacebookUrl] = useState("");
   const [formSuccess, setFormSuccess] = useState(false);
 
   // Fetch live config from Supabase (overrides hardcoded defaults)
@@ -452,6 +468,19 @@ export default function App() {
         setLoginError("Invalid email or password");
         return;
       }
+
+      // Authenticate with Supabase Auth so uploads work in admin.html
+      const authRes = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY },
+        body: JSON.stringify({ email: loginEmail.trim(), password: loginPassword })
+      });
+      if (authRes.ok) {
+        const authData = await authRes.json();
+        localStorage.setItem('supabaseAccessToken', authData.access_token);
+        localStorage.setItem('supabaseRefreshToken', authData.refresh_token);
+      }
+
       setLoginLoading(false);
       setAdminModalOpen(false);
       window.open("/admin.html", "_blank");
@@ -731,7 +760,7 @@ export default function App() {
               transition={{ delay: 0.68, duration: 0.7 }}
             >
               <div className="hero__stat">
-                <strong><CountUp to={statPlayingNum} suffix={statPlayingSuffix} /></strong>
+                <strong><CountUp to={statPlayingNum} fluctuate />+</strong>
                 <small>Playing now</small>
               </div>
               <div className="hero__stat-divider" aria-hidden="true" />
@@ -797,6 +826,7 @@ export default function App() {
                 username: formUsername,
                 phone: formPhone,
                 country: formCountry,
+                facebook_url: formFacebookUrl || null,
                 status: 'New'
               };
               // Save inquiry to Supabase
@@ -822,7 +852,7 @@ export default function App() {
                   });
                 }
               } catch (_) {}
-setFormName(""); setFormEmail(""); setFormUsername(""); setFormPhone(""); setFormCountry("");
+setFormName(""); setFormEmail(""); setFormUsername(""); setFormPhone(""); setFormCountry(""); setFormFacebookUrl("");
                setFormSuccess(true);
             }}>
               <label className="hero__form-field">
@@ -903,6 +933,10 @@ setFormName(""); setFormEmail(""); setFormUsername(""); setFormPhone(""); setFor
                   <option value="Peru">Peru</option>
                   <option value="Venezuela">Venezuela</option>
                 </select>
+              </label>
+              <label className="hero__form-field">
+                <span>Facebook URL <small style={{opacity:.5}}>(Optional)</small></span>
+                <input type="url" placeholder="https://facebook.com/yourprofile" value={formFacebookUrl} onChange={e => setFormFacebookUrl(e.target.value)} />
               </label>
                <button className="button button--primary button--large button--pulse" type="submit" style={{ width: "100%", marginTop: 8 }}>
                  {formSubmitText} <ArrowUpRight size={18} />
@@ -1389,7 +1423,11 @@ setFormName(""); setFormEmail(""); setFormUsername(""); setFormPhone(""); setFor
       </button>
 
 
-      <a className="sticky-cta" href={liveUrl} target="_blank" rel="noreferrer">Join now <ArrowUpRight size={18} /></a>
+      <button className="sticky-cta" type="button" onClick={() => setFormOpen(true)}>
+        <UserPlus size={20} />
+        <span>Register Account</span>
+        <ChevronDown size={16} />
+      </button>
 
       {!cookieConsent && (
         <div className="cookie-bar">

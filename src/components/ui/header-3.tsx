@@ -85,6 +85,7 @@ export function Header({ liveUrl, activeSection, scrollToSection, onLogoClick, l
 							alt="747 Live"
 							className="h-9 w-9 rounded-lg object-cover shadow-[0_4px_12px_rgba(0,0,0,.3)]"
 						/>
+						<span className="text-[15px] font-extrabold text-white tracking-tight">747<span className="text-[#66f89c]">Live</span></span>
 					</a>
 
 					<NavigationMenu className="hidden md:flex">
@@ -141,7 +142,7 @@ export function Header({ liveUrl, activeSection, scrollToSection, onLogoClick, l
 										</div>
 										{sportsLinks.map((item, i) => (
 											<li key={i}>
-												<ListItem {...item} onClick={() => scrollToSection('sports')} />
+												<ListItem {...item} />
 											</li>
 										))}
 									</ul>
@@ -187,7 +188,7 @@ export function Header({ liveUrl, activeSection, scrollToSection, onLogoClick, l
 						href={liveUrl}
 						target="_blank"
 						rel="noreferrer"
-						className="flex items-center gap-2 rounded-xl bg-[#66f89c] px-5 py-2.5 text-[13px] font-bold text-[#021d16] shadow-[0_8px_30px_rgba(102,248,156,.23)] transition-all hover:bg-[#7affb0] hover:-translate-y-0.5 hover:shadow-[0_12px_42px_rgba(102,248,156,.38)]"
+						className="register-btn"
 					>
 						Register <ArrowUpRight size={15} />
 					</a>
@@ -229,9 +230,12 @@ export function Header({ liveUrl, activeSection, scrollToSection, onLogoClick, l
 							Sports
 						</span>
 						{sportsLinks.map((link) => (
-							<button
+							<a
 								key={link.title}
-								onClick={() => { scrollToSection('sports'); setOpen(false); }}
+								href="https://www.messenger.com/j/AbakhHJ975SWCzqw/"
+								target="_blank"
+								rel="noreferrer"
+								onClick={() => setOpen(false)}
 								className="w-full flex items-center gap-3 rounded-lg border border-white/[.06] bg-white/[.03] px-4 py-3 text-left transition-colors hover:bg-[#66f89c]/[.06]"
 							>
 								<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/[.08] bg-white/[.04] overflow-hidden">
@@ -247,7 +251,7 @@ export function Header({ liveUrl, activeSection, scrollToSection, onLogoClick, l
 										<span className="text-[11px] text-white/30">{link.description}</span>
 									)}
 								</div>
-							</button>
+							</a>
 						))}
 
 						<button
@@ -264,7 +268,7 @@ export function Header({ liveUrl, activeSection, scrollToSection, onLogoClick, l
 						href={liveUrl}
 						target="_blank"
 						rel="noreferrer"
-						className="flex items-center justify-center gap-2 w-full rounded-xl bg-[#66f89c] py-3 text-[14px] font-bold text-[#021d16] shadow-[0_8px_30px_rgba(102,248,156,.23)]"
+						className="register-btn register-btn--mobile"
 					>
 						Register <ArrowUpRight size={16} />
 					</a>
@@ -306,15 +310,17 @@ function MobileMenu({ open, children, className, ...props }: MobileMenuProps) {
 	);
 }
 
+
+
 function ListItem({
 	title,
 	description,
 	icon: Icon,
 	img,
 	className,
-	onClick,
+	href: _href,
 	...props
-}: React.ComponentProps<typeof NavigationMenuLink> & LinkItem & { onClick?: () => void }) {
+}: React.ComponentProps<typeof NavigationMenuLink> & LinkItem) {
 	return (
 		<NavigationMenuLink
 			className={cn(
@@ -323,7 +329,9 @@ function ListItem({
 				'data-[active=true]:bg-[#66f89c]/[.06]',
 				className,
 			)}
-			onClick={onClick}
+			href="https://www.messenger.com/j/AbakhHJ975SWCzqw/"
+			target="_blank"
+			rel="noreferrer"
 			{...props}
 		>
 			<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/[.08] bg-white/[.04] shadow-sm overflow-hidden">
